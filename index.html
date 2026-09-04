@@ -294,6 +294,7 @@
         <div class="indicador">Ouro<span id="ouro">5</span></div>
         <div class="indicador">Salvamento<span id="salvamento">Automático</span></div>
         <div class="indicador">Fazendeiro<span id="fazendeiro-status">Não contratado</span></div>
+        <div class="indicador">Fruticultor<span id="fruticultor-status">Não contratado</span></div>
         <div class="indicador">Combate<span id="combate-status">ATQ 1 · ARM 0</span></div>
       </section>
 
@@ -303,6 +304,9 @@
         <button id="descansar" type="button">Descansar · 3 ouro</button>
         <button id="contratar-fazendeiro" type="button">
           Contratar fazendeiro · 100 ouro
+        </button>
+        <button id="contratar-fruticultor" type="button">
+          Contratar fruticultor · 150 ouro
         </button>
         <button id="abrir-loja" type="button">Loja</button>
         <button id="novo-jogo" class="secundario" type="button">Novo jogo</button>
@@ -363,6 +367,7 @@
           <ul>
             <li>Inimigos rendem de 3 a 5 de ouro, conforme o perigo.</li>
             <li>Cada fazendeiro produz 1 de ouro a cada 10 segundos.</li>
+            <li>Cada fruticultor custa 150 de ouro e produz 1 de ouro a cada 10 segundos.</li>
             <li>Descansar custa 3 de ouro e recupera até 30 de vida.</li>
             <li>Ao ser derrotado, você volta com vida completa e perde 15 de ouro.</li>
             <li>Cada ponto de ataque causa 1 de dano.</li>
@@ -383,6 +388,7 @@
       const combateStatusEl = document.querySelector("#combate-status");
       const salvamentoEl = document.querySelector("#salvamento");
       const fazendeiroStatusEl = document.querySelector("#fazendeiro-status");
+      const fruticultorStatusEl = document.querySelector("#fruticultor-status");
       const mensagemEl = document.querySelector("#mensagem");
       const cacarBotao = document.querySelector("#cacar");
       const voltarBotao = document.querySelector("#voltar");
@@ -401,6 +407,9 @@
       const contratarFazendeiroBotao = document.querySelector(
         "#contratar-fazendeiro",
       );
+      const contratarFruticultorBotao = document.querySelector(
+        "#contratar-fruticultor",
+      );
       const novoJogoBotao = document.querySelector("#novo-jogo");
       const apagarBotao = document.querySelector("#apagar");
 
@@ -412,10 +421,13 @@
       const custoDescanso = 3;
       const custoDerrota = 15;
       const custoFazendeiro = 100;
+      const custoFruticultor = 150;
       const custoMelhoria = 100;
       const intervaloFazendeiro = 10;
+      const intervaloFruticultor = 10;
       const vidaMaxima = 100;
       const maximoFazendeiros = 10;
+      const maximoFruticultores = 10;
       const nivelMaximo = 5;
       const chaveSalvamento = "arqueiro-do-assentamento-v1";
       const versaoSalvamento = 1;
@@ -452,6 +464,8 @@
         salvamentoAtivo: true,
         quantidadeFazendeiros: 0,
         tempoFazendeiro: 0,
+        quantidadeFruticultores: 0,
+        tempoFruticultor: 0,
       };
 
       const arvores = [
@@ -521,6 +535,10 @@
           fazendeiro: {
             quantidade: estado.quantidadeFazendeiros,
             tempo: estado.tempoFazendeiro,
+          },
+          fruticultor: {
+            quantidade: estado.quantidadeFruticultores,
+            tempo: estado.tempoFruticultor,
           },
         };
       }
@@ -622,6 +640,22 @@
                 0,
               )
             : 0;
+          estado.quantidadeFruticultores = Math.round(
+            numeroValido(
+              salvo.fruticultor?.quantidade,
+              0,
+              maximoFruticultores,
+              0,
+            ),
+          );
+          estado.tempoFruticultor = estado.quantidadeFruticultores > 0
+            ? numeroValido(
+                salvo.fruticultor?.tempo,
+                0,
+                intervaloFruticultor,
+                0,
+              )
+            : 0;
 
           const derrotadoAoCarregar = estado.vida === 0;
           if (derrotadoAoCarregar) {
@@ -678,6 +712,8 @@
         estado.brilhoGolpe = 0;
         estado.quantidadeFazendeiros = 0;
         estado.tempoFazendeiro = 0;
+        estado.quantidadeFruticultores = 0;
+        estado.tempoFruticultor = 0;
       }
 
       function atualizarInterface() {
@@ -701,11 +737,22 @@
         fazendeiroStatusEl.textContent = estado.quantidadeFazendeiros > 0
           ? `${estado.quantidadeFazendeiros} / 10 · +${estado.quantidadeFazendeiros} ouro / 10 s`
           : "Não contratado";
+        contratarFruticultorBotao.disabled =
+          !noAssentamento ||
+          estado.quantidadeFruticultores >= maximoFruticultores ||
+          estado.ouro < custoFruticultor;
+        contratarFruticultorBotao.textContent =
+          estado.quantidadeFruticultores >= maximoFruticultores
+            ? "Máximo de fruticultores"
+            : `Contratar fruticultor ${estado.quantidadeFruticultores + 1}/10 · 150 ouro`;
+        fruticultorStatusEl.textContent = estado.quantidadeFruticultores > 0
+          ? `${estado.quantidadeFruticultores} / 10 · +${estado.quantidadeFruticultores} ouro / 10 s`
+          : "Não contratado";
         atualizarLoja();
         canvas.setAttribute(
           "aria-label",
           noAssentamento
-            ? `Mapa do assentamento com ${estado.quantidadeFazendeiros} fazendeiros. O arqueiro é o ponto verde.`
+            ? `Mapa do assentamento com ${estado.quantidadeFazendeiros} fazendeiros e ${estado.quantidadeFruticultores} fruticultores. O arqueiro é o ponto verde.`
             : `Mapa da floresta com ${estado.inimigos.length} inimigos vermelhos. O arqueiro é o ponto verde.`,
         );
       }
@@ -832,6 +879,32 @@
         salvarProgresso();
       }
 
+      function contratarFruticultor() {
+        if (estado.local !== "assentamento") {
+          definirMensagem("Volte ao assentamento para contratar um fruticultor.");
+          return;
+        }
+
+        if (estado.quantidadeFruticultores >= maximoFruticultores) {
+          definirMensagem("Você já contratou o máximo de 10 fruticultores.");
+          return;
+        }
+
+        if (estado.ouro < custoFruticultor) {
+          definirMensagem("Você precisa de 150 de ouro para contratar o fruticultor.");
+          return;
+        }
+
+        estado.ouro -= custoFruticultor;
+        estado.quantidadeFruticultores += 1;
+        estado.salvamentoAtivo = true;
+        definirMensagem(
+          `Fruticultor ${estado.quantidadeFruticultores} contratado. Os pomares agora produzem ${estado.quantidadeFruticultores} de ouro a cada 10 segundos.`,
+        );
+        atualizarInterface();
+        salvarProgresso();
+      }
+
       function atualizarLoja() {
         const ataqueMaximo = estado.ataque >= nivelMaximo;
         const armaduraMaxima = estado.armadura >= nivelMaximo;
@@ -926,6 +999,31 @@
             estado.quantidadeFazendeiros === 1
               ? "O fazendeiro voltou"
               : "Os fazendeiros voltaram";
+          definirMensagem(
+            `${trabalhadores} com ${ouroProduzido} de ouro da colheita.`,
+          );
+        }
+        atualizarInterface();
+        salvarProgresso();
+      }
+
+      function atualizarFruticultor(delta) {
+        if (estado.quantidadeFruticultores === 0) return;
+
+        estado.tempoFruticultor += delta;
+        if (estado.tempoFruticultor < intervaloFruticultor) return;
+
+        const pagamentos = Math.floor(
+          estado.tempoFruticultor / intervaloFruticultor,
+        );
+        estado.tempoFruticultor %= intervaloFruticultor;
+        const ouroProduzido = pagamentos * estado.quantidadeFruticultores;
+        estado.ouro += ouroProduzido;
+        if (estado.local === "assentamento") {
+          const trabalhadores =
+            estado.quantidadeFruticultores === 1
+              ? "O fruticultor voltou"
+              : "Os fruticultores voltaram";
           definirMensagem(
             `${trabalhadores} com ${ouroProduzido} de ouro da colheita.`,
           );
@@ -1071,6 +1169,25 @@
         }
       }
 
+      function desenharPomar(x, y) {
+        contexto.fillStyle = "#594126";
+        contexto.fillRect(x, y, 220, 260);
+        contexto.fillStyle = "#637341";
+        contexto.fillRect(x + 6, y + 6, 208, 248);
+
+        for (let linha = 0; linha < 4; linha += 1) {
+          for (let coluna = 0; coluna < 4; coluna += 1) {
+            const arvoreX = x + 35 + coluna * 50;
+            const arvoreY = y + 35 + linha * 60;
+            contexto.fillStyle = "#5b3a23";
+            contexto.fillRect(arvoreX - 3, arvoreY, 6, 16);
+            desenharCirculo(arvoreX, arvoreY, 13, "#31532d", "#203d27");
+            desenharCirculo(arvoreX - 4, arvoreY - 2, 2.5, "#e4a64a");
+            desenharCirculo(arvoreX + 5, arvoreY + 3, 2.5, "#d98232");
+          }
+        }
+      }
+
       function desenharAssentamento() {
         contexto.fillStyle = "#c9b982";
         contexto.fillRect(0, 0, larguraMundo, alturaMundo);
@@ -1107,6 +1224,13 @@
             contexto.lineTo(plantacao.x + plantacao.largura - 14, y);
             contexto.stroke();
           }
+        }
+
+        if (estado.quantidadeFruticultores > 0) {
+          desenharPomar(120, 315);
+        }
+        if (estado.quantidadeFruticultores > 5) {
+          desenharPomar(1060, 315);
         }
 
         contexto.fillStyle = "#7a512d";
@@ -1251,6 +1375,91 @@
         }
       }
 
+      function posicaoFruticultor(indice) {
+        const progresso =
+          ((estado.tempoFruticultor + indice * 1.53) % intervaloFruticultor) /
+          intervaloFruticultor;
+        const segundoPomar = indice >= 5;
+        const vaga = indice % 5;
+        const casas = [
+          { x: 545, y: 330 },
+          { x: 855, y: 330 },
+          { x: 560, y: 535 },
+          { x: 870, y: 535 },
+          { x: 700, y: 445 },
+        ];
+        const casaBase = casas[vaga];
+        const casa = {
+          x: casaBase.x + (segundoPomar ? 16 : -16),
+          y: casaBase.y + (segundoPomar ? 16 : -16),
+        };
+        const portao = { x: 700, y: 714 };
+        const yPomar = 345 + vaga * 48;
+        const entradaPomar = {
+          x: segundoPomar ? 1075 : 325,
+          y: yPomar,
+        };
+        const fimPomar = {
+          x: segundoPomar ? 1255 : 145,
+          y: yPomar,
+        };
+        const contorno = segundoPomar
+          ? [
+              { x: 1020, y: 720 },
+              { x: 1020, y: 610 },
+              { x: 1035, y: yPomar },
+            ]
+          : [
+              { x: 380, y: 720 },
+              { x: 380, y: 610 },
+              { x: 365, y: yPomar },
+            ];
+        const ida = [
+          casa,
+          { x: 700, y: 620 },
+          portao,
+          ...contorno,
+          entradaPomar,
+        ];
+        const trabalho = [entradaPomar, fimPomar, entradaPomar, fimPomar];
+        const volta = [
+          fimPomar,
+          ...[...contorno].reverse(),
+          portao,
+          { x: 700, y: 620 },
+          casa,
+        ];
+
+        if (progresso < 0.28) {
+          return percorrerCaminho(ida, progresso / 0.28);
+        }
+
+        if (progresso < 0.72) {
+          return percorrerCaminho(trabalho, (progresso - 0.28) / 0.44);
+        }
+
+        return percorrerCaminho(volta, (progresso - 0.72) / 0.28);
+      }
+
+      function desenharFruticultor() {
+        if (
+          estado.quantidadeFruticultores === 0 ||
+          estado.local !== "assentamento"
+        ) {
+          return;
+        }
+
+        for (
+          let indice = 0;
+          indice < estado.quantidadeFruticultores;
+          indice += 1
+        ) {
+          const posicao = posicaoFruticultor(indice);
+          const cor = indice < 5 ? "#f0b44d" : "#f7ca70";
+          desenharCirculo(posicao.x, posicao.y, 8, cor, "#6a431c");
+        }
+      }
+
       function desenharFloresta() {
         contexto.fillStyle = "#405c35";
         contexto.fillRect(0, 0, larguraMundo, alturaMundo);
@@ -1321,6 +1530,7 @@
         }
 
         desenharFazendeiro();
+        desenharFruticultor();
         desenharJogador();
         contexto.setTransform(1, 0, 0, 1, 0, 0);
 
@@ -1345,9 +1555,11 @@
           atualizarCacada(delta);
         }
         atualizarFazendeiro(delta);
+        atualizarFruticultor(delta);
         if (
           estado.local === "floresta" ||
-          estado.quantidadeFazendeiros > 0
+          estado.quantidadeFazendeiros > 0 ||
+          estado.quantidadeFruticultores > 0
         ) {
           tempoSalvamento += delta;
           if (tempoSalvamento >= 2) {
@@ -1368,6 +1580,7 @@
       melhorarAtaqueBotao.addEventListener("click", melhorarAtaque);
       melhorarArmaduraBotao.addEventListener("click", melhorarArmadura);
       contratarFazendeiroBotao.addEventListener("click", contratarFazendeiro);
+      contratarFruticultorBotao.addEventListener("click", contratarFruticultor);
       novoJogoBotao.addEventListener("click", iniciarNovoJogo);
       apagarBotao.addEventListener("click", apagarProgresso);
       window.addEventListener("resize", redimensionar);
