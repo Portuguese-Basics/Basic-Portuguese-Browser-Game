@@ -491,7 +491,10 @@
         <div class="indicador indicador-colonia">Nova colônia<span id="colonia-status">Não fundada</span></div>
         <div class="indicador indicador-colonia">Cofre municipal<span id="tesouro-colonia">0</span></div>
         <div class="indicador indicador-colonia">Próximo repasse<span id="transferencia-status">60 s · 300 ouro</span></div>
-        <div class="indicador indicador-colonia">Produção colonial<span id="producao-colonia-status">Nenhuma</span></div>
+        <div class="indicador indicador-colonia">Alimentos<span id="alimentos-status">0 em estoque</span></div>
+        <div class="indicador indicador-colonia">Moradia<span id="moradia-status">0 / 20 abrigados</span></div>
+        <div class="indicador indicador-colonia">Prioridade dos colonos<span id="prioridade-colonia-status">Aguardando</span></div>
+        <div class="indicador indicador-colonia">Venda de alimentos<span id="producao-colonia-status">Nenhuma</span></div>
         <div class="indicador indicador-posto">Combate<span id="combate-status">ATQ 1 · ARM 0</span></div>
       </section>
 
@@ -622,12 +625,13 @@
             <li>Cada banqueiro custa 100 de ouro e rende 1% sobre o ouro atual a cada 60 segundos.</li>
             <li>Cada escriturário custa 100 de ouro e transfere 0,5% do ouro atual para o fundo de expansão a cada 60 segundos.</li>
             <li>Com 10.000 de ouro no fundo, o escritório pode comprar o mapa de uma nova colônia.</li>
-            <li>Ao chegar à nova colônia, o antigo posto é vendido e rende 2.500 de ouro pessoal uma única vez.</li>
-            <li>Cada parcela da venda rende 300 de ouro a cada 60 segundos: 270 para a cidade e 30 para o administrador.</li>
-            <li>A nova colônia começa vazia, com o administrador e 20 colonos na costa.</li>
-            <li>A administração custa 500 e o primeiro bairro residencial custa 750, pagos pelo cofre municipal.</li>
-            <li>A lavoura custa 400 e a pastagem custa 500 do cofre municipal.</li>
-            <li>Cada área produtiva rende 100 de ouro por minuto: 90% para a cidade e 10% para o administrador.</li>
+            <li>A nova colônia começa com 2.500 de ouro pessoal e uma transferência municipal inicial de 3.000.</li>
+            <li>A administração custa 500 e as moradias custam 750, já debitados da transferência inicial; o cofre começa com 1.750.</li>
+            <li>O posto original continua financiando a colônia com 300 de ouro a cada 60 segundos: 270 para a cidade e 30 para o administrador.</li>
+            <li>Os colonos escolhem suas prioridades automaticamente, começando pela lavoura de 400 e pela pastagem de 500.</li>
+            <li>A lavoura e a pastagem ficam juntas no interior, separadas por uma reserva para estrada.</li>
+            <li>Os 20 colonos consomem 20 alimentos por minuto. A lavoura produz 40 e a pastagem produz 20.</li>
+            <li>Alimentos acima da reserva de 80 são vendidos automaticamente; 90% da renda vai para a cidade e 10% para o administrador.</li>
             <li>Descansar custa 3 de ouro e recupera até 30 de vida.</li>
             <li>Ao ser derrotado, você volta com vida completa e perde 15 de ouro.</li>
             <li>Cada ponto de ataque causa 1 de dano.</li>
@@ -733,6 +737,11 @@
       const transferenciaStatusEl = document.querySelector(
         "#transferencia-status",
       );
+      const alimentosStatusEl = document.querySelector("#alimentos-status");
+      const moradiaStatusEl = document.querySelector("#moradia-status");
+      const prioridadeColoniaStatusEl = document.querySelector(
+        "#prioridade-colonia-status",
+      );
       const producaoColoniaStatusEl = document.querySelector(
         "#producao-colonia-status",
       );
@@ -835,30 +844,37 @@
         altura: 500,
       };
       const areaLavoura = {
-        x: 650,
-        y: 750,
+        x: 240,
+        y: 1650,
         largura: 900,
         altura: 650,
       };
       const areaPastagem = {
-        x: 4300,
-        y: 3300,
+        x: 1280,
+        y: 1650,
         largura: 1100,
-        altura: 700,
+        altura: 650,
       };
       const quantidadeColonosExpansao = 20;
+      const versaoColonia = 3;
+      const ouroInicialAdministrador = 2500;
+      const transferenciaInicialCidade = 3000;
       const custoAdministracaoColonia = 500;
       const custoMoradiasColonia = 750;
       const duracaoConstrucaoColonia = 20;
-      const bonusVendaPosto = 2500;
+      const duracaoObraAutomaticaColonia = 20;
       const valorTransferenciaPosto = 300;
       const intervaloTransferenciaPosto = 60;
       const taxaAdministrador = 0.1;
       const custoLavouraColonia = 400;
       const custoPastagemColonia = 500;
-      const receitaLavouraColonia = 100;
-      const receitaPastagemColonia = 100;
-      const intervaloProducaoColonia = 60;
+      const estoqueInicialAlimentos = 40;
+      const producaoLavouraColonia = 40;
+      const producaoPastagemColonia = 20;
+      const consumoAlimentoPorColono = 1;
+      const reservaAlimentosColonia = 80;
+      const valorVendaAlimento = 1;
+      const intervaloNecessidadesColonia = 60;
       const custoDescanso = 3;
       const custoDerrota = 15;
       const custoFazendeiro = 100;
@@ -951,13 +967,19 @@
         fundoExpansao: 0,
         mapaExpansaoComprado: false,
         mapaAtual: "posto",
-        vendaPostoConcluida: false,
+        coloniaIniciada: false,
+        revisaoColonia: 0,
         tesouroColonia: 0,
         tempoTransferenciaPosto: 0,
         lavouraConstruida: false,
         tempoLavouraColonia: 0,
         pastagemConstruida: false,
         tempoPastagemColonia: 0,
+        obraAutomaticaColonia: null,
+        tempoObraAutomaticaColonia: 0,
+        estoqueAlimentos: 0,
+        tempoNecessidadesColonia: 0,
+        colonosComFome: 0,
         etapaConstrucaoColonia: 0,
         tempoConstrucaoColonia: 0,
         cameraExpansao: {
@@ -1018,12 +1040,35 @@
         return String(valor).replace(".", ",");
       }
 
-      function concluirVendaPosto() {
-        if (estado.vendaPostoConcluida) return false;
-        estado.vendaPostoConcluida = true;
-        estado.ouro = arredondarOuro(estado.ouro + bonusVendaPosto);
+      function reiniciarNovaColonia() {
+        estado.coloniaIniciada = true;
+        estado.revisaoColonia = versaoColonia;
+        estado.ouro = ouroInicialAdministrador;
+        estado.tesouroColonia = arredondarOuro(
+          transferenciaInicialCidade -
+            custoAdministracaoColonia -
+            custoMoradiasColonia,
+        );
         estado.tempoTransferenciaPosto = 0;
-        return true;
+        estado.lavouraConstruida = false;
+        estado.tempoLavouraColonia = 0;
+        estado.pastagemConstruida = false;
+        estado.tempoPastagemColonia = 0;
+        estado.obraAutomaticaColonia = null;
+        estado.tempoObraAutomaticaColonia = 0;
+        estado.estoqueAlimentos = estoqueInicialAlimentos;
+        estado.tempoNecessidadesColonia = 0;
+        estado.colonosComFome = 0;
+        estado.etapaConstrucaoColonia = 4;
+        estado.tempoConstrucaoColonia = 0;
+        estado.mapaAtual = "expansao";
+        estado.local = "assentamento";
+        estado.inimigos = [];
+        estado.jogador.x = posicaoAdministrador.x;
+        estado.jogador.y = posicaoAdministrador.y;
+        estado.cameraExpansao.x = posicaoAdministrador.x - larguraMundo / 2;
+        estado.cameraExpansao.y = posicaoAdministrador.y - alturaMundo / 2;
+        estado.cameraExpansao.zoom = 1;
       }
 
       function dadosParaSalvar() {
@@ -1089,14 +1134,20 @@
           expansao: {
             mapaComprado: estado.mapaExpansaoComprado,
             mapaAtual: estado.mapaAtual,
+            revisaoColonia: estado.revisaoColonia,
             economia: {
-              vendaPostoConcluida: estado.vendaPostoConcluida,
+              coloniaIniciada: estado.coloniaIniciada,
               tesouro: estado.tesouroColonia,
               tempoTransferencia: estado.tempoTransferenciaPosto,
               lavouraConstruida: estado.lavouraConstruida,
               tempoLavoura: estado.tempoLavouraColonia,
               pastagemConstruida: estado.pastagemConstruida,
               tempoPastagem: estado.tempoPastagemColonia,
+              obraAutomatica: estado.obraAutomaticaColonia,
+              tempoObraAutomatica: estado.tempoObraAutomaticaColonia,
+              estoqueAlimentos: estado.estoqueAlimentos,
+              tempoNecessidades: estado.tempoNecessidadesColonia,
+              colonosComFome: estado.colonosComFome,
             },
             construcao: {
               etapa: estado.etapaConstrucaoColonia,
@@ -1513,7 +1564,16 @@
             estado.mapaExpansaoComprado && salvo.expansao?.mapaAtual === "expansao"
               ? "expansao"
               : "posto";
-          estado.vendaPostoConcluida =
+          estado.revisaoColonia = Math.round(
+            numeroValido(
+              salvo.expansao?.revisaoColonia,
+              0,
+              versaoColonia,
+              0,
+            ),
+          );
+          estado.coloniaIniciada =
+            salvo.expansao?.economia?.coloniaIniciada === true ||
             salvo.expansao?.economia?.vendaPostoConcluida === true;
           estado.tesouroColonia = arredondarOuro(
             numeroValido(
@@ -1523,7 +1583,7 @@
               0,
             ),
           );
-          estado.tempoTransferenciaPosto = estado.vendaPostoConcluida
+          estado.tempoTransferenciaPosto = estado.coloniaIniciada
             ? numeroValido(
                 salvo.expansao?.economia?.tempoTransferencia,
                 0,
@@ -1537,7 +1597,7 @@
             ? numeroValido(
                 salvo.expansao?.economia?.tempoLavoura,
                 0,
-                intervaloProducaoColonia,
+                intervaloNecessidadesColonia,
                 0,
               )
             : 0;
@@ -1547,10 +1607,46 @@
             ? numeroValido(
                 salvo.expansao?.economia?.tempoPastagem,
                 0,
-                intervaloProducaoColonia,
+                intervaloNecessidadesColonia,
                 0,
               )
             : 0;
+          estado.obraAutomaticaColonia =
+            salvo.expansao?.economia?.obraAutomatica === "lavoura" ||
+            salvo.expansao?.economia?.obraAutomatica === "pastagem"
+              ? salvo.expansao.economia.obraAutomatica
+              : null;
+          estado.tempoObraAutomaticaColonia =
+            estado.obraAutomaticaColonia
+              ? numeroValido(
+                  salvo.expansao?.economia?.tempoObraAutomatica,
+                  0,
+                  duracaoObraAutomaticaColonia,
+                  0,
+                )
+              : 0;
+          estado.estoqueAlimentos = numeroValido(
+            salvo.expansao?.economia?.estoqueAlimentos,
+            0,
+            999999999,
+            estado.coloniaIniciada ? estoqueInicialAlimentos : 0,
+          );
+          estado.tempoNecessidadesColonia = estado.coloniaIniciada
+            ? numeroValido(
+                salvo.expansao?.economia?.tempoNecessidades,
+                0,
+                intervaloNecessidadesColonia,
+                0,
+              )
+            : 0;
+          estado.colonosComFome = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.colonosComFome,
+              0,
+              quantidadeColonosExpansao,
+              0,
+            ),
+          );
           estado.etapaConstrucaoColonia = Math.round(
             numeroValido(
               salvo.expansao?.construcao?.etapa,
@@ -1589,15 +1685,20 @@
           );
           limitarCameraExpansao();
 
-          if (estado.vendaPostoConcluida) {
+          if (estado.coloniaIniciada) {
             estado.mapaAtual = "expansao";
           }
-          const vendaConcluidaAoCarregar =
-            estado.mapaAtual === "expansao" && concluirVendaPosto();
+          const coloniaReiniciadaAoCarregar =
+            estado.mapaAtual === "expansao" &&
+            estado.revisaoColonia < versaoColonia;
+          if (coloniaReiniciadaAoCarregar) {
+            reiniciarNovaColonia();
+            limitarCameraExpansao();
+          }
 
           const derrotadoAoCarregar = estado.vida === 0;
           if (derrotadoAoCarregar) {
-            estado.mapaAtual = estado.vendaPostoConcluida
+            estado.mapaAtual = estado.coloniaIniciada
               ? "expansao"
               : "posto";
             estado.local = "assentamento";
@@ -1625,9 +1726,9 @@
               "Você foi derrotado, voltou com vida completa e perdeu 15 de ouro.",
             );
             salvarProgresso();
-          } else if (vendaConcluidaAoCarregar) {
+          } else if (coloniaReiniciadaAoCarregar) {
             definirMensagem(
-              "O antigo posto foi vendido. Você recebeu 2.500 de ouro pessoal para iniciar a colônia.",
+              "A colônia recomeçou: 2.500 de ouro pessoal e 1.750 no cofre após administração e moradias.",
             );
             salvarProgresso();
           } else if (mapaAntigo) {
@@ -1681,13 +1782,19 @@
         estado.fundoExpansao = 0;
         estado.mapaExpansaoComprado = false;
         estado.mapaAtual = "posto";
-        estado.vendaPostoConcluida = false;
+        estado.coloniaIniciada = false;
+        estado.revisaoColonia = 0;
         estado.tesouroColonia = 0;
         estado.tempoTransferenciaPosto = 0;
         estado.lavouraConstruida = false;
         estado.tempoLavouraColonia = 0;
         estado.pastagemConstruida = false;
         estado.tempoPastagemColonia = 0;
+        estado.obraAutomaticaColonia = null;
+        estado.tempoObraAutomaticaColonia = 0;
+        estado.estoqueAlimentos = 0;
+        estado.tempoNecessidadesColonia = 0;
+        estado.colonosComFome = 0;
         estado.etapaConstrucaoColonia = 0;
         estado.tempoConstrucaoColonia = 0;
         estado.cameraExpansao.x = posicaoNovaColonia.x - larguraMundo / 2;
@@ -1704,65 +1811,51 @@
         );
       }
 
+      function capacidadeMoradiasColonia() {
+        return estado.etapaConstrucaoColonia >= 4
+          ? quantidadeColonosExpansao
+          : 0;
+      }
+
+      function nomeObraAutomaticaColonia(tipo) {
+        return tipo === "lavoura" ? "lavoura" : "pastagem";
+      }
+
+      function prioridadeAtualColonia() {
+        if (estado.obraAutomaticaColonia) {
+          return `Construir ${nomeObraAutomaticaColonia(estado.obraAutomaticaColonia)}`;
+        }
+        if (!estado.lavouraConstruida) return "Construir lavoura";
+        if (!estado.pastagemConstruida) return "Construir pastagem";
+        if (estado.colonosComFome > 0) return "Repor alimentos";
+        return "Manter alimento e moradia";
+      }
+
       function atualizarInterfaceConstrucao() {
-        const naNovaColonia = estado.mapaAtual === "expansao";
-        construirColoniaBotao.hidden = !naNovaColonia;
-        construirLavouraBotao.hidden =
-          !naNovaColonia || estado.etapaConstrucaoColonia < 4;
-        construirPastagemBotao.hidden =
-          !naNovaColonia || estado.etapaConstrucaoColonia < 4;
+        construirColoniaBotao.hidden = true;
+        construirLavouraBotao.hidden = true;
+        construirPastagemBotao.hidden = true;
 
         if (!estado.mapaExpansaoComprado) {
           coloniaStatusEl.textContent = "Não fundada";
-          construirColoniaBotao.disabled = true;
-          construirLavouraBotao.disabled = true;
-          construirPastagemBotao.disabled = true;
           return;
         }
 
-        if (estado.etapaConstrucaoColonia === 0) {
-          coloniaStatusEl.textContent = "20 colonos · costa vazia";
-          construirColoniaBotao.textContent =
-            "Construir administração · 500 do cofre";
-          construirColoniaBotao.disabled =
-            !naNovaColonia ||
-            estado.tesouroColonia < custoAdministracaoColonia;
-        } else if (estado.etapaConstrucaoColonia === 1) {
-          const percentual = percentualConstrucaoColonia();
-          coloniaStatusEl.textContent = `Administração · ${percentual}%`;
-          construirColoniaBotao.textContent =
-            `Administração em construção · ${percentual}%`;
-          construirColoniaBotao.disabled = true;
-        } else if (estado.etapaConstrucaoColonia === 2) {
-          coloniaStatusEl.textContent = "Administração concluída";
-          construirColoniaBotao.textContent =
-            "Construir bairro residencial · 750 do cofre";
-          construirColoniaBotao.disabled =
-            !naNovaColonia || estado.tesouroColonia < custoMoradiasColonia;
-        } else if (estado.etapaConstrucaoColonia === 3) {
-          const percentual = percentualConstrucaoColonia();
-          coloniaStatusEl.textContent = `Moradias · ${percentual}%`;
-          construirColoniaBotao.textContent =
-            `Bairro residencial em construção · ${percentual}%`;
-          construirColoniaBotao.disabled = true;
+        if (estado.obraAutomaticaColonia) {
+          const percentual = Math.min(
+            100,
+            Math.round(
+              (estado.tempoObraAutomaticaColonia /
+                duracaoObraAutomaticaColonia) *
+                100,
+            ),
+          );
+          coloniaStatusEl.textContent =
+            `${nomeObraAutomaticaColonia(estado.obraAutomaticaColonia)} · ${percentual}%`;
         } else {
-          coloniaStatusEl.textContent = "Administração e moradias concluídas";
-          construirColoniaBotao.textContent = "Primeiras fundações concluídas";
-          construirColoniaBotao.disabled = true;
+          coloniaStatusEl.textContent =
+            "20 colonos · administração e moradias prontas";
         }
-
-        construirLavouraBotao.textContent = estado.lavouraConstruida
-          ? "Lavoura em produção"
-          : "Preparar lavoura · 400 do cofre";
-        construirLavouraBotao.disabled =
-          estado.lavouraConstruida ||
-          estado.tesouroColonia < custoLavouraColonia;
-        construirPastagemBotao.textContent = estado.pastagemConstruida
-          ? "Pastagem em produção"
-          : "Preparar pastagem · 500 do cofre";
-        construirPastagemBotao.disabled =
-          estado.pastagemConstruida ||
-          estado.tesouroColonia < custoPastagemColonia;
       }
 
       function atualizarInterface() {
@@ -1794,12 +1887,20 @@
         );
         transferenciaStatusEl.textContent =
           `${segundosParaTransferencia} s · ${valorTransferenciaPosto} ouro`;
-        const producaoBrutaColonia =
-          (estado.lavouraConstruida ? receitaLavouraColonia : 0) +
-          (estado.pastagemConstruida ? receitaPastagemColonia : 0);
-        producaoColoniaStatusEl.textContent = producaoBrutaColonia > 0
-          ? `${producaoBrutaColonia} bruto / 60 s · 90% cidade`
-          : "Nenhuma";
+        const capacidadeMoradia = capacidadeMoradiasColonia();
+        const colonosAbrigados = Math.min(
+          quantidadeColonosExpansao,
+          capacidadeMoradia,
+        );
+        alimentosStatusEl.textContent =
+          `${Math.floor(estado.estoqueAlimentos)} em estoque · consumo 20 / 60 s`;
+        moradiaStatusEl.textContent =
+          `${colonosAbrigados} / ${quantidadeColonosExpansao} abrigados`;
+        prioridadeColoniaStatusEl.textContent = prioridadeAtualColonia();
+        producaoColoniaStatusEl.textContent =
+          estado.lavouraConstruida && estado.pastagemConstruida
+            ? "Automática acima da reserva de 80"
+            : "Aguardando produção de alimentos";
         combateStatusEl.textContent = `ATQ ${estado.ataque} · ARM ${estado.armadura}`;
         cacarBotao.disabled = !noAssentamento || estado.vida <= 0;
         voltarBotao.disabled = !naFloresta;
@@ -2006,10 +2107,10 @@
         estado.local = "assentamento";
         estado.vida = vidaMaxima;
         estado.ouro -= custoDerrota;
-        estado.mapaAtual = estado.vendaPostoConcluida
+        estado.mapaAtual = estado.coloniaIniciada
           ? "expansao"
           : "posto";
-        const retorno = estado.vendaPostoConcluida
+        const retorno = estado.coloniaIniciada
           ? posicaoJogadorNovaColonia()
           : posicaoAssentamento;
         estado.jogador.x = retorno.x;
@@ -2728,19 +2829,14 @@
             estado.fundoExpansao - metaFundoExpansao,
           );
           estado.mapaExpansaoComprado = true;
-          estado.mapaAtual = "expansao";
-          concluirVendaPosto();
-          estado.local = "assentamento";
-          estado.jogador.x = posicaoNovaColonia.x;
-          estado.jogador.y = posicaoNovaColonia.y;
-          estado.inimigos = [];
+          reiniciarNovaColonia();
           centralizarMapaExpansao(false);
           definirMensagem(
-            "O antigo posto foi vendido. Você e 20 colonos chegaram à costa com 2.500 de ouro pessoal; as parcelas futuras serão divididas entre você e a cidade.",
+            "A nova colônia começou com 2.500 de ouro pessoal e 1.750 no cofre, após administração e moradias. Os colonos escolherão as próximas prioridades.",
           );
         } else if (estado.mapaAtual === "expansao") {
           definirMensagem(
-            "O antigo posto foi vendido. Esta colônia agora é seu território.",
+            "O posto original continua financiando esta colônia a cada 60 segundos.",
           );
           return;
         } else {
@@ -2748,17 +2844,10 @@
             definirMensagem("Volte da caçada antes de viajar para a nova colônia.");
             return;
           }
-          const vendaConcluidaAgora = concluirVendaPosto();
-          estado.mapaAtual = "expansao";
-          estado.local = "assentamento";
-          const posicaoColonia = posicaoJogadorNovaColonia();
-          estado.jogador.x = posicaoColonia.x;
-          estado.jogador.y = posicaoColonia.y;
-          estado.inimigos = [];
+          reiniciarNovaColonia();
+          centralizarMapaExpansao(false);
           definirMensagem(
-            vendaConcluidaAgora
-              ? "O antigo posto foi vendido. Você chegou à colônia com 2.500 de ouro pessoal."
-              : "Você viajou para a colônia costeira.",
+            "A nova colônia começou com administração, moradias e prioridades automáticas.",
           );
         }
         estado.salvamentoAtivo = true;
@@ -2872,7 +2961,7 @@
       }
 
       function atualizarTransferenciaPosto(delta) {
-        if (!estado.vendaPostoConcluida) return;
+        if (!estado.coloniaIniciada) return;
         estado.tempoTransferenciaPosto += delta;
         transferenciaStatusEl.textContent =
           `${Math.max(1, Math.ceil(intervaloTransferenciaPosto - estado.tempoTransferenciaPosto))} s · ${valorTransferenciaPosto} ouro`;
@@ -2888,51 +2977,130 @@
         const divisao = dividirReceitaColonia(valorBruto);
         if (estado.mapaAtual === "expansao") {
           definirMensagem(
-            `Parcela da venda do antigo posto: ${formatarOuro(divisao.ouroMunicipal)} para o cofre municipal e ${formatarOuro(divisao.ouroPessoal)} para você.`,
+            `Repasse do posto original: ${formatarOuro(divisao.ouroMunicipal)} para o cofre municipal e ${formatarOuro(divisao.ouroPessoal)} para você.`,
           );
         }
         atualizarInterface();
         salvarProgresso();
       }
 
-      function atualizarLavouraColonia(delta) {
-        if (!estado.lavouraConstruida) return;
-        estado.tempoLavouraColonia += delta;
-        if (estado.tempoLavouraColonia < intervaloProducaoColonia) return;
+      function iniciarObraAutomaticaColonia(tipo) {
+        const custo = tipo === "lavoura"
+          ? custoLavouraColonia
+          : custoPastagemColonia;
+        if (estado.tesouroColonia < custo) return false;
 
-        const producoes = Math.floor(
-          estado.tempoLavouraColonia / intervaloProducaoColonia,
+        estado.tesouroColonia = arredondarOuro(
+          estado.tesouroColonia - custo,
         );
-        estado.tempoLavouraColonia %= intervaloProducaoColonia;
-        const divisao = dividirReceitaColonia(
-          producoes * receitaLavouraColonia,
+        estado.obraAutomaticaColonia = tipo;
+        estado.tempoObraAutomaticaColonia = 0;
+        focarCameraExpansao(
+          {
+            x:
+              (areaLavoura.x +
+                areaLavoura.largura +
+                areaPastagem.x) /
+              2,
+            y: areaLavoura.y + areaLavoura.altura / 2,
+          },
+          0.55,
         );
-        if (estado.mapaAtual === "expansao") {
-          definirMensagem(
-            `A lavoura rendeu ${formatarOuro(divisao.ouroMunicipal)} ao município e ${formatarOuro(divisao.ouroPessoal)} ao administrador.`,
-          );
+        definirMensagem(
+          `Os colonos priorizaram a ${nomeObraAutomaticaColonia(tipo)} e reservaram ${custo} do cofre municipal.`,
+        );
+        atualizarInterface();
+        salvarProgresso();
+        return true;
+      }
+
+      function atualizarPrioridadesColonia(delta) {
+        if (!estado.coloniaIniciada) return;
+
+        if (!estado.obraAutomaticaColonia) {
+          const proximaObra = !estado.lavouraConstruida
+            ? "lavoura"
+            : !estado.pastagemConstruida
+              ? "pastagem"
+              : null;
+          if (!proximaObra || !iniciarObraAutomaticaColonia(proximaObra)) {
+            return;
+          }
         }
+
+        estado.tempoObraAutomaticaColonia += delta;
+        if (
+          estado.tempoObraAutomaticaColonia <
+          duracaoObraAutomaticaColonia
+        ) {
+          atualizarInterfaceConstrucao();
+          return;
+        }
+
+        const obraConcluida = estado.obraAutomaticaColonia;
+        if (obraConcluida === "lavoura") {
+          estado.lavouraConstruida = true;
+        } else {
+          estado.pastagemConstruida = true;
+        }
+        estado.obraAutomaticaColonia = null;
+        estado.tempoObraAutomaticaColonia = 0;
+        definirMensagem(
+          `${obraConcluida === "lavoura" ? "Lavoura" : "Pastagem"} concluída. Os colonos reavaliaram as necessidades da cidade.`,
+        );
         atualizarInterface();
         salvarProgresso();
       }
 
-      function atualizarPastagemColonia(delta) {
-        if (!estado.pastagemConstruida) return;
-        estado.tempoPastagemColonia += delta;
-        if (estado.tempoPastagemColonia < intervaloProducaoColonia) return;
+      function atualizarNecessidadesColonia(delta) {
+        if (!estado.coloniaIniciada) return;
+        estado.tempoNecessidadesColonia += delta;
+        if (
+          estado.tempoNecessidadesColonia <
+          intervaloNecessidadesColonia
+        ) return;
 
-        const producoes = Math.floor(
-          estado.tempoPastagemColonia / intervaloProducaoColonia,
+        const ciclos = Math.floor(
+          estado.tempoNecessidadesColonia /
+            intervaloNecessidadesColonia,
         );
-        estado.tempoPastagemColonia %= intervaloProducaoColonia;
-        const divisao = dividirReceitaColonia(
-          producoes * receitaPastagemColonia,
-        );
-        if (estado.mapaAtual === "expansao") {
-          definirMensagem(
-            `A pastagem rendeu ${formatarOuro(divisao.ouroMunicipal)} ao município e ${formatarOuro(divisao.ouroPessoal)} ao administrador.`,
+        estado.tempoNecessidadesColonia %= intervaloNecessidadesColonia;
+        let alimentosProduzidos = 0;
+        let alimentosConsumidos = 0;
+        let alimentosVendidos = 0;
+
+        for (let ciclo = 0; ciclo < ciclos; ciclo += 1) {
+          const producao =
+            (estado.lavouraConstruida ? producaoLavouraColonia : 0) +
+            (estado.pastagemConstruida ? producaoPastagemColonia : 0);
+          alimentosProduzidos += producao;
+          estado.estoqueAlimentos += producao;
+
+          const necessidade =
+            quantidadeColonosExpansao * consumoAlimentoPorColono;
+          const consumo = Math.min(necessidade, estado.estoqueAlimentos);
+          estado.estoqueAlimentos -= consumo;
+          alimentosConsumidos += consumo;
+          estado.colonosComFome = necessidade - consumo;
+
+          const excedente = Math.max(
+            0,
+            estado.estoqueAlimentos - reservaAlimentosColonia,
           );
+          estado.estoqueAlimentos -= excedente;
+          alimentosVendidos += excedente;
+          if (excedente > 0) {
+            dividirReceitaColonia(excedente * valorVendaAlimento);
+          }
         }
+
+        definirMensagem(
+          alimentosVendidos > 0
+            ? `Os colonos consumiram ${alimentosConsumidos}, preservaram 80 alimentos e venderam ${alimentosVendidos}. A renda foi dividida entre cidade e administrador.`
+            : estado.colonosComFome > 0
+              ? `${estado.colonosComFome} colonos ficaram sem alimento neste ciclo.`
+              : `A cidade produziu ${alimentosProduzidos} e consumiu ${alimentosConsumidos} alimentos. O excedente será vendido acima da reserva de 80.`,
+        );
         atualizarInterface();
         salvarProgresso();
       }
@@ -2940,7 +3108,7 @@
       function atualizarFazendeiro(delta) {
         if (
           estado.quantidadeFazendeiros === 0 ||
-          estado.vendaPostoConcluida
+          estado.coloniaIniciada
         ) return;
 
         estado.tempoFazendeiro += delta;
@@ -2971,7 +3139,7 @@
       function atualizarFruticultor(delta) {
         if (
           estado.quantidadeFruticultores === 0 ||
-          estado.vendaPostoConcluida
+          estado.coloniaIniciada
         ) return;
 
         estado.tempoFruticultor += delta;
@@ -3003,7 +3171,7 @@
       function atualizarPescador(delta) {
         if (
           estado.quantidadePescadores === 0 ||
-          estado.vendaPostoConcluida
+          estado.coloniaIniciada
         ) return;
 
         estado.tempoPescador += delta;
@@ -3035,7 +3203,7 @@
       function atualizarComerciante(delta) {
         if (
           estado.quantidadeComerciantes === 0 ||
-          estado.vendaPostoConcluida
+          estado.coloniaIniciada
         ) return;
 
         estado.tempoComerciante += delta;
@@ -3063,7 +3231,7 @@
       function atualizarFerreiro(delta) {
         if (
           estado.quantidadeFerreiros === 0 ||
-          estado.vendaPostoConcluida
+          estado.coloniaIniciada
         ) return;
 
         estado.tempoFerreiro += delta;
@@ -3091,7 +3259,7 @@
       function atualizarMineiro(delta) {
         if (
           estado.quantidadeMineiros === 0 ||
-          estado.vendaPostoConcluida
+          estado.coloniaIniciada
         ) return;
 
         estado.tempoMineiro += delta;
@@ -3119,7 +3287,7 @@
       function atualizarBanqueiro(delta) {
         if (
           estado.quantidadeBanqueiros === 0 ||
-          estado.vendaPostoConcluida
+          estado.coloniaIniciada
         ) return;
 
         estado.tempoBanqueiro += delta;
@@ -3154,7 +3322,7 @@
         if (
           estado.quantidadeEscriturarios === 0 ||
           estado.mapaExpansaoComprado ||
-          estado.vendaPostoConcluida
+          estado.coloniaIniciada
         ) {
           return;
         }
@@ -3813,7 +3981,8 @@
           posicao = interpolarPonto(administracao, moradias, progresso);
         } else if (estado.etapaConstrucaoColonia >= 4) {
           if (
-            estado.lavouraConstruida &&
+            (estado.lavouraConstruida ||
+              estado.obraAutomaticaColonia === "lavoura") &&
             indice >= 6 &&
             indice < 11
           ) {
@@ -3831,7 +4000,8 @@
                 Math.cos(tempoRio * 0.9 + indice) * 35,
             };
           } else if (
-            estado.pastagemConstruida &&
+            (estado.pastagemConstruida ||
+              estado.obraAutomaticaColonia === "pastagem") &&
             indice >= 11 &&
             indice < 16
           ) {
@@ -3959,12 +4129,41 @@
         contexto.textBaseline = "middle";
         contexto.font = "bold 30px sans-serif";
 
-        if (estado.lavouraConstruida) {
+        contexto.fillStyle = "#b7a36c";
+        contexto.fillRect(
+          areaLavoura.x + areaLavoura.largura,
+          areaLavoura.y - 80,
+          areaPastagem.x -
+            (areaLavoura.x + areaLavoura.largura),
+          areaLavoura.altura + 160,
+        );
+        contexto.fillStyle = "#51482f";
+        contexto.font = "bold 14px sans-serif";
+        contexto.fillText(
+          "ESTRADA FUTURA",
+          (areaLavoura.x +
+            areaLavoura.largura +
+            areaPastagem.x) /
+            2,
+          areaLavoura.y - 42,
+        );
+        contexto.font = "bold 30px sans-serif";
+
+        const progressoLavoura = estado.lavouraConstruida
+          ? 1
+          : estado.obraAutomaticaColonia === "lavoura"
+            ? Math.min(
+                1,
+                estado.tempoObraAutomaticaColonia /
+                  duracaoObraAutomaticaColonia,
+              )
+            : 0;
+        if (progressoLavoura > 0) {
           contexto.fillStyle = "#9d7546";
           contexto.fillRect(
             areaLavoura.x,
             areaLavoura.y,
-            areaLavoura.largura,
+            areaLavoura.largura * progressoLavoura,
             areaLavoura.altura,
           );
           contexto.strokeStyle = "#60452a";
@@ -3979,12 +4178,19 @@
           for (let y = areaLavoura.y + 95; y < areaLavoura.y + 570; y += 95) {
             contexto.beginPath();
             contexto.moveTo(areaLavoura.x + 55, y);
-            contexto.lineTo(areaLavoura.x + areaLavoura.largura - 55, y);
+            contexto.lineTo(
+              areaLavoura.x +
+                55 +
+                (areaLavoura.largura - 110) * progressoLavoura,
+              y,
+            );
             contexto.stroke();
           }
           contexto.fillStyle = "#332819";
           contexto.fillText(
-            "LAVOURA",
+            progressoLavoura >= 1
+              ? "LAVOURA"
+              : `LAVOURA · ${Math.round(progressoLavoura * 100)}%`,
             areaLavoura.x + areaLavoura.largura / 2,
             areaLavoura.y + 35,
           );
@@ -4004,12 +4210,21 @@
           );
         }
 
-        if (estado.pastagemConstruida) {
+        const progressoPastagem = estado.pastagemConstruida
+          ? 1
+          : estado.obraAutomaticaColonia === "pastagem"
+            ? Math.min(
+                1,
+                estado.tempoObraAutomaticaColonia /
+                  duracaoObraAutomaticaColonia,
+              )
+            : 0;
+        if (progressoPastagem > 0) {
           contexto.fillStyle = "#789851";
           contexto.fillRect(
             areaPastagem.x,
             areaPastagem.y,
-            areaPastagem.largura,
+            areaPastagem.largura * progressoPastagem,
             areaPastagem.altura,
           );
           contexto.strokeStyle = "#59452b";
@@ -4036,7 +4251,9 @@
           }
           contexto.fillStyle = "#29371d";
           contexto.fillText(
-            "PASTAGEM",
+            progressoPastagem >= 1
+              ? "PASTAGEM"
+              : `PASTAGEM · ${Math.round(progressoPastagem * 100)}%`,
             areaPastagem.x + areaPastagem.largura / 2,
             areaPastagem.y + 42,
           );
@@ -4752,8 +4969,8 @@
         atualizarBanqueiro(delta);
         atualizarEscriturario(delta);
         atualizarTransferenciaPosto(delta);
-        atualizarLavouraColonia(delta);
-        atualizarPastagemColonia(delta);
+        atualizarPrioridadesColonia(delta);
+        atualizarNecessidadesColonia(delta);
         atualizarConstrucaoColonia(delta);
         if (
           estado.local === "floresta" ||
