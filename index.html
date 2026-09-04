@@ -205,6 +205,31 @@
         line-height: 1.3;
       }
 
+      .placar-pessoal {
+        position: absolute;
+        top: 0.65rem;
+        left: 0.65rem;
+        z-index: 2;
+        min-width: 8.5rem;
+        padding: 0.45rem 0.6rem;
+        border: 1px solid #c89b43;
+        border-radius: 0.4rem;
+        background: rgb(25 24 18 / 92%);
+        box-shadow: 0 0.4rem 1.2rem rgb(0 0 0 / 28%);
+        color: #d4cbb4;
+        font-size: 0.75rem;
+        line-height: 1.25;
+        pointer-events: none;
+      }
+
+      .placar-pessoal strong {
+        display: block;
+        margin-top: 0.12rem;
+        color: #f1cc69;
+        font-size: 1rem;
+        font-variant-numeric: tabular-nums;
+      }
+
       .mensagem {
         position: absolute;
         right: 1rem;
@@ -419,6 +444,18 @@
           font-size: 0.78rem;
         }
 
+        .placar-pessoal {
+          top: 0.45rem;
+          left: 0.45rem;
+          min-width: 7.5rem;
+          padding: 0.35rem 0.45rem;
+          font-size: 0.7rem;
+        }
+
+        .placar-pessoal strong {
+          font-size: 0.9rem;
+        }
+
         .controles-mapa {
           top: 0.45rem;
           right: 0.45rem;
@@ -508,6 +545,10 @@
     </header>
 
     <main class="mapa">
+      <aside class="placar-pessoal" aria-label="Patrimônio pessoal">
+        Patrimônio pessoal
+        <strong id="patrimonio-pessoal" aria-live="polite">5 ouro</strong>
+      </aside>
       <canvas
         id="jogo"
         role="img"
@@ -673,6 +714,9 @@
       const vidaEl = document.querySelector("#vida");
       const rotuloOuroEl = document.querySelector("#rotulo-ouro");
       const ouroEl = document.querySelector("#ouro");
+      const patrimonioPessoalEl = document.querySelector(
+        "#patrimonio-pessoal",
+      );
       const combateStatusEl = document.querySelector("#combate-status");
       const salvamentoEl = document.querySelector("#salvamento");
       const fazendeiroStatusEl = document.querySelector("#fazendeiro-status");
@@ -1739,6 +1783,8 @@
             : "Floresta";
         vidaEl.textContent = `${estado.vida} / ${vidaMaxima}`;
         ouroEl.textContent = formatarOuro(estado.ouro);
+        patrimonioPessoalEl.textContent =
+          `${formatarOuro(estado.ouro)} ouro`;
         tesouroColoniaEl.textContent = formatarOuro(estado.tesouroColonia);
         const segundosParaTransferencia = Math.max(
           1,
