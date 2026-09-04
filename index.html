@@ -297,6 +297,7 @@
         <div class="indicador">Fruticultor<span id="fruticultor-status">Não contratado</span></div>
         <div class="indicador">Pescador<span id="pescador-status">Não contratado</span></div>
         <div class="indicador">Comerciante<span id="comerciante-status">Não contratado</span></div>
+        <div class="indicador">Ferreiro<span id="ferreiro-status">Não contratado</span></div>
         <div class="indicador">Combate<span id="combate-status">ATQ 1 · ARM 0</span></div>
       </section>
 
@@ -315,6 +316,9 @@
         </button>
         <button id="contratar-comerciante" type="button">
           Contratar comerciante · 100 ouro
+        </button>
+        <button id="contratar-ferreiro" type="button">
+          Contratar ferreiro · 100 ouro
         </button>
         <button id="abrir-loja" type="button">Loja</button>
         <button id="novo-jogo" class="secundario" type="button">Novo jogo</button>
@@ -378,6 +382,7 @@
             <li>Cada fruticultor custa 100 de ouro e produz 2 de ouro a cada 20 segundos.</li>
             <li>Cada pescador custa 100 de ouro e produz 3 de ouro a cada 30 segundos.</li>
             <li>Cada comerciante custa 100 de ouro e produz 1 de ouro a cada 10 segundos.</li>
+            <li>Cada ferreiro custa 100 de ouro e produz 1 de ouro a cada 10 segundos.</li>
             <li>Descansar custa 3 de ouro e recupera até 30 de vida.</li>
             <li>Ao ser derrotado, você volta com vida completa e perde 15 de ouro.</li>
             <li>Cada ponto de ataque causa 1 de dano.</li>
@@ -401,6 +406,7 @@
       const fruticultorStatusEl = document.querySelector("#fruticultor-status");
       const pescadorStatusEl = document.querySelector("#pescador-status");
       const comercianteStatusEl = document.querySelector("#comerciante-status");
+      const ferreiroStatusEl = document.querySelector("#ferreiro-status");
       const mensagemEl = document.querySelector("#mensagem");
       const cacarBotao = document.querySelector("#cacar");
       const voltarBotao = document.querySelector("#voltar");
@@ -428,6 +434,9 @@
       const contratarComercianteBotao = document.querySelector(
         "#contratar-comerciante",
       );
+      const contratarFerreiroBotao = document.querySelector(
+        "#contratar-ferreiro",
+      );
       const novoJogoBotao = document.querySelector("#novo-jogo");
       const apagarBotao = document.querySelector("#apagar");
 
@@ -442,19 +451,23 @@
       const custoFruticultor = 100;
       const custoPescador = 100;
       const custoComerciante = 100;
+      const custoFerreiro = 100;
       const custoMelhoria = 100;
       const intervaloFazendeiro = 10;
       const intervaloFruticultor = 20;
       const intervaloPescador = 30;
       const intervaloComerciante = 10;
+      const intervaloFerreiro = 10;
       const ouroPorFruticultor = 2;
       const ouroPorPescador = 3;
       const ouroPorComerciante = 1;
+      const ouroPorFerreiro = 1;
       const vidaMaxima = 100;
       const maximoFazendeiros = 10;
       const maximoFruticultores = 10;
       const maximoPescadores = 10;
       const maximoComerciantes = 10;
+      const maximoFerreiros = 10;
       const nivelMaximo = 5;
       const chaveSalvamento = "arqueiro-do-assentamento-v1";
       const versaoSalvamento = 1;
@@ -497,6 +510,8 @@
         tempoPescador: 0,
         quantidadeComerciantes: 0,
         tempoComerciante: 0,
+        quantidadeFerreiros: 0,
+        tempoFerreiro: 0,
       };
 
       const arvores = [
@@ -578,6 +593,10 @@
           comerciante: {
             quantidade: estado.quantidadeComerciantes,
             tempo: estado.tempoComerciante,
+          },
+          ferreiro: {
+            quantidade: estado.quantidadeFerreiros,
+            tempo: estado.tempoFerreiro,
           },
         };
       }
@@ -727,6 +746,22 @@
                 0,
               )
             : 0;
+          estado.quantidadeFerreiros = Math.round(
+            numeroValido(
+              salvo.ferreiro?.quantidade,
+              0,
+              maximoFerreiros,
+              0,
+            ),
+          );
+          estado.tempoFerreiro = estado.quantidadeFerreiros > 0
+            ? numeroValido(
+                salvo.ferreiro?.tempo,
+                0,
+                intervaloFerreiro,
+                0,
+              )
+            : 0;
 
           const derrotadoAoCarregar = estado.vida === 0;
           if (derrotadoAoCarregar) {
@@ -789,6 +824,8 @@
         estado.tempoPescador = 0;
         estado.quantidadeComerciantes = 0;
         estado.tempoComerciante = 0;
+        estado.quantidadeFerreiros = 0;
+        estado.tempoFerreiro = 0;
       }
 
       function atualizarInterface() {
@@ -845,11 +882,22 @@
         comercianteStatusEl.textContent = estado.quantidadeComerciantes > 0
           ? `${estado.quantidadeComerciantes} / 10 · +${estado.quantidadeComerciantes * ouroPorComerciante} ouro / 10 s`
           : "Não contratado";
+        contratarFerreiroBotao.disabled =
+          !noAssentamento ||
+          estado.quantidadeFerreiros >= maximoFerreiros ||
+          estado.ouro < custoFerreiro;
+        contratarFerreiroBotao.textContent =
+          estado.quantidadeFerreiros >= maximoFerreiros
+            ? "Máximo de ferreiros"
+            : `Contratar ferreiro ${estado.quantidadeFerreiros + 1}/10 · 100 ouro`;
+        ferreiroStatusEl.textContent = estado.quantidadeFerreiros > 0
+          ? `${estado.quantidadeFerreiros} / 10 · +${estado.quantidadeFerreiros * ouroPorFerreiro} ouro / 10 s`
+          : "Não contratado";
         atualizarLoja();
         canvas.setAttribute(
           "aria-label",
           noAssentamento
-            ? `Mapa do assentamento com um rio, cais de pesca e um cais comercial ao norte, ${estado.quantidadeFazendeiros} fazendeiros, ${estado.quantidadeFruticultores} fruticultores, ${estado.quantidadePescadores} pescadores e ${estado.quantidadeComerciantes} comerciantes. O arqueiro é o ponto verde.`
+            ? `Mapa do assentamento com rio, cais, ferraria, ${estado.quantidadeFazendeiros} fazendeiros, ${estado.quantidadeFruticultores} fruticultores, ${estado.quantidadePescadores} pescadores, ${estado.quantidadeComerciantes} comerciantes e ${estado.quantidadeFerreiros} ferreiros. O arqueiro é o ponto verde.`
             : `Mapa da floresta com ${estado.inimigos.length} inimigos vermelhos. O arqueiro é o ponto verde.`,
         );
       }
@@ -1057,6 +1105,32 @@
         salvarProgresso();
       }
 
+      function contratarFerreiro() {
+        if (estado.local !== "assentamento") {
+          definirMensagem("Volte ao assentamento para contratar um ferreiro.");
+          return;
+        }
+
+        if (estado.quantidadeFerreiros >= maximoFerreiros) {
+          definirMensagem("Você já contratou o máximo de 10 ferreiros.");
+          return;
+        }
+
+        if (estado.ouro < custoFerreiro) {
+          definirMensagem("Você precisa de 100 de ouro para contratar o ferreiro.");
+          return;
+        }
+
+        estado.ouro -= custoFerreiro;
+        estado.quantidadeFerreiros += 1;
+        estado.salvamentoAtivo = true;
+        definirMensagem(
+          `Ferreiro ${estado.quantidadeFerreiros} contratado. A ferraria agora produz ${estado.quantidadeFerreiros * ouroPorFerreiro} de ouro a cada 10 segundos.`,
+        );
+        atualizarInterface();
+        salvarProgresso();
+      }
+
       function atualizarLoja() {
         const ataqueMaximo = estado.ataque >= nivelMaximo;
         const armaduraMaxima = estado.armadura >= nivelMaximo;
@@ -1227,6 +1301,28 @@
         if (estado.local === "assentamento") {
           definirMensagem(
             `O cais comercial rendeu ${ouroProduzido} de ouro em trocas.`,
+          );
+        }
+        atualizarInterface();
+        salvarProgresso();
+      }
+
+      function atualizarFerreiro(delta) {
+        if (estado.quantidadeFerreiros === 0) return;
+
+        estado.tempoFerreiro += delta;
+        if (estado.tempoFerreiro < intervaloFerreiro) return;
+
+        const pagamentos = Math.floor(
+          estado.tempoFerreiro / intervaloFerreiro,
+        );
+        estado.tempoFerreiro %= intervaloFerreiro;
+        const ouroProduzido =
+          pagamentos * estado.quantidadeFerreiros * ouroPorFerreiro;
+        estado.ouro += ouroProduzido;
+        if (estado.local === "assentamento") {
+          definirMensagem(
+            `A ferraria produziu mercadorias no valor de ${ouroProduzido} de ouro.`,
           );
         }
         atualizarInterface();
@@ -1628,6 +1724,48 @@
           contexto.fill();
         }
 
+        contexto.fillStyle = "#4a3525";
+        contexto.fillRect(566, 255, 14, 40);
+        if (estado.quantidadeFerreiros > 0) {
+          contexto.fillStyle = "#d86b2f";
+          contexto.fillRect(535, 340, 20, 21);
+          for (let indice = 0; indice < 3; indice += 1) {
+            const subida = (tempoRio * 11 + indice * 18) % 54;
+            desenharCirculo(
+              573 + Math.sin(tempoRio + indice) * 5,
+              252 - subida,
+              5 + indice,
+              "#8c8a7c",
+            );
+          }
+        }
+
+        contexto.fillStyle = "#e7d6a6";
+        contexto.fillRect(505, 317, 80, 24);
+        contexto.fillStyle = "#3d2a1b";
+        contexto.font = "bold 12px sans-serif";
+        contexto.textAlign = "center";
+        contexto.textBaseline = "middle";
+        contexto.fillText("FERRARIA", 545, 329);
+
+        contexto.fillStyle = "#4f5557";
+        contexto.fillRect(598, 339, 46, 8);
+        contexto.fillRect(614, 347, 14, 14);
+        contexto.fillRect(606, 359, 30, 7);
+        if (estado.quantidadeFerreiros > 0) {
+          for (let indice = 0; indice < 4; indice += 1) {
+            const alturaFaisca = (tempoRio * 20 + indice * 7) % 24;
+            desenharCirculo(
+              620 + Math.sin(tempoRio * 5 + indice) * 12,
+              338 - alturaFaisca,
+              2,
+              "#f0a23d",
+            );
+          }
+        }
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
+
         contexto.fillStyle = "#e7d6a6";
         contexto.fillRect(828, 317, 54, 24);
         contexto.fillStyle = "#3d2a1b";
@@ -1971,6 +2109,51 @@
         }
       }
 
+      function posicaoFerreiro(indice) {
+        const progresso =
+          ((estado.tempoFerreiro + indice * 0.83) % intervaloFerreiro) /
+          intervaloFerreiro;
+        const postos = [
+          { x: 500, y: 380 },
+          { x: 525, y: 392 },
+          { x: 550, y: 382 },
+          { x: 575, y: 394 },
+          { x: 600, y: 382 },
+          { x: 620, y: 375 },
+          { x: 635, y: 355 },
+          { x: 610, y: 325 },
+          { x: 520, y: 365 },
+          { x: 545, y: 350 },
+        ];
+        const posto = postos[indice];
+        const porta = { x: 545, y: 365 };
+        const bancada = {
+          x: 603 + (indice % 4) * 10,
+          y: 332 + (indice % 3) * 9,
+        };
+        const caminho = [posto, porta, bancada, porta, posto];
+        return percorrerCaminho(caminho, progresso);
+      }
+
+      function desenharFerreiro() {
+        if (
+          estado.quantidadeFerreiros === 0 ||
+          estado.local !== "assentamento"
+        ) {
+          return;
+        }
+
+        for (
+          let indice = 0;
+          indice < estado.quantidadeFerreiros;
+          indice += 1
+        ) {
+          const posicao = posicaoFerreiro(indice);
+          const cor = indice < 5 ? "#98a7ac" : "#c0c9cc";
+          desenharCirculo(posicao.x, posicao.y, 8, cor, "#39474c");
+        }
+      }
+
       function desenharFloresta() {
         contexto.fillStyle = "#405c35";
         contexto.fillRect(0, 0, larguraMundo, alturaMundo);
@@ -2044,6 +2227,7 @@
         desenharFruticultor();
         desenharPescador();
         desenharComerciante();
+        desenharFerreiro();
         desenharJogador();
         contexto.setTransform(1, 0, 0, 1, 0, 0);
 
@@ -2073,12 +2257,14 @@
         atualizarFruticultor(delta);
         atualizarPescador(delta);
         atualizarComerciante(delta);
+        atualizarFerreiro(delta);
         if (
           estado.local === "floresta" ||
           estado.quantidadeFazendeiros > 0 ||
           estado.quantidadeFruticultores > 0 ||
           estado.quantidadePescadores > 0 ||
-          estado.quantidadeComerciantes > 0
+          estado.quantidadeComerciantes > 0 ||
+          estado.quantidadeFerreiros > 0
         ) {
           tempoSalvamento += delta;
           if (tempoSalvamento >= 2) {
@@ -2102,6 +2288,7 @@
       contratarFruticultorBotao.addEventListener("click", contratarFruticultor);
       contratarPescadorBotao.addEventListener("click", contratarPescador);
       contratarComercianteBotao.addEventListener("click", contratarComerciante);
+      contratarFerreiroBotao.addEventListener("click", contratarFerreiro);
       novoJogoBotao.addEventListener("click", iniciarNovoJogo);
       apagarBotao.addEventListener("click", apagarProgresso);
       window.addEventListener("resize", redimensionar);
