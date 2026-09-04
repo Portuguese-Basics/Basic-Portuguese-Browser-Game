@@ -104,6 +104,26 @@
         opacity: 0.38;
       }
 
+      button.secundario {
+        border-color: #655e4d;
+        background: #3b382f;
+      }
+
+      button.secundario:hover:not(:disabled),
+      button.secundario:focus-visible:not(:disabled) {
+        background: #4b473c;
+      }
+
+      button.perigo {
+        border-color: #74433d;
+        background: #4f302c;
+      }
+
+      button.perigo:hover:not(:disabled),
+      button.perigo:focus-visible:not(:disabled) {
+        background: #633b35;
+      }
+
       .mapa {
         position: relative;
         flex: 1;
@@ -144,7 +164,7 @@
         .estado,
         .acoes {
           display: grid;
-          grid-template-columns: repeat(3, minmax(0, 1fr));
+          grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .indicador {
@@ -178,12 +198,15 @@
         <div class="indicador">Local<span id="local">Assentamento</span></div>
         <div class="indicador">Vida<span id="vida">100 / 100</span></div>
         <div class="indicador">Ouro<span id="ouro">5</span></div>
+        <div class="indicador">Salvamento<span id="salvamento">Automático</span></div>
       </section>
 
       <nav class="acoes" aria-label="Ações">
         <button id="cacar" type="button">Caçar</button>
         <button id="voltar" type="button" disabled>Voltar</button>
         <button id="descansar" type="button">Descansar · 3 ouro</button>
+        <button id="novo-jogo" class="secundario" type="button">Novo jogo</button>
+        <button id="apagar" class="perigo" type="button">Apagar progresso</button>
       </nav>
     </header>
 
@@ -206,15 +229,20 @@
       const localEl = document.querySelector("#local");
       const vidaEl = document.querySelector("#vida");
       const ouroEl = document.querySelector("#ouro");
+      const salvamentoEl = document.querySelector("#salvamento");
       const mensagemEl = document.querySelector("#mensagem");
       const cacarBotao = document.querySelector("#cacar");
       const voltarBotao = document.querySelector("#voltar");
       const descansarBotao = document.querySelector("#descansar");
+      const novoJogoBotao = document.querySelector("#novo-jogo");
+      const apagarBotao = document.querySelector("#apagar");
 
       const larguraMundo = 1000;
       const alturaMundo = 700;
       const custoDescanso = 3;
       const vidaMaxima = 100;
+      const chaveSalvamento = "arqueiro-do-assentamento-v1";
+      const versaoSalvamento = 1;
 
       const estado = {
         local: "assentamento",
@@ -226,6 +254,8 @@
         tempoReforco: 0,
         alvoGolpeado: null,
         brilhoGolpe: 0,
+        salvamentoDisponivel: true,
+        salvamentoAtivo: true,
       };
 
       const arvores = [
@@ -249,6 +279,120 @@
 
       function definirMensagem(texto) {
         mensagemEl.textContent = texto;
+      }
+
+      function numeroValido(valor, minimo, maximo, padrao) {
+        return Number.isFinite(valor)
+          ? Math.min(maximo, Math.max(minimo, valor))
+          : padrao;
+      }
+
+      function dadosParaSalvar() {
+        return {
+          versao: versaoSalvamento,
+          salvoEm: Date.now(),
+          local: estado.local,
+          vida: estado.vida,
+          ouro: estado.ouro,
+          jogador: {
+            x: estado.jogador.x,
+            y: estado.jogador.y,
+          },
+          inimigos: estado.inimigos.map((inimigo) => ({
+            id: inimigo.id,
+            x: inimigo.x,
+            y: inimigo.y,
+            vida: inimigo.vida,
+            velocidade: inimigo.velocidade,
+          })),
+        };
+      }
+
+      function salvarProgresso() {
+        if (!estado.salvamentoDisponivel || !estado.salvamentoAtivo) return;
+
+        try {
+          localStorage.setItem(chaveSalvamento, JSON.stringify(dadosParaSalvar()));
+          salvamentoEl.textContent = "Salvo agora";
+        } catch (erro) {
+          estado.salvamentoDisponivel = false;
+          salvamentoEl.textContent = "Indisponível";
+          definirMensagem(
+            "O jogo continua, mas este navegador não permitiu salvar o progresso.",
+          );
+        }
+      }
+
+      function carregarProgresso() {
+        try {
+          const textoSalvo = localStorage.getItem(chaveSalvamento);
+          if (!textoSalvo) return false;
+
+          const salvo = JSON.parse(textoSalvo);
+          if (salvo.versao !== versaoSalvamento) return false;
+
+          estado.local = salvo.local === "floresta" ? "floresta" : "assentamento";
+          estado.vida = Math.round(
+            numeroValido(salvo.vida, 0, vidaMaxima, vidaMaxima),
+          );
+          estado.ouro = Math.floor(numeroValido(salvo.ouro, 0, 999999, 5));
+          estado.jogador.x = numeroValido(
+            salvo.jogador?.x,
+            0,
+            larguraMundo,
+            estado.local === "floresta" ? 500 : 500,
+          );
+          estado.jogador.y = numeroValido(
+            salvo.jogador?.y,
+            0,
+            alturaMundo,
+            estado.local === "floresta" ? 610 : 390,
+          );
+
+          estado.inimigos = Array.isArray(salvo.inimigos)
+            ? salvo.inimigos.slice(0, 20).map((inimigo, indice) => ({
+                id: String(inimigo.id || `salvo-${indice}`),
+                x: numeroValido(inimigo.x, 0, larguraMundo, 100),
+                y: numeroValido(inimigo.y, 0, alturaMundo, 100),
+                vida: Math.round(numeroValido(inimigo.vida, 1, 2, 2)),
+                velocidade: numeroValido(inimigo.velocidade, 16, 50, 26),
+              }))
+            : [];
+
+          if (estado.local === "assentamento") {
+            estado.jogador.x = 500;
+            estado.jogador.y = 390;
+            estado.inimigos = [];
+          } else if (estado.inimigos.length === 0 && estado.vida > 0) {
+            povoarFloresta();
+          }
+
+          salvamentoEl.textContent = "Carregado";
+          definirMensagem("Progresso carregado automaticamente.");
+          return true;
+        } catch (erro) {
+          try {
+            localStorage.removeItem(chaveSalvamento);
+          } catch (erroAoApagar) {
+            estado.salvamentoDisponivel = false;
+          }
+          salvamentoEl.textContent = "Novo jogo";
+          definirMensagem("O salvamento antigo estava inválido. Um novo jogo foi iniciado.");
+          return false;
+        }
+      }
+
+      function redefinirEstado() {
+        estado.local = "assentamento";
+        estado.vida = vidaMaxima;
+        estado.ouro = 5;
+        estado.jogador.x = 500;
+        estado.jogador.y = 390;
+        estado.inimigos = [];
+        estado.tempoAtaque = 0;
+        estado.tempoReforco = 0;
+        estado.alvoGolpeado = null;
+        estado.brilhoGolpe = 0;
       }
 
       function atualizarInterface() {
@@ -293,6 +437,7 @@
       }
 
       function iniciarCacada() {
+        estado.salvamentoAtivo = true;
         estado.local = "floresta";
         estado.jogador.x = 500;
         estado.jogador.y = 610;
@@ -301,9 +446,11 @@
         povoarFloresta();
         definirMensagem("Caçada iniciada. O arqueiro luta automaticamente.");
         atualizarInterface();
+        salvarProgresso();
       }
 
       function voltarAoAssentamento() {
+        estado.salvamentoAtivo = true;
         estado.local = "assentamento";
         estado.jogador.x = 500;
         estado.jogador.y = 390;
@@ -311,9 +458,11 @@
         estado.alvoGolpeado = null;
         definirMensagem("Você voltou ao assentamento.");
         atualizarInterface();
+        salvarProgresso();
       }
 
       function descansar() {
+        estado.salvamentoAtivo = true;
         if (estado.vida >= vidaMaxima) {
           definirMensagem("Sua vida já está completa.");
           return;
@@ -330,6 +479,42 @@
         const recuperada = estado.vida - vidaAnterior;
         definirMensagem(`Descanso concluído. Você recuperou ${recuperada} de vida.`);
         atualizarInterface();
+        salvarProgresso();
+      }
+
+      function iniciarNovoJogo() {
+        const confirmado = window.confirm(
+          "Começar um novo jogo? O progresso atual será substituído.",
+        );
+        if (!confirmado) return;
+
+        redefinirEstado();
+        estado.salvamentoDisponivel = true;
+        estado.salvamentoAtivo = true;
+        definirMensagem("Novo jogo iniciado.");
+        atualizarInterface();
+        salvarProgresso();
+      }
+
+      function apagarProgresso() {
+        const confirmado = window.confirm(
+          "Apagar todo o progresso salvo neste navegador?",
+        );
+        if (!confirmado) return;
+
+        try {
+          localStorage.removeItem(chaveSalvamento);
+          estado.salvamentoDisponivel = true;
+          estado.salvamentoAtivo = false;
+          redefinirEstado();
+          salvamentoEl.textContent = "Apagado";
+          definirMensagem("Progresso apagado. O jogo voltou ao início.");
+          atualizarInterface();
+        } catch (erro) {
+          estado.salvamentoDisponivel = false;
+          salvamentoEl.textContent = "Indisponível";
+          definirMensagem("Não foi possível apagar o progresso neste navegador.");
+        }
       }
 
       function inimigoMaisProximo() {
@@ -368,6 +553,7 @@
             povoarFloresta();
             definirMensagem("Mais inimigos apareceram na floresta.");
             atualizarInterface();
+            salvarProgresso();
           }
           return;
         }
@@ -412,6 +598,7 @@
         }
 
         atualizarInterface();
+        salvarProgresso();
       }
 
       function desenharCirculo(x, y, raio, cor, contorno = null) {
@@ -546,11 +733,19 @@
       }
 
       let tempoAnterior = performance.now();
+      let tempoSalvamento = 0;
       function quadro(agora) {
         const delta = Math.min((agora - tempoAnterior) / 1000, 0.05);
         tempoAnterior = agora;
 
-        if (estado.local === "floresta") atualizarCacada(delta);
+        if (estado.local === "floresta") {
+          atualizarCacada(delta);
+          tempoSalvamento += delta;
+          if (tempoSalvamento >= 2) {
+            tempoSalvamento = 0;
+            salvarProgresso();
+          }
+        }
         estado.brilhoGolpe = Math.max(0, estado.brilhoGolpe - delta);
         desenhar();
         requestAnimationFrame(quadro);
@@ -559,8 +754,15 @@
       cacarBotao.addEventListener("click", iniciarCacada);
       voltarBotao.addEventListener("click", voltarAoAssentamento);
       descansarBotao.addEventListener("click", descansar);
+      novoJogoBotao.addEventListener("click", iniciarNovoJogo);
+      apagarBotao.addEventListener("click", apagarProgresso);
       window.addEventListener("resize", redimensionar);
+      window.addEventListener("pagehide", salvarProgresso);
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") salvarProgresso();
+      });
 
+      carregarProgresso();
       atualizarInterface();
       redimensionar();
       requestAnimationFrame(quadro);
