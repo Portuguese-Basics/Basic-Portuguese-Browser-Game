@@ -550,6 +550,7 @@
         <div class="indicador indicador-colonia">Empregos<span id="empregos-colonia-status">Aguardando</span></div>
         <div class="indicador indicador-colonia">Armazéns<span id="estoques-colonia-status">Aguardando</span></div>
         <div class="indicador indicador-colonia">Costa<span id="costa-colonia-status">Portos planejados</span></div>
+        <div class="indicador indicador-colonia">Defesa<span id="defesa-colonia-status">Sem efetivos</span></div>
         <div class="indicador indicador-colonia">Migração<span id="migracao-status">Sem administradores</span></div>
         <div class="indicador indicador-colonia">Prioridade dos colonos<span id="prioridade-colonia-status">Aguardando</span></div>
         <div class="indicador indicador-colonia">Produção alimentar<span id="producao-colonia-status">Nenhuma</span></div>
@@ -708,6 +709,10 @@
             <li>Custos municipais: pastagem 500; celeiro central 300; horta/pomar 350 + armazém 200; feijoal 350 + armazém 200; campo de grãos 400 + silo 250; moinho 450 + depósito 200; padaria 500 + despensa 250.</li>
             <li>As muralhas não existem no início. Depois das construções produtivas, a cidade pode erguer a paliçada interna por 4 trechos de 250 e a externa por 4 trechos de 450.</li>
             <li>A paliçada completa é o estágio 1. Estágios futuros poderão acrescentar torres, muralhas mais espessas com passagem para soldados e, depois, muralhas de pedra.</li>
+            <li>A defesa é uma prioridade municipal tardia. Depois da infraestrutura e das paliçadas, a cidade ergue um pátio de treino, promove-o a campo da guarda e constrói um quartel.</li>
+            <li>Milicianos custam 60 e recebem 1 de soldo; guardas municipais custam 120 e recebem 2; soldados profissionais custam 200 e recebem 4 a cada 60 segundos.</li>
+            <li>A contratação preserva 2.500 de ouro no cofre e limita os soldos a 30% do repasse municipal garantido. Um efetivo completo custa 70 por minuto contra 270 de receita garantida.</li>
+            <li>Cada combatente recebe uma arma de metal ou lança, ou um arco com uma aljava de 20 flechas. Guardas patrulham a cidade; soldados ficam disponíveis para ordens futuras.</li>
             <li>A costa pode sustentar dois cais de pesca com 5 trabalhadores cada. O mercado costeiro guarda 160 peixes; cada pescador entrega 3 peixes e cada barco ativo acrescenta 2 por minuto.</li>
             <li>A feitoria amplia o cais comercial para 10 mercadores. Cada navio mercante acrescenta 2 mercadorias por minuto enquanto houver mercadores.</li>
             <li>O estaleiro aceita 5 carpinteiros navais. Cinco pontos de trabalho, 20 madeiras e 2 ferramentas produzem um barco de pesca ou navio mercante.</li>
@@ -825,6 +830,20 @@
             </ul>
           </section>
 
+          <section class="economia" aria-labelledby="titulo-defesa-colonia">
+            <h3 id="titulo-defesa-colonia">Defesa municipal</h3>
+            <ul class="lista-colonia">
+              <li>Milicianos <span id="defesa-milicia">0 / 10</span></li>
+              <li>Guardas municipais <span id="defesa-guardas">0 / 10</span></li>
+              <li>Soldados profissionais <span id="defesa-soldados">0 / 10</span></li>
+              <li>Segurança civil <span id="defesa-seguranca">0 / 100</span></li>
+              <li>Força militar <span id="defesa-forca">0 / 100</span></li>
+              <li>Soldos municipais <span id="defesa-soldos">0 ouro / 60 s</span></li>
+              <li>Próxima contratação <span id="defesa-proxima-contratacao">Aguardando infraestrutura</span></li>
+              <li>Ordens militares <span>Não implementadas</span></li>
+            </ul>
+          </section>
+
           <section class="economia" aria-labelledby="titulo-edificios-colonia">
             <h3 id="titulo-edificios-colonia">Edificações produtivas</h3>
             <ul class="lista-colonia">
@@ -855,6 +874,9 @@
               <li>Forja + arsenal <span id="edificio-forja">Planejados</span></li>
               <li>Paliçada interna — estágio 1 <span id="edificio-palicada-interna">0 / 4 trechos</span></li>
               <li>Paliçada externa — estágio 1 <span id="edificio-palicada-externa">0 / 4 trechos</span></li>
+              <li>Pátio de treino da milícia <span id="edificio-patio-treino">Planejado</span></li>
+              <li>Campo de treinamento da guarda <span id="edificio-campo-guarda">Planejado</span></li>
+              <li>Quartel militar <span id="edificio-quartel-militar">Planejado</span></li>
             </ul>
           </section>
         </div>
@@ -969,6 +991,21 @@
             </ul>
           </section>
 
+          <section class="economia" aria-labelledby="titulo-registro-defesa">
+            <h3 id="titulo-registro-defesa">Defesa, equipamento e soldos</h3>
+            <ul class="lista-colonia">
+              <li>Milícia <span id="registro-milicia">0 / 10</span></li>
+              <li>Guarda municipal <span id="registro-guardas">0 / 10</span></li>
+              <li>Soldados profissionais <span id="registro-soldados">0 / 10</span></li>
+              <li>Segurança civil <span id="registro-seguranca-civil">0 / 100</span></li>
+              <li>Força militar <span id="registro-forca-militar">0 / 100</span></li>
+              <li>Folha de soldos <span id="registro-soldos">0 / 81 ouro por 60 s</span></li>
+              <li>Reserva municipal protegida <span id="registro-reserva-defesa">2.500 ouro</span></li>
+              <li>Situação financeira <span id="registro-sustentabilidade-defesa">Sustentável</span></li>
+              <li>Próxima contratação <span id="registro-proxima-defesa">Aguardando infraestrutura</span></li>
+            </ul>
+          </section>
+
           <section class="economia" aria-labelledby="titulo-registro-fluxos">
             <h3 id="titulo-registro-fluxos">Fluxos produtivos · 60 segundos</h3>
             <ul class="lista-colonia">
@@ -1004,6 +1041,8 @@
               <li>Bebês consomem 0,25 alimento; crianças consomem 0,5. Aos 30 minutos tornam-se crianças e, após 2 horas, adultos.</li>
               <li>Com bebês ou crianças, a escola vira prioridade municipal. Um professor é essencial; sem escola e professor, a maioridade fica pausada.</li>
               <li>O banco, a farmácia, os medicamentos, os arsenais, as ferramentas e a munição ficam protegidos no recinto interno.</li>
+              <li>Milícia, guarda e soldados são efetivos municipais separados dos empregos civis. A cidade contrata no máximo uma pessoa por ciclo de 60 segundos.</li>
+              <li>Sem equipamento, reserva ou margem para soldos, o recrutamento pausa. Soldos atrasados suspendem novas contratações até o caixa se recuperar.</li>
             </ul>
           </section>
 
@@ -1151,6 +1190,9 @@
       const costaColoniaStatusEl = document.querySelector(
         "#costa-colonia-status",
       );
+      const defesaColoniaStatusEl = document.querySelector(
+        "#defesa-colonia-status",
+      );
       const migracaoStatusEl = document.querySelector("#migracao-status");
       const prioridadeColoniaStatusEl = document.querySelector(
         "#prioridade-colonia-status",
@@ -1274,6 +1316,15 @@
       const trabalhoFerrariaEl = document.querySelector("#trabalho-ferraria");
       const trabalhoForjaEl = document.querySelector("#trabalho-forja");
       const trabalhoGeralEl = document.querySelector("#trabalho-geral");
+      const defesaMiliciaEl = document.querySelector("#defesa-milicia");
+      const defesaGuardasEl = document.querySelector("#defesa-guardas");
+      const defesaSoldadosEl = document.querySelector("#defesa-soldados");
+      const defesaSegurancaEl = document.querySelector("#defesa-seguranca");
+      const defesaForcaEl = document.querySelector("#defesa-forca");
+      const defesaSoldosEl = document.querySelector("#defesa-soldos");
+      const defesaProximaContratacaoEl = document.querySelector(
+        "#defesa-proxima-contratacao",
+      );
       const estoqueAlimentosDetalheEl = document.querySelector(
         "#estoque-alimentos-detalhe",
       );
@@ -1345,6 +1396,15 @@
       );
       const edificioPalicadaExternaEl = document.querySelector(
         "#edificio-palicada-externa",
+      );
+      const edificioPatioTreinoEl = document.querySelector(
+        "#edificio-patio-treino",
+      );
+      const edificioCampoGuardaEl = document.querySelector(
+        "#edificio-campo-guarda",
+      );
+      const edificioQuartelMilitarEl = document.querySelector(
+        "#edificio-quartel-militar",
       );
       const controlesMapaEl = document.querySelector("#controles-mapa");
       const diminuirZoomBotao = document.querySelector("#diminuir-zoom");
@@ -1433,6 +1493,15 @@
           "producao-minerio",
           "producao-pedra",
           "producao-metal",
+          "milicia",
+          "guardas",
+          "soldados",
+          "seguranca-civil",
+          "forca-militar",
+          "soldos",
+          "reserva-defesa",
+          "sustentabilidade-defesa",
+          "proxima-defesa",
         ].map((nome) => [
           nome,
           document.querySelector(`#registro-${nome}`),
@@ -1726,6 +1795,18 @@
         largura: 500,
         altura: 280,
       };
+      const areaPatioTreinoColonia = {
+        x: 7200,
+        y: 7750,
+        largura: 950,
+        altura: 620,
+      };
+      const areaQuartelMilitarColonia = {
+        x: 10350,
+        y: 6620,
+        largura: 720,
+        altura: 520,
+      };
       const quantidadeColonosExpansao = 20;
       const versaoColonia = 5;
       const ouroInicialAdministrador = 2500;
@@ -1792,6 +1873,21 @@
       const custoTrechoPalicadaInternaColonia = 250;
       const custoTrechoPalicadaExternaColonia = 450;
       const totalTrechosPalicadaColonia = 4;
+      const custoPatioTreinoColonia = 650;
+      const custoCampoGuardaColonia = 900;
+      const custoQuartelMilitarColonia = 1400;
+      const reservaDefesaColonia = 2500;
+      const maximoMilicianosColonia = 10;
+      const maximoGuardasColonia = 10;
+      const maximoSoldadosColonia = 10;
+      const custoMilicianoColonia = 60;
+      const custoGuardaColonia = 120;
+      const custoSoldadoColonia = 200;
+      const soldoMilicianoColonia = 1;
+      const soldoGuardaColonia = 2;
+      const soldoSoldadoColonia = 4;
+      const intervaloDefesaColonia = 60;
+      const fracaoMaximaSoldosColonia = 0.3;
       const capacidadeMinerioColonia = 100;
       const capacidadePedraColonia = 120;
       const capacidadeFerramentasColonia = 60;
@@ -2058,6 +2154,20 @@
         forjaColoniaConstruida: false,
         trechosPalicadaInterna: 0,
         trechosPalicadaExterna: 0,
+        patioTreinoConstruido: false,
+        campoGuardaConstruido: false,
+        quartelMilitarConstruido: false,
+        quantidadeMilicianos: 0,
+        arqueirosMilicia: 0,
+        armasMetalMilicia: 0,
+        quantidadeGuardas: 0,
+        arqueirosGuarda: 0,
+        armasMetalGuarda: 0,
+        quantidadeSoldados: 0,
+        arqueirosSoldados: 0,
+        armasMetalSoldados: 0,
+        tempoDefesaColonia: 0,
+        ciclosSoldosAtrasados: 0,
         estoqueMinerio: 0,
         estoquePedra: 0,
         estoqueFerramentas: 0,
@@ -2486,6 +2596,20 @@
         estado.forjaColoniaConstruida = false;
         estado.trechosPalicadaInterna = 0;
         estado.trechosPalicadaExterna = 0;
+        estado.patioTreinoConstruido = false;
+        estado.campoGuardaConstruido = false;
+        estado.quartelMilitarConstruido = false;
+        estado.quantidadeMilicianos = 0;
+        estado.arqueirosMilicia = 0;
+        estado.armasMetalMilicia = 0;
+        estado.quantidadeGuardas = 0;
+        estado.arqueirosGuarda = 0;
+        estado.armasMetalGuarda = 0;
+        estado.quantidadeSoldados = 0;
+        estado.arqueirosSoldados = 0;
+        estado.armasMetalSoldados = 0;
+        estado.tempoDefesaColonia = 0;
+        estado.ciclosSoldosAtrasados = 0;
         estado.estoqueMinerio = 0;
         estado.estoquePedra = 0;
         estado.estoqueFerramentas = 0;
@@ -2602,6 +2726,26 @@
               defesas: {
                 trechosPalicadaInterna: estado.trechosPalicadaInterna,
                 trechosPalicadaExterna: estado.trechosPalicadaExterna,
+                patioTreino: estado.patioTreinoConstruido,
+                campoGuarda: estado.campoGuardaConstruido,
+                quartelMilitar: estado.quartelMilitarConstruido,
+                tempo: estado.tempoDefesaColonia,
+                ciclosSoldosAtrasados: estado.ciclosSoldosAtrasados,
+                milicia: {
+                  total: estado.quantidadeMilicianos,
+                  arqueiros: estado.arqueirosMilicia,
+                  armasMetal: estado.armasMetalMilicia,
+                },
+                guardas: {
+                  total: estado.quantidadeGuardas,
+                  arqueiros: estado.arqueirosGuarda,
+                  armasMetal: estado.armasMetalGuarda,
+                },
+                soldados: {
+                  total: estado.quantidadeSoldados,
+                  arqueiros: estado.arqueirosSoldados,
+                  armasMetal: estado.armasMetalSoldados,
+                },
                 estagioInterno:
                   estado.trechosPalicadaInterna === totalTrechosPalicadaColonia
                     ? 1
@@ -3202,6 +3346,98 @@
               0,
             ),
           );
+          estado.patioTreinoConstruido =
+            salvo.expansao?.economia?.defesas?.patioTreino === true;
+          estado.campoGuardaConstruido =
+            salvo.expansao?.economia?.defesas?.campoGuarda === true;
+          estado.quartelMilitarConstruido =
+            salvo.expansao?.economia?.defesas?.quartelMilitar === true;
+          estado.quantidadeMilicianos = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.defesas?.milicia?.total,
+              0,
+              maximoMilicianosColonia,
+              0,
+            ),
+          );
+          estado.arqueirosMilicia = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.defesas?.milicia?.arqueiros,
+              0,
+              estado.quantidadeMilicianos,
+              0,
+            ),
+          );
+          estado.armasMetalMilicia = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.defesas?.milicia?.armasMetal,
+              0,
+              estado.quantidadeMilicianos - estado.arqueirosMilicia,
+              0,
+            ),
+          );
+          estado.quantidadeGuardas = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.defesas?.guardas?.total,
+              0,
+              maximoGuardasColonia,
+              0,
+            ),
+          );
+          estado.arqueirosGuarda = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.defesas?.guardas?.arqueiros,
+              0,
+              estado.quantidadeGuardas,
+              0,
+            ),
+          );
+          estado.armasMetalGuarda = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.defesas?.guardas?.armasMetal,
+              0,
+              estado.quantidadeGuardas - estado.arqueirosGuarda,
+              0,
+            ),
+          );
+          estado.quantidadeSoldados = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.defesas?.soldados?.total,
+              0,
+              maximoSoldadosColonia,
+              0,
+            ),
+          );
+          estado.arqueirosSoldados = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.defesas?.soldados?.arqueiros,
+              0,
+              estado.quantidadeSoldados,
+              0,
+            ),
+          );
+          estado.armasMetalSoldados = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.defesas?.soldados?.armasMetal,
+              0,
+              estado.quantidadeSoldados - estado.arqueirosSoldados,
+              0,
+            ),
+          );
+          estado.tempoDefesaColonia = numeroValido(
+            salvo.expansao?.economia?.defesas?.tempo,
+            0,
+            intervaloDefesaColonia,
+            0,
+          );
+          estado.ciclosSoldosAtrasados = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.defesas?.ciclosSoldosAtrasados,
+              0,
+              9999,
+              0,
+            ),
+          );
           estado.obraAutomaticaColonia =
             salvo.expansao?.economia?.obraAutomatica === "lavoura" ||
             salvo.expansao?.economia?.obraAutomatica === "armazemGraos" ||
@@ -3239,7 +3475,10 @@
             salvo.expansao?.economia?.obraAutomatica === "ferraria" ||
             salvo.expansao?.economia?.obraAutomatica === "forja" ||
             salvo.expansao?.economia?.obraAutomatica === "palicadaInterna" ||
-            salvo.expansao?.economia?.obraAutomatica === "palicadaExterna"
+            salvo.expansao?.economia?.obraAutomatica === "palicadaExterna" ||
+            salvo.expansao?.economia?.obraAutomatica === "patioTreino" ||
+            salvo.expansao?.economia?.obraAutomatica === "campoGuarda" ||
+            salvo.expansao?.economia?.obraAutomatica === "quartelMilitar"
               ? salvo.expansao.economia.obraAutomatica
               : null;
           estado.tempoObraAutomaticaColonia =
@@ -3733,6 +3972,20 @@
         estado.forjaColoniaConstruida = false;
         estado.trechosPalicadaInterna = 0;
         estado.trechosPalicadaExterna = 0;
+        estado.patioTreinoConstruido = false;
+        estado.campoGuardaConstruido = false;
+        estado.quartelMilitarConstruido = false;
+        estado.quantidadeMilicianos = 0;
+        estado.arqueirosMilicia = 0;
+        estado.armasMetalMilicia = 0;
+        estado.quantidadeGuardas = 0;
+        estado.arqueirosGuarda = 0;
+        estado.armasMetalGuarda = 0;
+        estado.quantidadeSoldados = 0;
+        estado.arqueirosSoldados = 0;
+        estado.armasMetalSoldados = 0;
+        estado.tempoDefesaColonia = 0;
+        estado.ciclosSoldosAtrasados = 0;
         estado.estoqueMinerio = 0;
         estado.estoquePedra = 0;
         estado.estoqueFerramentas = 0;
@@ -4097,6 +4350,252 @@
         );
       }
 
+      function limiteSoldosColonia() {
+        return Math.floor(
+          valorTransferenciaPosto *
+            (1 - taxaAdministrador) *
+            fracaoMaximaSoldosColonia,
+        );
+      }
+
+      function folhaSoldosColonia() {
+        return (
+          estado.quantidadeMilicianos * soldoMilicianoColonia +
+          estado.quantidadeGuardas * soldoGuardaColonia +
+          estado.quantidadeSoldados * soldoSoldadoColonia
+        );
+      }
+
+      function segurancaCivilColonia() {
+        const fatorAtraso = estado.ciclosSoldosAtrasados > 0 ? 0.5 : 1;
+        return Math.min(
+          100,
+          Math.round(
+            (estado.quantidadeMilicianos * 3 +
+              estado.quantidadeGuardas * 6) *
+              fatorAtraso,
+          ),
+        );
+      }
+
+      function forcaMilitarColonia() {
+        const fatorAtraso = estado.ciclosSoldosAtrasados > 0 ? 0.5 : 1;
+        return Math.min(
+          100,
+          Math.round(estado.quantidadeSoldados * 10 * fatorAtraso),
+        );
+      }
+
+      function proximaContratacaoDefesaColonia() {
+        if (
+          estado.patioTreinoConstruido &&
+          estado.quantidadeMilicianos < 5
+        ) {
+          return {
+            categoria: "milicia",
+            nome: "miliciano",
+            custo: custoMilicianoColonia,
+            soldo: soldoMilicianoColonia,
+          };
+        }
+        if (
+          estado.campoGuardaConstruido &&
+          estado.quantidadeGuardas < 5
+        ) {
+          return {
+            categoria: "guarda",
+            nome: "guarda municipal",
+            custo: custoGuardaColonia,
+            soldo: soldoGuardaColonia,
+          };
+        }
+        if (
+          estado.quartelMilitarConstruido &&
+          estado.quantidadeSoldados < 5
+        ) {
+          return {
+            categoria: "soldado",
+            nome: "soldado profissional",
+            custo: custoSoldadoColonia,
+            soldo: soldoSoldadoColonia,
+          };
+        }
+        if (
+          estado.patioTreinoConstruido &&
+          estado.quantidadeMilicianos < maximoMilicianosColonia
+        ) {
+          return {
+            categoria: "milicia",
+            nome: "miliciano",
+            custo: custoMilicianoColonia,
+            soldo: soldoMilicianoColonia,
+          };
+        }
+        if (
+          estado.campoGuardaConstruido &&
+          estado.quantidadeGuardas < maximoGuardasColonia
+        ) {
+          return {
+            categoria: "guarda",
+            nome: "guarda municipal",
+            custo: custoGuardaColonia,
+            soldo: soldoGuardaColonia,
+          };
+        }
+        if (
+          estado.quartelMilitarConstruido &&
+          estado.quantidadeSoldados < maximoSoldadosColonia
+        ) {
+          return {
+            categoria: "soldado",
+            nome: "soldado profissional",
+            custo: custoSoldadoColonia,
+            soldo: soldoSoldadoColonia,
+          };
+        }
+        return null;
+      }
+
+      function equipamentoDisponivelDefesaColonia(tipo) {
+        if (tipo === "arco") {
+          return (
+            estado.estoqueArcos >= 1 &&
+            estado.estoqueFlechas >= flechasPorAljava
+          );
+        }
+        if (tipo === "arma") return estado.estoqueArmas >= 1;
+        return estado.estoqueLancasMadeira >= 1;
+      }
+
+      function escolherEquipamentoDefesaColonia(categoria) {
+        const quantidade = categoria === "milicia"
+          ? estado.quantidadeMilicianos
+          : categoria === "guarda"
+            ? estado.quantidadeGuardas
+            : estado.quantidadeSoldados;
+        const prefereArco = quantidade % 3 === 2;
+        const ordem = prefereArco
+          ? ["arco", categoria === "milicia" ? "lanca" : "arma", categoria === "milicia" ? "arma" : "lanca"]
+          : categoria === "milicia"
+            ? ["lanca", "arma", "arco"]
+            : ["arma", "arco", "lanca"];
+        return ordem.find(equipamentoDisponivelDefesaColonia) || null;
+      }
+
+      function consumirEquipamentoDefesaColonia(categoria, tipo) {
+        if (tipo === "arco") {
+          estado.estoqueArcos -= 1;
+          estado.estoqueFlechas -= flechasPorAljava;
+          if (categoria === "milicia") estado.arqueirosMilicia += 1;
+          else if (categoria === "guarda") estado.arqueirosGuarda += 1;
+          else estado.arqueirosSoldados += 1;
+          return "arco e aljava";
+        }
+        if (tipo === "arma") {
+          estado.estoqueArmas -= 1;
+          if (categoria === "milicia") estado.armasMetalMilicia += 1;
+          else if (categoria === "guarda") estado.armasMetalGuarda += 1;
+          else estado.armasMetalSoldados += 1;
+          return "arma de metal";
+        }
+        estado.estoqueLancasMadeira -= 1;
+        return "lança de madeira";
+      }
+
+      function textoEquipamentoDefesaColonia(categoria) {
+        const total = categoria === "milicia"
+          ? estado.quantidadeMilicianos
+          : categoria === "guarda"
+            ? estado.quantidadeGuardas
+            : estado.quantidadeSoldados;
+        const arqueiros = categoria === "milicia"
+          ? estado.arqueirosMilicia
+          : categoria === "guarda"
+            ? estado.arqueirosGuarda
+            : estado.arqueirosSoldados;
+        const metal = categoria === "milicia"
+          ? estado.armasMetalMilicia
+          : categoria === "guarda"
+            ? estado.armasMetalGuarda
+            : estado.armasMetalSoldados;
+        const lancas = Math.max(0, total - arqueiros - metal);
+        return `${total} / 10 · ${lancas} lanças · ${metal} metal · ${arqueiros} arcos`;
+      }
+
+      function motivoPausaDefesaColonia() {
+        if (!estado.patioTreinoConstruido) return "Aguardando pátio de treino";
+        const proxima = proximaContratacaoDefesaColonia();
+        if (!proxima) return "Efetivo completo";
+        if (estado.ciclosSoldosAtrasados > 0) return "Soldos em atraso";
+        if (folhaSoldosColonia() + proxima.soldo > limiteSoldosColonia()) {
+          return "Limite sustentável de soldos atingido";
+        }
+        if (estado.tesouroColonia - proxima.custo < reservaDefesaColonia) {
+          return `Preservando reserva de ${formatarOuro(reservaDefesaColonia)}`;
+        }
+        if (!escolherEquipamentoDefesaColonia(proxima.categoria)) {
+          return "Aguardando arma ou arco com 20 flechas";
+        }
+        return `${proxima.nome} · ${proxima.custo} ouro + ${proxima.soldo}/60 s`;
+      }
+
+      function atualizarDefesaColonia(delta) {
+        if (!estado.coloniaIniciada) return;
+        estado.tempoDefesaColonia += delta;
+        if (estado.tempoDefesaColonia < intervaloDefesaColonia) return;
+
+        const ciclos = Math.floor(
+          estado.tempoDefesaColonia / intervaloDefesaColonia,
+        );
+        estado.tempoDefesaColonia %= intervaloDefesaColonia;
+        let ultimaContratacao = null;
+        for (let ciclo = 0; ciclo < ciclos; ciclo += 1) {
+          const soldos = folhaSoldosColonia();
+          if (soldos > 0) {
+            if (estado.tesouroColonia >= soldos) {
+              estado.tesouroColonia = arredondarOuro(
+                estado.tesouroColonia - soldos,
+              );
+              estado.ciclosSoldosAtrasados = 0;
+            } else {
+              estado.tesouroColonia = 0;
+              estado.ciclosSoldosAtrasados += 1;
+              continue;
+            }
+          }
+
+          const proxima = proximaContratacaoDefesaColonia();
+          if (
+            !proxima ||
+            folhaSoldosColonia() + proxima.soldo > limiteSoldosColonia() ||
+            estado.tesouroColonia - proxima.custo < reservaDefesaColonia
+          ) continue;
+          const equipamento = escolherEquipamentoDefesaColonia(
+            proxima.categoria,
+          );
+          if (!equipamento) continue;
+
+          estado.tesouroColonia = arredondarOuro(
+            estado.tesouroColonia - proxima.custo,
+          );
+          const equipamentoTexto = consumirEquipamentoDefesaColonia(
+            proxima.categoria,
+            equipamento,
+          );
+          if (proxima.categoria === "milicia") estado.quantidadeMilicianos += 1;
+          else if (proxima.categoria === "guarda") estado.quantidadeGuardas += 1;
+          else estado.quantidadeSoldados += 1;
+          ultimaContratacao = `${proxima.nome} equipado com ${equipamentoTexto}`;
+        }
+        if (ultimaContratacao && estado.mapaAtual === "expansao") {
+          definirMensagem(
+            `Defesa municipal: ${ultimaContratacao}. A reserva e o limite de soldos foram preservados.`,
+          );
+        }
+        atualizarInterface();
+        salvarProgresso();
+      }
+
       function nomeObraAutomaticaColonia(tipo) {
         if (tipo === "lavoura") return "campo de grãos";
         if (tipo === "armazemGraos") return "silo de grãos";
@@ -4141,6 +4640,11 @@
         if (tipo === "estaleiro") return "estaleiro";
         if (tipo === "ferraria") return "ferraria e armazém de ferramentas";
         if (tipo === "forja") return "forja e arsenal";
+        if (tipo === "patioTreino") return "pátio de treino da milícia";
+        if (tipo === "campoGuarda") {
+          return "ampliação para campo de treinamento da guarda";
+        }
+        if (tipo === "quartelMilitar") return "quartel militar";
         if (tipo === "palicadaInterna") {
           return `trecho ${estado.trechosPalicadaInterna + 1}/${totalTrechosPalicadaColonia} da paliçada interna`;
         }
@@ -4186,6 +4690,9 @@
           forja: custoForjaColonia,
           palicadaInterna: custoTrechoPalicadaInternaColonia,
           palicadaExterna: custoTrechoPalicadaExternaColonia,
+          patioTreino: custoPatioTreinoColonia,
+          campoGuarda: custoCampoGuardaColonia,
+          quartelMilitar: custoQuartelMilitarColonia,
         };
         return custos[tipo];
       }
@@ -4248,6 +4755,11 @@
         if (
           estado.trechosPalicadaExterna < totalTrechosPalicadaColonia
         ) return "palicadaExterna";
+        if (!estado.patioTreinoConstruido) return "patioTreino";
+        if (estado.quantidadeMilicianos < 5) return null;
+        if (!estado.campoGuardaConstruido) return "campoGuarda";
+        if (estado.quantidadeGuardas < 5) return null;
+        if (!estado.quartelMilitarConstruido) return "quartelMilitar";
         return null;
       }
 
@@ -4264,10 +4776,23 @@
         const proximaObra = proximaObraAutomaticaColonia();
         if (proximaObra) {
           const custo = custoObraAutomaticaColonia(proximaObra);
-          return estado.tesouroColonia >= custo
+          const obraDefensiva =
+            proximaObra === "patioTreino" ||
+            proximaObra === "campoGuarda" ||
+            proximaObra === "quartelMilitar";
+          const saldoNecessario = obraDefensiva
+            ? custo + reservaDefesaColonia
+            : custo;
+          return estado.tesouroColonia >= saldoNecessario
             ? `Construir ${nomeObraAutomaticaColonia(proximaObra)}`
-            : `Aguardar ${custo} para ${nomeObraAutomaticaColonia(proximaObra)}`;
+            : `Aguardar ${saldoNecessario} para ${nomeObraAutomaticaColonia(proximaObra)}`;
         }
+        if (
+          estado.patioTreinoConstruido &&
+          (estado.quantidadeMilicianos < maximoMilicianosColonia ||
+            estado.quantidadeGuardas < maximoGuardasColonia ||
+            estado.quantidadeSoldados < maximoSoldadosColonia)
+        ) return motivoPausaDefesaColonia();
         if (estado.colonosComFome > 0) return "Repor alimentos";
         return "Manter alimento e moradia";
       }
@@ -4418,6 +4943,13 @@
           `Peixe ${formatarQuantidade(estado.estoquePeixes)}/${capacidadePeixesColonia} · Gr ${formatarQuantidade(estado.estoqueGraos)}/${capacidadeGraosColonia} · Pão ${formatarQuantidade(estado.estoquePaes)}/${capacidadePaesColonia}`;
         costaColoniaStatusEl.textContent =
           `${quantidadeCaisPescaColonia()}/2 cais · ${estado.barcosPesca} barcos · ${estado.naviosMercantes} navios`;
+        const folhaSoldos = folhaSoldosColonia();
+        const segurancaCivil = segurancaCivilColonia();
+        const forcaMilitar = forcaMilitarColonia();
+        const proximaDefesa = motivoPausaDefesaColonia();
+        defesaColoniaStatusEl.textContent = estado.ciclosSoldosAtrasados > 0
+          ? `Soldos atrasados · segurança ${segurancaCivil}`
+          : `${estado.quantidadeMilicianos} milícia · ${estado.quantidadeGuardas} guardas · ${estado.quantidadeSoldados} soldados · ${folhaSoldos}/60 s`;
         const segundosMigracao = estado.cargasMigracaoDisponiveis <
           estado.quantidadeAdministradoresMigracao
           ? Math.max(1, Math.ceil(intervaloMigracao - estado.tempoRecargaMigracao))
@@ -4550,6 +5082,13 @@
         trabalhoForjaEl.textContent =
           `${empregos.forja} / ${maximoTrabalhadoresForja} · 3 minério → 1 arma`;
         trabalhoGeralEl.textContent = String(empregos.geral);
+        defesaMiliciaEl.textContent = textoEquipamentoDefesaColonia("milicia");
+        defesaGuardasEl.textContent = textoEquipamentoDefesaColonia("guarda");
+        defesaSoldadosEl.textContent = textoEquipamentoDefesaColonia("soldado");
+        defesaSegurancaEl.textContent = `${segurancaCivil} / 100`;
+        defesaForcaEl.textContent = `${forcaMilitar} / 100`;
+        defesaSoldosEl.textContent = `${folhaSoldos} / ${limiteSoldosColonia()} ouro / 60 s`;
+        defesaProximaContratacaoEl.textContent = proximaDefesa;
         estoqueAlimentosDetalheEl.textContent =
           `${formatarQuantidade(estado.estoqueAlimentos)} / ${capacidadeCeleiroColonia}`;
         estoqueGraosEl.textContent =
@@ -4713,6 +5252,18 @@
           "palicadaExterna",
           estado.trechosPalicadaExterna,
         );
+        edificioPatioTreinoEl.textContent = statusEdificioColonia(
+          "patioTreino",
+          estado.patioTreinoConstruido,
+        );
+        edificioCampoGuardaEl.textContent = statusEdificioColonia(
+          "campoGuarda",
+          estado.campoGuardaConstruido,
+        );
+        edificioQuartelMilitarEl.textContent = statusEdificioColonia(
+          "quartelMilitar",
+          estado.quartelMilitarConstruido,
+        );
         const aljavasCompletas = Math.floor(
           estado.estoqueFlechas / flechasPorAljava,
         );
@@ -4834,6 +5385,20 @@
           `+${empregos.pedreira * pedraPorTrabalhadorPedreira} pedra`;
         registrosEls["producao-metal"].textContent =
           `${empregos.ferraria} ferramentas possíveis · ${empregos.forja} armas possíveis`;
+        registrosEls.milicia.textContent = textoEquipamentoDefesaColonia("milicia");
+        registrosEls.guardas.textContent = textoEquipamentoDefesaColonia("guarda");
+        registrosEls.soldados.textContent = textoEquipamentoDefesaColonia("soldado");
+        registrosEls["seguranca-civil"].textContent = `${segurancaCivil} / 100`;
+        registrosEls["forca-militar"].textContent = `${forcaMilitar} / 100`;
+        registrosEls.soldos.textContent =
+          `${folhaSoldos} / ${limiteSoldosColonia()} ouro por 60 s`;
+        registrosEls["reserva-defesa"].textContent =
+          `${formatarOuro(reservaDefesaColonia)} ouro`;
+        registrosEls["sustentabilidade-defesa"].textContent =
+          estado.ciclosSoldosAtrasados > 0
+            ? `${estado.ciclosSoldosAtrasados} ciclo(s) em atraso`
+            : `${limiteSoldosColonia() - folhaSoldos} de margem · sustentável`;
+        registrosEls["proxima-defesa"].textContent = proximaDefesa;
         combateStatusEl.textContent = `ATQ ${estado.ataque} · ARM ${estado.armadura}`;
         cacarBotao.disabled = !noAssentamento || estado.vida <= 0;
         voltarBotao.disabled = !naFloresta;
@@ -6127,7 +6692,15 @@
 
       function iniciarObraAutomaticaColonia(tipo) {
         const custo = custoObraAutomaticaColonia(tipo);
-        if (estado.tesouroColonia < custo) return false;
+        const obraDefensiva =
+          tipo === "patioTreino" ||
+          tipo === "campoGuarda" ||
+          tipo === "quartelMilitar";
+        if (
+          estado.tesouroColonia < custo ||
+          (obraDefensiva &&
+            estado.tesouroColonia - custo < reservaDefesaColonia)
+        ) return false;
 
         estado.tesouroColonia = arredondarOuro(
           estado.tesouroColonia - custo,
@@ -6242,6 +6815,18 @@
           forja: {
             x: areaForjaColonia.x + areaForjaColonia.largura / 2,
             y: areaForjaColonia.y + areaForjaColonia.altura / 2,
+          },
+          patioTreino: {
+            x: areaPatioTreinoColonia.x + areaPatioTreinoColonia.largura / 2,
+            y: areaPatioTreinoColonia.y + areaPatioTreinoColonia.altura / 2,
+          },
+          campoGuarda: {
+            x: areaPatioTreinoColonia.x + areaPatioTreinoColonia.largura / 2,
+            y: areaPatioTreinoColonia.y + areaPatioTreinoColonia.altura / 2,
+          },
+          quartelMilitar: {
+            x: areaQuartelMilitarColonia.x + areaQuartelMilitarColonia.largura / 2,
+            y: areaQuartelMilitarColonia.y + areaQuartelMilitarColonia.altura / 2,
           },
         };
         focarCameraExpansao(
@@ -6359,6 +6944,12 @@
           estado.ferrariaColoniaConstruida = true;
         } else if (obraConcluida === "forja") {
           estado.forjaColoniaConstruida = true;
+        } else if (obraConcluida === "patioTreino") {
+          estado.patioTreinoConstruido = true;
+        } else if (obraConcluida === "campoGuarda") {
+          estado.campoGuardaConstruido = true;
+        } else if (obraConcluida === "quartelMilitar") {
+          estado.quartelMilitarConstruido = true;
         } else if (obraConcluida === "palicadaInterna") {
           estado.trechosPalicadaInterna = Math.min(
             totalTrechosPalicadaColonia,
@@ -7964,6 +8555,18 @@
           depositoFlechas: {
             x: areaDepositoFlechas.x + areaDepositoFlechas.largura / 2,
             y: areaDepositoFlechas.y + areaDepositoFlechas.altura / 2,
+          },
+          patioTreino: {
+            x: areaPatioTreinoColonia.x + areaPatioTreinoColonia.largura / 2,
+            y: areaPatioTreinoColonia.y + areaPatioTreinoColonia.altura / 2,
+          },
+          campoGuarda: {
+            x: areaPatioTreinoColonia.x + areaPatioTreinoColonia.largura / 2,
+            y: areaPatioTreinoColonia.y + areaPatioTreinoColonia.altura / 2,
+          },
+          quartelMilitar: {
+            x: areaQuartelMilitarColonia.x + areaQuartelMilitarColonia.largura / 2,
+            y: areaQuartelMilitarColonia.y + areaQuartelMilitarColonia.altura / 2,
           },
           palicadaInterna: centroTrechoPalicadaColonia(
             recintoInterno,
@@ -10155,6 +10758,171 @@
         }
       }
 
+      function tipoEquipamentoEfetivoColonia(categoria, indice) {
+        const arqueiros = categoria === "milicia"
+          ? estado.arqueirosMilicia
+          : categoria === "guarda"
+            ? estado.arqueirosGuarda
+            : estado.arqueirosSoldados;
+        const metal = categoria === "milicia"
+          ? estado.armasMetalMilicia
+          : categoria === "guarda"
+            ? estado.armasMetalGuarda
+            : estado.armasMetalSoldados;
+        if (indice < arqueiros) return "arco";
+        if (indice < arqueiros + metal) return "arma";
+        return "lanca";
+      }
+
+      function desenharEfetivoDefesaColonia(
+        x,
+        y,
+        cor,
+        equipamento,
+        guarda = false,
+      ) {
+        desenharCirculo(x, y, 10, cor, "#30291f");
+        if (guarda) {
+          contexto.fillStyle = "#e6bd54";
+          contexto.fillRect(x - 3, y - 3, 6, 6);
+        }
+        contexto.strokeStyle = equipamento === "arma" ? "#d7d9d8" : "#6b482c";
+        contexto.lineWidth = equipamento === "lanca" ? 4 : 3;
+        contexto.beginPath();
+        if (equipamento === "arco") {
+          contexto.arc(x + 9, y, 8, -Math.PI / 2, Math.PI / 2);
+        } else {
+          contexto.moveTo(x + 5, y + 7);
+          contexto.lineTo(
+            x + (equipamento === "lanca" ? 20 : 14),
+            y - (equipamento === "lanca" ? 15 : 10),
+          );
+        }
+        contexto.stroke();
+      }
+
+      function desenharEstruturasDefesaColonia() {
+        if (estado.etapaConstrucaoColonia < 4) return;
+        const progressoPatio = estado.patioTreinoConstruido
+          ? 1
+          : progressoEdificioColonia("patioTreino", false);
+        const progressoCampo = estado.campoGuardaConstruido
+          ? 1
+          : progressoEdificioColonia("campoGuarda", false);
+        const { x, y, largura, altura } = areaPatioTreinoColonia;
+
+        contexto.strokeStyle = "#64704c";
+        contexto.lineWidth = 9;
+        contexto.strokeRect(x, y, largura, altura);
+        contexto.fillStyle = progressoPatio > 0 ? "#b7a36c" : "rgba(183, 163, 108, 0.18)";
+        contexto.fillRect(x + 10, y + 10, (largura - 20) * progressoPatio, altura - 20);
+        if (progressoPatio > 0.45) {
+          contexto.fillStyle = "#755232";
+          contexto.fillRect(x + 45, y + 70, 170, 120);
+          contexto.fillStyle = "#efe1bd";
+          contexto.font = "bold 18px sans-serif";
+          contexto.textAlign = "center";
+          contexto.textBaseline = "middle";
+          contexto.fillText("ARMAS", x + 130, y + 130);
+        }
+        if (progressoCampo > 0) {
+          for (let indice = 0; indice < 3; indice += 1) {
+            const alvoX = x + 690 + indice * 80;
+            const alvoY = y + 135;
+            desenharCirculo(alvoX, alvoY, 28, "#e8d6a5", "#62452d");
+            desenharCirculo(alvoX, alvoY, 10, "#9c453d");
+          }
+          contexto.strokeStyle = "#5e4931";
+          contexto.lineWidth = 6;
+          for (let indice = 0; indice < 5; indice += 1) {
+            const linhaY = y + 280 + indice * 55;
+            contexto.beginPath();
+            contexto.moveTo(x + 300, linhaY);
+            contexto.lineTo(x + largura - 55, linhaY);
+            contexto.stroke();
+          }
+        }
+        contexto.fillStyle = "#352d22";
+        contexto.font = "bold 24px sans-serif";
+        contexto.textAlign = "center";
+        contexto.textBaseline = "middle";
+        contexto.fillText(
+          estado.campoGuardaConstruido
+            ? "CAMPO DE TREINAMENTO DA GUARDA"
+            : estado.patioTreinoConstruido
+              ? "PÁTIO DE TREINO DA MILÍCIA"
+              : "LOCAL: PÁTIO DE TREINO",
+          x + largura / 2,
+          y + altura - 35,
+        );
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
+
+        desenharEdificioColonia(
+          areaQuartelMilitarColonia,
+          "quartelMilitar",
+          estado.quartelMilitarConstruido,
+          "QUARTEL MILITAR · 10 SOLDADOS",
+          "#70594c",
+        );
+      }
+
+      function desenharEfetivosDefesaColonia() {
+        for (let indice = 0; indice < estado.quantidadeMilicianos; indice += 1) {
+          const coluna = indice % 5;
+          const linha = Math.floor(indice / 5);
+          const x = areaPatioTreinoColonia.x + 300 + coluna * 75;
+          const y =
+            areaPatioTreinoColonia.y +
+            285 +
+            linha * 120 +
+            Math.sin(tempoRio * 2 + indice) * 6;
+          desenharEfetivoDefesaColonia(
+            x,
+            y,
+            "#6f7a3f",
+            tipoEquipamentoEfetivoColonia("milicia", indice),
+          );
+        }
+
+        const rotaGuarda = [
+          { x: recintoInterno.x - 90, y: recintoInterno.y - 90 },
+          { x: recintoInterno.x + recintoInterno.largura + 90, y: recintoInterno.y - 90 },
+          { x: recintoInterno.x + recintoInterno.largura + 90, y: recintoInterno.y + recintoInterno.altura + 90 },
+          { x: recintoInterno.x - 90, y: recintoInterno.y + recintoInterno.altura + 90 },
+          { x: recintoInterno.x - 90, y: recintoInterno.y - 90 },
+        ];
+        for (let indice = 0; indice < estado.quantidadeGuardas; indice += 1) {
+          const progresso =
+            (tempoRio * 0.018 + indice / Math.max(1, estado.quantidadeGuardas)) % 1;
+          const posicao = percorrerCaminho(rotaGuarda, progresso);
+          desenharEfetivoDefesaColonia(
+            posicao.x,
+            posicao.y,
+            "#355d82",
+            tipoEquipamentoEfetivoColonia("guarda", indice),
+            true,
+          );
+        }
+
+        for (let indice = 0; indice < estado.quantidadeSoldados; indice += 1) {
+          const coluna = indice % 5;
+          const linha = Math.floor(indice / 5);
+          const x = areaQuartelMilitarColonia.x + 95 + coluna * 125;
+          const y =
+            areaQuartelMilitarColonia.y +
+            areaQuartelMilitarColonia.altura +
+            75 +
+            linha * 75;
+          desenharEfetivoDefesaColonia(
+            x,
+            y,
+            "#7b3f3f",
+            tipoEquipamentoEfetivoColonia("soldado", indice),
+          );
+        }
+      }
+
       function desenharNovaColonia() {
         contexto.fillStyle = "#899e62";
         contexto.fillRect(0, 0, larguraMundoExpansao, alturaMundoExpansao);
@@ -10201,8 +10969,10 @@
         desenharCeleiroColonia();
         desenharMoradiasColonia();
         desenharInfraestruturaColonia();
+        desenharEstruturasDefesaColonia();
         desenharColonosNovaColonia();
         desenharJovensColonia();
+        desenharEfetivosDefesaColonia();
       }
 
       function interpolarPonto(inicio, fim, progresso) {
@@ -10862,6 +11632,7 @@
         atualizarMigracaoColonia(delta);
         atualizarPrioridadesColonia(delta);
         atualizarNecessidadesColonia(delta);
+        atualizarDefesaColonia(delta);
         atualizarConstrucaoColonia(delta);
         if (
           estado.local === "floresta" ||
