@@ -298,6 +298,7 @@
         <div class="indicador">Pescador<span id="pescador-status">Não contratado</span></div>
         <div class="indicador">Comerciante<span id="comerciante-status">Não contratado</span></div>
         <div class="indicador">Ferreiro<span id="ferreiro-status">Não contratado</span></div>
+        <div class="indicador">Mineiro<span id="mineiro-status">Não contratado</span></div>
         <div class="indicador">Combate<span id="combate-status">ATQ 1 · ARM 0</span></div>
       </section>
 
@@ -319,6 +320,9 @@
         </button>
         <button id="contratar-ferreiro" type="button">
           Contratar ferreiro · 100 ouro
+        </button>
+        <button id="contratar-mineiro" type="button">
+          Contratar mineiro · 100 ouro
         </button>
         <button id="abrir-loja" type="button">Loja</button>
         <button id="novo-jogo" class="secundario" type="button">Novo jogo</button>
@@ -383,6 +387,7 @@
             <li>Cada pescador custa 100 de ouro e produz 3 de ouro a cada 30 segundos.</li>
             <li>Cada comerciante custa 100 de ouro e produz 1 de ouro a cada 10 segundos.</li>
             <li>Cada ferreiro custa 100 de ouro e produz 1 de ouro a cada 10 segundos.</li>
+            <li>Cada mineiro custa 100 de ouro e produz 1 de ouro a cada 10 segundos.</li>
             <li>Descansar custa 3 de ouro e recupera até 30 de vida.</li>
             <li>Ao ser derrotado, você volta com vida completa e perde 15 de ouro.</li>
             <li>Cada ponto de ataque causa 1 de dano.</li>
@@ -407,6 +412,7 @@
       const pescadorStatusEl = document.querySelector("#pescador-status");
       const comercianteStatusEl = document.querySelector("#comerciante-status");
       const ferreiroStatusEl = document.querySelector("#ferreiro-status");
+      const mineiroStatusEl = document.querySelector("#mineiro-status");
       const mensagemEl = document.querySelector("#mensagem");
       const cacarBotao = document.querySelector("#cacar");
       const voltarBotao = document.querySelector("#voltar");
@@ -437,6 +443,9 @@
       const contratarFerreiroBotao = document.querySelector(
         "#contratar-ferreiro",
       );
+      const contratarMineiroBotao = document.querySelector(
+        "#contratar-mineiro",
+      );
       const novoJogoBotao = document.querySelector("#novo-jogo");
       const apagarBotao = document.querySelector("#apagar");
 
@@ -452,22 +461,26 @@
       const custoPescador = 100;
       const custoComerciante = 100;
       const custoFerreiro = 100;
+      const custoMineiro = 100;
       const custoMelhoria = 100;
       const intervaloFazendeiro = 10;
       const intervaloFruticultor = 20;
       const intervaloPescador = 30;
       const intervaloComerciante = 10;
       const intervaloFerreiro = 10;
+      const intervaloMineiro = 10;
       const ouroPorFruticultor = 2;
       const ouroPorPescador = 3;
       const ouroPorComerciante = 1;
       const ouroPorFerreiro = 1;
+      const ouroPorMineiro = 1;
       const vidaMaxima = 100;
       const maximoFazendeiros = 10;
       const maximoFruticultores = 10;
       const maximoPescadores = 10;
       const maximoComerciantes = 10;
       const maximoFerreiros = 10;
+      const maximoMineiros = 10;
       const nivelMaximo = 5;
       const chaveSalvamento = "arqueiro-do-assentamento-v1";
       const versaoSalvamento = 1;
@@ -512,6 +525,8 @@
         tempoComerciante: 0,
         quantidadeFerreiros: 0,
         tempoFerreiro: 0,
+        quantidadeMineiros: 0,
+        tempoMineiro: 0,
       };
 
       const arvores = [
@@ -597,6 +612,10 @@
           ferreiro: {
             quantidade: estado.quantidadeFerreiros,
             tempo: estado.tempoFerreiro,
+          },
+          mineiro: {
+            quantidade: estado.quantidadeMineiros,
+            tempo: estado.tempoMineiro,
           },
         };
       }
@@ -762,6 +781,22 @@
                 0,
               )
             : 0;
+          estado.quantidadeMineiros = Math.round(
+            numeroValido(
+              salvo.mineiro?.quantidade,
+              0,
+              maximoMineiros,
+              0,
+            ),
+          );
+          estado.tempoMineiro = estado.quantidadeMineiros > 0
+            ? numeroValido(
+                salvo.mineiro?.tempo,
+                0,
+                intervaloMineiro,
+                0,
+              )
+            : 0;
 
           const derrotadoAoCarregar = estado.vida === 0;
           if (derrotadoAoCarregar) {
@@ -826,6 +861,8 @@
         estado.tempoComerciante = 0;
         estado.quantidadeFerreiros = 0;
         estado.tempoFerreiro = 0;
+        estado.quantidadeMineiros = 0;
+        estado.tempoMineiro = 0;
       }
 
       function atualizarInterface() {
@@ -893,11 +930,22 @@
         ferreiroStatusEl.textContent = estado.quantidadeFerreiros > 0
           ? `${estado.quantidadeFerreiros} / 10 · +${estado.quantidadeFerreiros * ouroPorFerreiro} ouro / 10 s`
           : "Não contratado";
+        contratarMineiroBotao.disabled =
+          !noAssentamento ||
+          estado.quantidadeMineiros >= maximoMineiros ||
+          estado.ouro < custoMineiro;
+        contratarMineiroBotao.textContent =
+          estado.quantidadeMineiros >= maximoMineiros
+            ? "Máximo de mineiros"
+            : `Contratar mineiro ${estado.quantidadeMineiros + 1}/10 · 100 ouro`;
+        mineiroStatusEl.textContent = estado.quantidadeMineiros > 0
+          ? `${estado.quantidadeMineiros} / 10 · +${estado.quantidadeMineiros * ouroPorMineiro} ouro / 10 s`
+          : "Não contratado";
         atualizarLoja();
         canvas.setAttribute(
           "aria-label",
           noAssentamento
-            ? `Mapa do assentamento com rio, cais, ferraria, ${estado.quantidadeFazendeiros} fazendeiros, ${estado.quantidadeFruticultores} fruticultores, ${estado.quantidadePescadores} pescadores, ${estado.quantidadeComerciantes} comerciantes e ${estado.quantidadeFerreiros} ferreiros. O arqueiro é o ponto verde.`
+            ? `Mapa do assentamento com rio, cais, ferraria, minas, ${estado.quantidadeFazendeiros} fazendeiros, ${estado.quantidadeFruticultores} fruticultores, ${estado.quantidadePescadores} pescadores, ${estado.quantidadeComerciantes} comerciantes, ${estado.quantidadeFerreiros} ferreiros e ${estado.quantidadeMineiros} mineiros. O arqueiro é o ponto verde.`
             : `Mapa da floresta com ${estado.inimigos.length} inimigos vermelhos. O arqueiro é o ponto verde.`,
         );
       }
@@ -1131,6 +1179,44 @@
         salvarProgresso();
       }
 
+      function contratarMineiro() {
+        if (estado.local !== "assentamento") {
+          definirMensagem("Volte ao assentamento para contratar um mineiro.");
+          return;
+        }
+
+        if (estado.quantidadeMineiros >= maximoMineiros) {
+          definirMensagem("Você já contratou o máximo de 10 mineiros.");
+          return;
+        }
+
+        if (estado.ouro < custoMineiro) {
+          definirMensagem("Você precisa de 100 de ouro para contratar o mineiro.");
+          return;
+        }
+
+        const abrePrimeiraMina = estado.quantidadeMineiros === 0;
+        const abreSegundaMina = estado.quantidadeMineiros === 5;
+        estado.ouro -= custoMineiro;
+        estado.quantidadeMineiros += 1;
+        estado.salvamentoAtivo = true;
+        if (abrePrimeiraMina) {
+          definirMensagem(
+            "Primeiro mineiro contratado. Uma mina foi aberta no lado inferior esquerdo do mapa.",
+          );
+        } else if (abreSegundaMina) {
+          definirMensagem(
+            "Sexto mineiro contratado. Uma segunda mina foi aberta no lado inferior direito do mapa.",
+          );
+        } else {
+          definirMensagem(
+            `Mineiro ${estado.quantidadeMineiros} contratado. As minas agora produzem ${estado.quantidadeMineiros * ouroPorMineiro} de ouro a cada 10 segundos.`,
+          );
+        }
+        atualizarInterface();
+        salvarProgresso();
+      }
+
       function atualizarLoja() {
         const ataqueMaximo = estado.ataque >= nivelMaximo;
         const armaduraMaxima = estado.armadura >= nivelMaximo;
@@ -1323,6 +1409,28 @@
         if (estado.local === "assentamento") {
           definirMensagem(
             `A ferraria produziu mercadorias no valor de ${ouroProduzido} de ouro.`,
+          );
+        }
+        atualizarInterface();
+        salvarProgresso();
+      }
+
+      function atualizarMineiro(delta) {
+        if (estado.quantidadeMineiros === 0) return;
+
+        estado.tempoMineiro += delta;
+        if (estado.tempoMineiro < intervaloMineiro) return;
+
+        const pagamentos = Math.floor(
+          estado.tempoMineiro / intervaloMineiro,
+        );
+        estado.tempoMineiro %= intervaloMineiro;
+        const ouroProduzido =
+          pagamentos * estado.quantidadeMineiros * ouroPorMineiro;
+        estado.ouro += ouroProduzido;
+        if (estado.local === "assentamento") {
+          definirMensagem(
+            `As minas produziram minério no valor de ${ouroProduzido} de ouro.`,
           );
         }
         atualizarInterface();
@@ -1640,6 +1748,53 @@
         }
       }
 
+      function desenharMina(x, y, direcao) {
+        contexto.fillStyle = "#71624d";
+        contexto.beginPath();
+        contexto.moveTo(x, y + 100);
+        contexto.lineTo(x + 20, y + 38);
+        contexto.lineTo(x + 58, y + 12);
+        contexto.lineTo(x + 104, y);
+        contexto.lineTo(x + 148, y + 22);
+        contexto.lineTo(x + 180, y + 100);
+        contexto.closePath();
+        contexto.fill();
+
+        desenharCirculo(x + 28, y + 68, 13, "#8b7c63", "#514839");
+        desenharCirculo(x + 151, y + 76, 17, "#625746", "#433b30");
+        desenharCirculo(x + 118, y + 34, 10, "#918269", "#514839");
+
+        contexto.fillStyle = "#282722";
+        contexto.fillRect(x + 65, y + 10, 50, 70);
+        desenharCirculo(x + 90, y + 12, 25, "#282722");
+        contexto.fillStyle = "#5c3d25";
+        contexto.fillRect(x + 58, y + 2, 64, 9);
+        contexto.fillRect(x + 58, y + 2, 8, 86);
+        contexto.fillRect(x + 114, y + 2, 8, 86);
+
+        const trilhoInicio = direcao < 0 ? x + 78 : x + 102;
+        const trilhoFim = direcao < 0 ? x - 45 : x + 225;
+        contexto.strokeStyle = "#4b4d4b";
+        contexto.lineWidth = 4;
+        for (const deslocamento of [-7, 7]) {
+          contexto.beginPath();
+          contexto.moveTo(trilhoInicio, y + 82 + deslocamento);
+          contexto.lineTo(trilhoFim, y + 104 + deslocamento);
+          contexto.stroke();
+        }
+        contexto.strokeStyle = "#6b482c";
+        contexto.lineWidth = 5;
+        for (let indice = 0; indice < 5; indice += 1) {
+          const progresso = indice / 4;
+          const trilhoX = trilhoInicio + (trilhoFim - trilhoInicio) * progresso;
+          const trilhoY = y + 82 + 22 * progresso;
+          contexto.beginPath();
+          contexto.moveTo(trilhoX - 12, trilhoY);
+          contexto.lineTo(trilhoX + 12, trilhoY);
+          contexto.stroke();
+        }
+      }
+
       function desenharAssentamento() {
         contexto.fillStyle = "#c9b982";
         contexto.fillRect(0, 0, larguraMundo, alturaMundo);
@@ -1695,6 +1850,13 @@
         }
         if (estado.quantidadeFruticultores > 5) {
           desenharPomar(1060, 315);
+        }
+
+        if (estado.quantidadeMineiros > 0) {
+          desenharMina(70, 750, 1);
+        }
+        if (estado.quantidadeMineiros > 5) {
+          desenharMina(1150, 750, -1);
         }
 
         contexto.fillStyle = "#7a512d";
@@ -2154,6 +2316,62 @@
         }
       }
 
+      function posicaoMineiro(indice) {
+        const progresso =
+          ((estado.tempoMineiro + indice * 0.91) % intervaloMineiro) /
+          intervaloMineiro;
+        const segundaMina = indice >= 5;
+        const vaga = indice % 5;
+        const posto = {
+          x: segundaMina ? 770 + vaga * 24 : 630 - vaga * 24,
+          y: 620 + (vaga % 2) * 18,
+        };
+        const portao = { x: 700, y: 710 };
+        const desvio = {
+          x: segundaMina ? 1030 : 370,
+          y: 725 + vaga * 5,
+        };
+        const entrada = {
+          x: segundaMina ? 1240 : 160,
+          y: 805,
+        };
+        const trabalho = {
+          x: entrada.x + (segundaMina ? 18 : -18),
+          y: 792 + vaga * 7,
+        };
+        const caminho = [
+          posto,
+          portao,
+          desvio,
+          entrada,
+          trabalho,
+          entrada,
+          desvio,
+          portao,
+          posto,
+        ];
+        return percorrerCaminho(caminho, progresso);
+      }
+
+      function desenharMineiro() {
+        if (
+          estado.quantidadeMineiros === 0 ||
+          estado.local !== "assentamento"
+        ) {
+          return;
+        }
+
+        for (
+          let indice = 0;
+          indice < estado.quantidadeMineiros;
+          indice += 1
+        ) {
+          const posicao = posicaoMineiro(indice);
+          const cor = indice < 5 ? "#d4a64d" : "#e6c36a";
+          desenharCirculo(posicao.x, posicao.y, 8, cor, "#4e3b24");
+        }
+      }
+
       function desenharFloresta() {
         contexto.fillStyle = "#405c35";
         contexto.fillRect(0, 0, larguraMundo, alturaMundo);
@@ -2228,6 +2446,7 @@
         desenharPescador();
         desenharComerciante();
         desenharFerreiro();
+        desenharMineiro();
         desenharJogador();
         contexto.setTransform(1, 0, 0, 1, 0, 0);
 
@@ -2258,13 +2477,15 @@
         atualizarPescador(delta);
         atualizarComerciante(delta);
         atualizarFerreiro(delta);
+        atualizarMineiro(delta);
         if (
           estado.local === "floresta" ||
           estado.quantidadeFazendeiros > 0 ||
           estado.quantidadeFruticultores > 0 ||
           estado.quantidadePescadores > 0 ||
           estado.quantidadeComerciantes > 0 ||
-          estado.quantidadeFerreiros > 0
+          estado.quantidadeFerreiros > 0 ||
+          estado.quantidadeMineiros > 0
         ) {
           tempoSalvamento += delta;
           if (tempoSalvamento >= 2) {
@@ -2289,6 +2510,7 @@
       contratarPescadorBotao.addEventListener("click", contratarPescador);
       contratarComercianteBotao.addEventListener("click", contratarComerciante);
       contratarFerreiroBotao.addEventListener("click", contratarFerreiro);
+      contratarMineiroBotao.addEventListener("click", contratarMineiro);
       novoJogoBotao.addEventListener("click", iniciarNovoJogo);
       apagarBotao.addEventListener("click", apagarProgresso);
       window.addEventListener("resize", redimensionar);
