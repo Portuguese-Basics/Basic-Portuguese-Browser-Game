@@ -236,6 +236,77 @@
         line-height: 1.5;
       }
 
+      .transferencia-conteudo {
+        padding: 1rem;
+      }
+
+      .transferencia-grade {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+      }
+
+      .painel-transferencia {
+        padding: 0.9rem;
+        border: 1px solid #544b39;
+        border-radius: 0.4rem;
+        background: #302a1e;
+      }
+
+      .painel-transferencia h3,
+      .painel-transferencia p {
+        margin: 0;
+      }
+
+      .painel-transferencia p,
+      .ajuda-transferencia,
+      .resultado-transferencia {
+        color: #d4cbb4;
+        line-height: 1.45;
+      }
+
+      .ajuda-transferencia {
+        margin: 0 0 0.85rem;
+      }
+
+      .codigo-transferencia {
+        width: 100%;
+        min-height: 8rem;
+        margin-top: 0.7rem;
+        padding: 0.65rem;
+        resize: vertical;
+        border: 1px solid #655e4d;
+        border-radius: 0.35rem;
+        background: #171812;
+        color: #fff9df;
+        font: 0.78rem/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      .codigo-transferencia:focus-visible,
+      .arquivo-transferencia:focus-visible {
+        outline: 3px solid #f1cc69;
+        outline-offset: 2px;
+      }
+
+      .acoes-transferencia {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.45rem;
+        margin-top: 0.55rem;
+      }
+
+      .arquivo-transferencia {
+        width: 100%;
+        margin-top: 0.6rem;
+        color: #fff9df;
+        font-size: 0.82rem;
+      }
+
+      .resultado-transferencia {
+        min-height: 1.4rem;
+        margin: 0.7rem 0 0;
+      }
+
       @media (max-width: 760px) {
         .barra {
           align-items: stretch;
@@ -281,6 +352,10 @@
         }
 
         .grade-loja {
+          grid-template-columns: 1fr;
+        }
+
+        .transferencia-grade {
           grid-template-columns: 1fr;
         }
       }
@@ -337,6 +412,9 @@
           Comprar novo mapa · 10.000 no fundo
         </button>
         <button id="abrir-loja" type="button">Loja</button>
+        <button id="abrir-transferencia" class="secundario" type="button">
+          Transferir save
+        </button>
         <button id="novo-jogo" class="secundario" type="button">Novo jogo</button>
         <button id="apagar" class="perigo" type="button">Apagar progresso</button>
       </nav>
@@ -413,6 +491,74 @@
       </section>
     </dialog>
 
+    <dialog id="transferencia" aria-labelledby="titulo-transferencia">
+      <section class="transferencia-conteudo">
+        <header class="loja-cabecalho">
+          <div>
+            <h2 id="titulo-transferencia">Transferir save</h2>
+          </div>
+          <button
+            id="fechar-transferencia"
+            class="secundario fechar-loja"
+            type="button"
+            aria-label="Fechar transferência de save"
+          >
+            ×
+          </button>
+        </header>
+        <p class="ajuda-transferencia">
+          Leve seu progresso entre Safari, ChatGPT e outros navegadores usando
+          um código ou arquivo.
+        </p>
+
+        <div class="transferencia-grade">
+          <section class="painel-transferencia" aria-labelledby="titulo-exportar">
+            <h3 id="titulo-exportar">Exportar</h3>
+            <p>Copie o código ou baixe um arquivo de save.</p>
+            <textarea
+              id="codigo-exportacao"
+              class="codigo-transferencia"
+              readonly
+              aria-label="Código de exportação do save"
+            ></textarea>
+            <div class="acoes-transferencia">
+              <button id="copiar-save" type="button">Copiar código</button>
+              <button id="baixar-save" class="secundario" type="button">
+                Baixar arquivo
+              </button>
+            </div>
+          </section>
+
+          <section class="painel-transferencia" aria-labelledby="titulo-importar">
+            <h3 id="titulo-importar">Importar</h3>
+            <p>Cole um código exportado ou escolha o arquivo salvo.</p>
+            <textarea
+              id="codigo-importacao"
+              class="codigo-transferencia"
+              aria-label="Código de importação do save"
+              placeholder="Cole o código aqui"
+            ></textarea>
+            <input
+              id="arquivo-importacao"
+              class="arquivo-transferencia"
+              type="file"
+              accept=".json,.txt,application/json,text/plain"
+              aria-label="Escolher arquivo de save"
+            />
+            <div class="acoes-transferencia">
+              <button id="importar-save" type="button">Importar save</button>
+            </div>
+          </section>
+        </div>
+        <p
+          id="resultado-transferencia"
+          class="resultado-transferencia"
+          role="status"
+          aria-live="polite"
+        ></p>
+      </section>
+    </dialog>
+
     <script>
       "use strict";
 
@@ -472,6 +618,22 @@
         "#contratar-escriturario",
       );
       const mapaExpansaoBotao = document.querySelector("#mapa-expansao");
+      const abrirTransferenciaBotao = document.querySelector(
+        "#abrir-transferencia",
+      );
+      const transferencia = document.querySelector("#transferencia");
+      const fecharTransferenciaBotao = document.querySelector(
+        "#fechar-transferencia",
+      );
+      const codigoExportacaoEl = document.querySelector("#codigo-exportacao");
+      const codigoImportacaoEl = document.querySelector("#codigo-importacao");
+      const arquivoImportacaoEl = document.querySelector("#arquivo-importacao");
+      const copiarSaveBotao = document.querySelector("#copiar-save");
+      const baixarSaveBotao = document.querySelector("#baixar-save");
+      const importarSaveBotao = document.querySelector("#importar-save");
+      const resultadoTransferenciaEl = document.querySelector(
+        "#resultado-transferencia",
+      );
       const novoJogoBotao = document.querySelector("#novo-jogo");
       const apagarBotao = document.querySelector("#apagar");
 
@@ -521,6 +683,8 @@
       const nivelMaximo = 5;
       const chaveSalvamento = "arqueiro-do-assentamento-v1";
       const versaoSalvamento = 1;
+      const prefixoTransferencia = "ARQUEIRO1-";
+      const tipoTransferencia = "arqueiro-do-assentamento-save";
       const nomesAtaque = [
         "",
         "Iniciante",
@@ -689,6 +853,186 @@
             mapaAtual: estado.mapaAtual,
           },
         };
+      }
+
+      function criarPacoteTransferencia() {
+        return {
+          tipo: tipoTransferencia,
+          formato: 1,
+          exportadoEm: Date.now(),
+          dados: dadosParaSalvar(),
+        };
+      }
+
+      function textoParaBase64(texto) {
+        const bytes = new TextEncoder().encode(texto);
+        let binario = "";
+        for (const byte of bytes) binario += String.fromCharCode(byte);
+        return btoa(binario)
+          .replaceAll("+", "-")
+          .replaceAll("/", "_")
+          .replace(/=+$/u, "");
+      }
+
+      function base64ParaTexto(base64) {
+        const normalizado = base64.replaceAll("-", "+").replaceAll("_", "/");
+        const preenchimento = "=".repeat((4 - (normalizado.length % 4)) % 4);
+        const binario = atob(normalizado + preenchimento);
+        const bytes = Uint8Array.from(binario, (caractere) =>
+          caractere.charCodeAt(0),
+        );
+        return new TextDecoder().decode(bytes);
+      }
+
+      function gerarCodigoTransferencia() {
+        salvarProgresso();
+        const pacote = criarPacoteTransferencia();
+        const codigo =
+          prefixoTransferencia + textoParaBase64(JSON.stringify(pacote));
+        codigoExportacaoEl.value = codigo;
+        return codigo;
+      }
+
+      function abrirTransferencia() {
+        resultadoTransferenciaEl.textContent = "";
+        gerarCodigoTransferencia();
+        if (typeof transferencia.showModal === "function") {
+          transferencia.showModal();
+        } else {
+          transferencia.setAttribute("open", "");
+        }
+      }
+
+      function fecharTransferencia() {
+        if (typeof transferencia.close === "function") {
+          transferencia.close();
+        } else {
+          transferencia.removeAttribute("open");
+        }
+      }
+
+      async function copiarCodigoTransferencia() {
+        const codigo = gerarCodigoTransferencia();
+        try {
+          if (
+            typeof navigator !== "undefined" &&
+            navigator.clipboard?.writeText
+          ) {
+            await navigator.clipboard.writeText(codigo);
+          } else {
+            codigoExportacaoEl.focus();
+            codigoExportacaoEl.select();
+            if (!document.execCommand?.("copy")) throw new Error("sem cópia");
+          }
+          resultadoTransferenciaEl.textContent =
+            "Código copiado. Cole-o no outro navegador.";
+        } catch (erro) {
+          codigoExportacaoEl.focus();
+          codigoExportacaoEl.select();
+          resultadoTransferenciaEl.textContent =
+            "Não foi possível copiar automaticamente. O código está selecionado para cópia manual.";
+        }
+      }
+
+      function baixarArquivoTransferencia() {
+        const pacote = criarPacoteTransferencia();
+        const conteudo = JSON.stringify(pacote, null, 2);
+        const arquivo = new Blob([conteudo], {
+          type: "application/json;charset=utf-8",
+        });
+        const url = URL.createObjectURL(arquivo);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = `arqueiro-save-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+        resultadoTransferenciaEl.textContent = "Arquivo de save preparado.";
+      }
+
+      function lerPacoteTransferencia(texto) {
+        const entrada = texto.trim();
+        if (!entrada) throw new Error("Cole um código ou escolha um arquivo.");
+        if (entrada.length > 2000000) {
+          throw new Error("O arquivo ou código é grande demais.");
+        }
+
+        const textoJson = entrada.startsWith(prefixoTransferencia)
+          ? base64ParaTexto(entrada.slice(prefixoTransferencia.length))
+          : entrada;
+        const pacote = JSON.parse(textoJson);
+        if (
+          pacote?.tipo !== tipoTransferencia ||
+          pacote?.formato !== 1 ||
+          !pacote.dados ||
+          pacote.dados.versao !== versaoSalvamento
+        ) {
+          throw new Error("Este save não pertence a uma versão compatível do jogo.");
+        }
+        return pacote.dados;
+      }
+
+      function importarTransferencia() {
+        const estadoAnterior = dadosParaSalvar();
+        try {
+          const dadosImportados = lerPacoteTransferencia(
+            codigoImportacaoEl.value,
+          );
+          const confirmado = window.confirm(
+            "Importar este save e substituir o progresso deste navegador?",
+          );
+          if (!confirmado) return;
+
+          localStorage.setItem(
+            chaveSalvamento,
+            JSON.stringify(dadosImportados),
+          );
+          if (!carregarProgresso()) {
+            throw new Error("O save não pôde ser carregado.");
+          }
+          estado.salvamentoDisponivel = true;
+          estado.salvamentoAtivo = true;
+          atualizarInterface();
+          salvarProgresso();
+          gerarCodigoTransferencia();
+          definirMensagem("Save importado com sucesso.");
+          resultadoTransferenciaEl.textContent =
+            "Save importado. O progresso deste navegador foi atualizado.";
+        } catch (erro) {
+          try {
+            localStorage.setItem(
+              chaveSalvamento,
+              JSON.stringify(estadoAnterior),
+            );
+            carregarProgresso();
+            atualizarInterface();
+          } catch (erroAoRestaurar) {
+            estado.salvamentoDisponivel = false;
+          }
+          resultadoTransferenciaEl.textContent =
+            erro instanceof Error
+              ? `Não foi possível importar: ${erro.message}`
+              : "Não foi possível importar este save.";
+        }
+      }
+
+      async function carregarArquivoTransferencia(evento) {
+        const arquivo = evento.target.files?.[0];
+        if (!arquivo) return;
+        try {
+          if (arquivo.size > 2000000) {
+            throw new Error("O arquivo é grande demais.");
+          }
+          codigoImportacaoEl.value = (await arquivo.text()).trim();
+          resultadoTransferenciaEl.textContent =
+            "Arquivo carregado. Toque em “Importar save” para confirmar.";
+        } catch (erro) {
+          resultadoTransferenciaEl.textContent =
+            erro instanceof Error
+              ? `Não foi possível ler o arquivo: ${erro.message}`
+              : "Não foi possível ler o arquivo.";
+        }
       }
 
       function salvarProgresso() {
@@ -3141,6 +3485,15 @@
       fecharLojaBotao.addEventListener("click", fecharLoja);
       melhorarAtaqueBotao.addEventListener("click", melhorarAtaque);
       melhorarArmaduraBotao.addEventListener("click", melhorarArmadura);
+      abrirTransferenciaBotao.addEventListener("click", abrirTransferencia);
+      fecharTransferenciaBotao.addEventListener("click", fecharTransferencia);
+      copiarSaveBotao.addEventListener("click", copiarCodigoTransferencia);
+      baixarSaveBotao.addEventListener("click", baixarArquivoTransferencia);
+      importarSaveBotao.addEventListener("click", importarTransferencia);
+      arquivoImportacaoEl.addEventListener(
+        "change",
+        carregarArquivoTransferencia,
+      );
       contratarFazendeiroBotao.addEventListener("click", contratarFazendeiro);
       contratarFruticultorBotao.addEventListener("click", contratarFruticultor);
       contratarPescadorBotao.addEventListener("click", contratarPescador);
