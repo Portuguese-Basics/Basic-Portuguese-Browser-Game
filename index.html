@@ -541,6 +541,7 @@
         <div class="indicador indicador-posto">Fundo de expansão<span id="fundo-expansao">0 / 10.000</span></div>
         <div class="indicador indicador-colonia">Nova colônia<span id="colonia-status">Não fundada</span></div>
         <div class="indicador indicador-colonia">Cofre municipal<span id="tesouro-colonia">0</span></div>
+        <div class="indicador indicador-colonia">Orçamento<span id="orcamento-colonia-status">Aguardando fundação</span></div>
         <div class="indicador indicador-colonia">Próximo repasse<span id="transferencia-status">60 s · 300 ouro</span></div>
         <div class="indicador indicador-colonia">População<span id="populacao-colonia-status">20 moradores</span></div>
         <div class="indicador indicador-colonia">Famílias<span id="familias-colonia-status">10 famílias · 0 crianças</span></div>
@@ -712,6 +713,10 @@
             <li>A defesa é uma prioridade municipal tardia. Depois da infraestrutura e das paliçadas, a cidade ergue um pátio de treino, promove-o a campo da guarda e constrói um quartel.</li>
             <li>Milicianos custam 60 e recebem 1 de soldo; guardas municipais custam 120 e recebem 2; soldados profissionais custam 200 e recebem 4 a cada 60 segundos.</li>
             <li>A contratação preserva 2.500 de ouro no cofre e limita os soldos a 30% do repasse municipal garantido. Um efetivo completo custa 70 por minuto contra 270 de receita garantida.</li>
+            <li>O orçamento municipal paga primeiro a folha civil, os soldos e a manutenção. Empregos produtivos só são preenchidos até o limite sustentável de 60% do repasse municipal, já descontada a manutenção.</li>
+            <li>A cidade protege uma reserva de pelo menos 2.500 de ouro ou cinco ciclos de despesas essenciais. Obras não urgentes esperam até que custo e reserva estejam cobertos.</li>
+            <li>Melhorias públicas automáticas: poço e cisterna por 600; estradas de terra por 750; saneamento por 1.200; quatro postos da guarda por 300 cada. Todas acrescentam manutenção recorrente.</li>
+            <li>Poço e saneamento reduzem a pressão sobre a saúde; os postos acrescentam segurança civil. Moradia, comida, escola e clínica continuam sendo prioridades de emergência.</li>
             <li>Cada combatente recebe uma arma de metal ou lança, ou um arco com uma aljava de 20 flechas. Guardas patrulham a cidade; soldados ficam disponíveis para ordens futuras.</li>
             <li>A costa pode sustentar dois cais de pesca com 5 trabalhadores cada. O mercado costeiro guarda 160 peixes; cada pescador entrega 3 peixes e cada barco ativo acrescenta 2 por minuto.</li>
             <li>A feitoria amplia o cais comercial para 10 mercadores. Cada navio mercante acrescenta 2 mercadorias por minuto enquanto houver mercadores.</li>
@@ -844,6 +849,19 @@
             </ul>
           </section>
 
+          <section class="economia" aria-labelledby="titulo-orcamento-colonia">
+            <h3 id="titulo-orcamento-colonia">Orçamento municipal</h3>
+            <ul class="lista-colonia">
+              <li>Receita garantida <span id="orcamento-receita">270 ouro / 60 s</span></li>
+              <li>Folha civil <span id="orcamento-folha-civil">0 ouro / 60 s</span></li>
+              <li>Manutenção <span id="orcamento-manutencao">0 ouro / 60 s</span></li>
+              <li>Soldos <span id="orcamento-soldos">0 ouro / 60 s</span></li>
+              <li>Saldo operacional mínimo <span id="orcamento-saldo">+270 ouro / 60 s</span></li>
+              <li>Reserva protegida <span id="orcamento-reserva">2.500 ouro</span></li>
+              <li>Situação <span id="orcamento-situacao">Sustentável</span></li>
+            </ul>
+          </section>
+
           <section class="economia" aria-labelledby="titulo-edificios-colonia">
             <h3 id="titulo-edificios-colonia">Edificações produtivas</h3>
             <ul class="lista-colonia">
@@ -877,6 +895,10 @@
               <li>Pátio de treino da milícia <span id="edificio-patio-treino">Planejado</span></li>
               <li>Campo de treinamento da guarda <span id="edificio-campo-guarda">Planejado</span></li>
               <li>Quartel militar <span id="edificio-quartel-militar">Planejado</span></li>
+              <li>Poço e cisterna <span id="edificio-cisterna">Planejados</span></li>
+              <li>Rede de estradas de terra <span id="edificio-estradas">Planejada</span></li>
+              <li>Saneamento básico <span id="edificio-saneamento">Planejado</span></li>
+              <li>Postos da guarda <span id="edificio-postos-guarda">0 / 4</span></li>
             </ul>
           </section>
         </div>
@@ -908,6 +930,12 @@
               <li>Chance migratória espontânea <span id="registro-chance-migracao">5% / 60 s</span></li>
               <li>Vagas para migrantes <span id="registro-vagas-migracao">0</span></li>
               <li>Escriturários em fiscalização <span id="registro-fiscalizacao">0 · +0 ouro / 60 s</span></li>
+              <li>Folha civil <span id="registro-folha-civil">0 ouro / 60 s</span></li>
+              <li>Manutenção de bens públicos <span id="registro-manutencao">0 ouro / 60 s</span></li>
+              <li>Despesas essenciais totais <span id="registro-despesas-essenciais">0 ouro / 60 s</span></li>
+              <li>Saldo operacional garantido <span id="registro-saldo-operacional">+270 ouro / 60 s</span></li>
+              <li>Reserva dinâmica · 5 ciclos <span id="registro-reserva-municipal">2.500 ouro</span></li>
+              <li>Último pagamento municipal <span id="registro-ultimo-orcamento">Ainda não processado</span></li>
             </ul>
           </section>
 
@@ -1043,6 +1071,10 @@
               <li>O banco, a farmácia, os medicamentos, os arsenais, as ferramentas e a munição ficam protegidos no recinto interno.</li>
               <li>Milícia, guarda e soldados são efetivos municipais separados dos empregos civis. A cidade contrata no máximo uma pessoa por ciclo de 60 segundos.</li>
               <li>Sem equipamento, reserva ou margem para soldos, o recrutamento pausa. Soldos atrasados suspendem novas contratações até o caixa se recuperar.</li>
+              <li>A folha civil, os soldos e a manutenção são pagos antes de qualquer nova obra. A cidade só cria empregos não essenciais dentro do orçamento garantido.</li>
+              <li>A reserva protegida equivale a pelo menos 2.500 de ouro ou cinco ciclos de despesas essenciais, o que for maior.</li>
+              <li>Construções não essenciais só começam quando o custo da obra cabe acima da reserva. Moradia, alimento, escola e saúde continuam como prioridades de emergência.</li>
+              <li>Poço, estradas, saneamento e postos da guarda são melhorias públicas automáticas com custos de construção e manutenção contínua.</li>
             </ul>
           </section>
 
@@ -1167,6 +1199,9 @@
       const fundoExpansaoEl = document.querySelector("#fundo-expansao");
       const coloniaStatusEl = document.querySelector("#colonia-status");
       const tesouroColoniaEl = document.querySelector("#tesouro-colonia");
+      const orcamentoColoniaStatusEl = document.querySelector(
+        "#orcamento-colonia-status",
+      );
       const transferenciaStatusEl = document.querySelector(
         "#transferencia-status",
       );
@@ -1325,6 +1360,19 @@
       const defesaProximaContratacaoEl = document.querySelector(
         "#defesa-proxima-contratacao",
       );
+      const orcamentoReceitaEl = document.querySelector("#orcamento-receita");
+      const orcamentoFolhaCivilEl = document.querySelector(
+        "#orcamento-folha-civil",
+      );
+      const orcamentoManutencaoEl = document.querySelector(
+        "#orcamento-manutencao",
+      );
+      const orcamentoSoldosEl = document.querySelector("#orcamento-soldos");
+      const orcamentoSaldoEl = document.querySelector("#orcamento-saldo");
+      const orcamentoReservaEl = document.querySelector("#orcamento-reserva");
+      const orcamentoSituacaoEl = document.querySelector(
+        "#orcamento-situacao",
+      );
       const estoqueAlimentosDetalheEl = document.querySelector(
         "#estoque-alimentos-detalhe",
       );
@@ -1406,6 +1454,14 @@
       const edificioQuartelMilitarEl = document.querySelector(
         "#edificio-quartel-militar",
       );
+      const edificioCisternaEl = document.querySelector("#edificio-cisterna");
+      const edificioEstradasEl = document.querySelector("#edificio-estradas");
+      const edificioSaneamentoEl = document.querySelector(
+        "#edificio-saneamento",
+      );
+      const edificioPostosGuardaEl = document.querySelector(
+        "#edificio-postos-guarda",
+      );
       const controlesMapaEl = document.querySelector("#controles-mapa");
       const diminuirZoomBotao = document.querySelector("#diminuir-zoom");
       const centralizarMapaBotao = document.querySelector("#centralizar-mapa");
@@ -1440,6 +1496,12 @@
           "chance-migracao",
           "vagas-migracao",
           "fiscalizacao",
+          "folha-civil",
+          "manutencao",
+          "despesas-essenciais",
+          "saldo-operacional",
+          "reserva-municipal",
+          "ultimo-orcamento",
           "adultos",
           "familias",
           "bebes",
@@ -1807,6 +1869,12 @@
         largura: 720,
         altura: 520,
       };
+      const areaCisternaColonia = {
+        x: 9540,
+        y: 4040,
+        largura: 360,
+        altura: 300,
+      };
       const quantidadeColonosExpansao = 20;
       const versaoColonia = 5;
       const ouroInicialAdministrador = 2500;
@@ -1876,6 +1944,11 @@
       const custoPatioTreinoColonia = 650;
       const custoCampoGuardaColonia = 900;
       const custoQuartelMilitarColonia = 1400;
+      const custoCisternaColonia = 600;
+      const custoEstradasTerraColonia = 750;
+      const custoSaneamentoColonia = 1200;
+      const custoPostoGuardaColonia = 300;
+      const totalPostosGuardaColonia = 4;
       const reservaDefesaColonia = 2500;
       const maximoMilicianosColonia = 10;
       const maximoGuardasColonia = 10;
@@ -1888,6 +1961,12 @@
       const soldoSoldadoColonia = 4;
       const intervaloDefesaColonia = 60;
       const fracaoMaximaSoldosColonia = 0.3;
+      const intervaloOrcamentoColonia = 60;
+      const fracaoMaximaFolhaCivilColonia = 0.6;
+      const reservaMinimaMunicipal = 2500;
+      const ciclosReservaMunicipal = 5;
+      const salarioCivilPadrao = 1;
+      const salarioServicoPublico = 2;
       const capacidadeMinerioColonia = 100;
       const capacidadePedraColonia = 120;
       const capacidadeFerramentasColonia = 60;
@@ -2157,6 +2236,10 @@
         patioTreinoConstruido: false,
         campoGuardaConstruido: false,
         quartelMilitarConstruido: false,
+        cisternaConstruida: false,
+        estradasTerraConstruidas: false,
+        saneamentoConstruido: false,
+        quantidadePostosGuarda: 0,
         quantidadeMilicianos: 0,
         arqueirosMilicia: 0,
         armasMetalMilicia: 0,
@@ -2168,6 +2251,11 @@
         armasMetalSoldados: 0,
         tempoDefesaColonia: 0,
         ciclosSoldosAtrasados: 0,
+        tempoOrcamentoColonia: 0,
+        ciclosManutencaoAtrasada: 0,
+        ultimaFolhaCivil: 0,
+        ultimaManutencao: 0,
+        ultimaDespesaMunicipal: 0,
         estoqueMinerio: 0,
         estoquePedra: 0,
         estoqueFerramentas: 0,
@@ -2425,9 +2513,16 @@
       }
 
       function pressaoSaudePrevistaColonia() {
-        return (
+        const pressaoBase =
           Math.max(1, Math.ceil(totalMoradoresColonia() / 25)) +
-          Math.ceil(estado.colonosComFome / 5)
+          Math.ceil(estado.colonosComFome / 5) +
+          (estado.ciclosManutencaoAtrasada > 0 ? 1 : 0);
+        const reducaoPublica =
+          (estado.cisternaConstruida ? 1 : 0) +
+          (estado.saneamentoConstruido ? 2 : 0);
+        return Math.max(
+          0,
+          pressaoBase - reducaoPublica,
         );
       }
 
@@ -2599,6 +2694,10 @@
         estado.patioTreinoConstruido = false;
         estado.campoGuardaConstruido = false;
         estado.quartelMilitarConstruido = false;
+        estado.cisternaConstruida = false;
+        estado.estradasTerraConstruidas = false;
+        estado.saneamentoConstruido = false;
+        estado.quantidadePostosGuarda = 0;
         estado.quantidadeMilicianos = 0;
         estado.arqueirosMilicia = 0;
         estado.armasMetalMilicia = 0;
@@ -2610,6 +2709,11 @@
         estado.armasMetalSoldados = 0;
         estado.tempoDefesaColonia = 0;
         estado.ciclosSoldosAtrasados = 0;
+        estado.tempoOrcamentoColonia = 0;
+        estado.ciclosManutencaoAtrasada = 0;
+        estado.ultimaFolhaCivil = 0;
+        estado.ultimaManutencao = 0;
+        estado.ultimaDespesaMunicipal = 0;
         estado.estoqueMinerio = 0;
         estado.estoquePedra = 0;
         estado.estoqueFerramentas = 0;
@@ -2755,6 +2859,13 @@
                     ? 1
                     : 0,
               },
+              orcamento: {
+                tempo: estado.tempoOrcamentoColonia,
+                ciclosManutencaoAtrasada: estado.ciclosManutencaoAtrasada,
+                ultimaFolhaCivil: estado.ultimaFolhaCivil,
+                ultimaManutencao: estado.ultimaManutencao,
+                ultimaDespesa: estado.ultimaDespesaMunicipal,
+              },
               obraAutomatica: estado.obraAutomaticaColonia,
               tempoObraAutomatica: estado.tempoObraAutomaticaColonia,
               estoqueAlimentos: estado.estoqueAlimentos,
@@ -2791,6 +2902,10 @@
                 clinica: estado.clinicaConstruida,
                 escola: estado.escolaConstruida,
                 banco: estado.bancoColoniaConstruido,
+                cisterna: estado.cisternaConstruida,
+                estradasTerra: estado.estradasTerraConstruidas,
+                saneamento: estado.saneamentoConstruido,
+                postosGuarda: estado.quantidadePostosGuarda,
               },
               estoques: {
                 graos: estado.estoqueGraos,
@@ -3438,6 +3553,38 @@
               0,
             ),
           );
+          estado.tempoOrcamentoColonia = numeroValido(
+            salvo.expansao?.economia?.orcamento?.tempo,
+            0,
+            intervaloOrcamentoColonia,
+            0,
+          );
+          estado.ciclosManutencaoAtrasada = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.orcamento?.ciclosManutencaoAtrasada,
+              0,
+              9999,
+              0,
+            ),
+          );
+          estado.ultimaFolhaCivil = numeroValido(
+            salvo.expansao?.economia?.orcamento?.ultimaFolhaCivil,
+            0,
+            999999999,
+            0,
+          );
+          estado.ultimaManutencao = numeroValido(
+            salvo.expansao?.economia?.orcamento?.ultimaManutencao,
+            0,
+            999999999,
+            0,
+          );
+          estado.ultimaDespesaMunicipal = numeroValido(
+            salvo.expansao?.economia?.orcamento?.ultimaDespesa,
+            0,
+            999999999,
+            0,
+          );
           estado.obraAutomaticaColonia =
             salvo.expansao?.economia?.obraAutomatica === "lavoura" ||
             salvo.expansao?.economia?.obraAutomatica === "armazemGraos" ||
@@ -3479,6 +3626,10 @@
             salvo.expansao?.economia?.obraAutomatica === "patioTreino" ||
             salvo.expansao?.economia?.obraAutomatica === "campoGuarda" ||
             salvo.expansao?.economia?.obraAutomatica === "quartelMilitar"
+            || salvo.expansao?.economia?.obraAutomatica === "cisterna"
+            || salvo.expansao?.economia?.obraAutomatica === "estradasTerra"
+            || salvo.expansao?.economia?.obraAutomatica === "saneamento"
+            || salvo.expansao?.economia?.obraAutomatica === "postoGuarda"
               ? salvo.expansao.economia.obraAutomatica
               : null;
           estado.tempoObraAutomaticaColonia =
@@ -3710,6 +3861,20 @@
             salvo.expansao?.economia?.edificios?.escola === true;
           estado.bancoColoniaConstruido =
             salvo.expansao?.economia?.edificios?.banco === true;
+          estado.cisternaConstruida =
+            salvo.expansao?.economia?.edificios?.cisterna === true;
+          estado.estradasTerraConstruidas =
+            salvo.expansao?.economia?.edificios?.estradasTerra === true;
+          estado.saneamentoConstruido =
+            salvo.expansao?.economia?.edificios?.saneamento === true;
+          estado.quantidadePostosGuarda = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.edificios?.postosGuarda,
+              0,
+              totalPostosGuardaColonia,
+              0,
+            ),
+          );
           estado.estoqueMinerio = numeroValido(
             salvo.expansao?.economia?.estoques?.minerio,
             0,
@@ -3975,6 +4140,10 @@
         estado.patioTreinoConstruido = false;
         estado.campoGuardaConstruido = false;
         estado.quartelMilitarConstruido = false;
+        estado.cisternaConstruida = false;
+        estado.estradasTerraConstruidas = false;
+        estado.saneamentoConstruido = false;
+        estado.quantidadePostosGuarda = 0;
         estado.quantidadeMilicianos = 0;
         estado.arqueirosMilicia = 0;
         estado.armasMetalMilicia = 0;
@@ -3986,6 +4155,11 @@
         estado.armasMetalSoldados = 0;
         estado.tempoDefesaColonia = 0;
         estado.ciclosSoldosAtrasados = 0;
+        estado.tempoOrcamentoColonia = 0;
+        estado.ciclosManutencaoAtrasada = 0;
+        estado.ultimaFolhaCivil = 0;
+        estado.ultimaManutencao = 0;
+        estado.ultimaDespesaMunicipal = 0;
         estado.estoqueMinerio = 0;
         estado.estoquePedra = 0;
         estado.estoqueFerramentas = 0;
@@ -4051,19 +4225,31 @@
         };
         let disponiveis = estado.populacaoColonia;
         const ocupar = (chave, maximo) => {
-          const quantidade = Math.min(maximo, Math.max(0, disponiveis));
-          empregos[chave] = quantidade;
-          disponiveis -= quantidade;
+          while (
+            empregos[chave] < maximo &&
+            disponiveis > 0
+          ) {
+            empregos[chave] += 1;
+            if (folhaCivilColonia(empregos) > limiteFolhaCivilColonia()) {
+              empregos[chave] -= 1;
+              break;
+            }
+            disponiveis -= 1;
+          }
         };
         const adicionar = (chave, maximo, quantidade = 1) => {
           const vagas = Math.max(0, maximo - empregos[chave]);
-          const adicionados = Math.min(
-            vagas,
-            quantidade,
-            Math.max(0, disponiveis),
-          );
-          empregos[chave] += adicionados;
-          disponiveis -= adicionados;
+          const alvo = Math.min(vagas, quantidade, Math.max(0, disponiveis));
+          let adicionados = 0;
+          while (adicionados < alvo) {
+            empregos[chave] += 1;
+            if (folhaCivilColonia(empregos) > limiteFolhaCivilColonia()) {
+              empregos[chave] -= 1;
+              break;
+            }
+            disponiveis -= 1;
+            adicionados += 1;
+          }
           return adicionados;
         };
 
@@ -4350,6 +4536,252 @@
         );
       }
 
+      function receitaGarantidaMunicipalColonia() {
+        return valorTransferenciaPosto * (1 - taxaAdministrador);
+      }
+
+      function manutencaoMunicipalColonia() {
+        if (!estado.coloniaIniciada) return 0;
+        let total = estado.etapaConstrucaoColonia >= 2 ? 2 : 0;
+        total += estado.quantidadeCasasColonia * 0.25;
+        total += [
+          estado.lavouraConstruida,
+          estado.hortaConstruida,
+          estado.feijaoConstruido,
+          estado.pastagemConstruida,
+          estado.moinhoConstruido,
+          estado.padariaConstruida,
+          estado.minaConstruida,
+          estado.pedreiraConstruida,
+          estado.ferrariaColoniaConstruida,
+          estado.forjaColoniaConstruida,
+          estado.oficinaArmasMadeiraConstruida,
+          estado.flechariaConstruida,
+        ].filter(Boolean).length * 0.75;
+        total += [
+          estado.celeiroConstruido,
+          estado.armazemGraosConstruido,
+          estado.armazemHortalicasConstruido,
+          estado.armazemFeijaoConstruido,
+          estado.armazemFarinhaConstruido,
+          estado.armazemPaesConstruido,
+          estado.depositoMadeiraConstruido,
+          estado.ervarioConstruido,
+          estado.arsenalMadeiraConstruido,
+          estado.depositoFlechasConstruido,
+          estado.mercadoPeixesConstruido,
+          estado.feitoriaConstruida,
+        ].filter(Boolean).length * 0.25;
+        total +=
+          (estado.quantidadeCabanasLenhadores +
+            estado.quantidadeCabanasColeta) *
+          0.5;
+        total += estado.cabanaReflorestamentoConstruida ? 0.5 : 0;
+        total += [
+          estado.clinicaConstruida,
+          estado.escolaConstruida,
+          estado.bancoColoniaConstruido,
+        ].filter(Boolean).length;
+        total += quantidadeCaisPescaColonia();
+        total += estado.caisComercialConstruido ? 1.5 : 0;
+        total += estado.estaleiroConstruido ? 2 : 0;
+        total += (estado.barcosPesca + estado.naviosMercantes) * 0.5;
+        total +=
+          (estado.trechosPalicadaInterna +
+            estado.trechosPalicadaExterna) *
+          0.5;
+        total += [
+          estado.patioTreinoConstruido,
+          estado.campoGuardaConstruido,
+          estado.quartelMilitarConstruido,
+        ].filter(Boolean).length;
+        total += estado.cisternaConstruida ? 1.5 : 0;
+        total += estado.estradasTerraConstruidas ? 2 : 0;
+        total += estado.saneamentoConstruido ? 3 : 0;
+        total += estado.quantidadePostosGuarda;
+        return arredondarOuro(total);
+      }
+
+      function folhaCivilColonia(empregos = estado.empregosColonia) {
+        const servicosPublicos =
+          (empregos.administracao || 0) +
+          (empregos.professor || 0) +
+          (empregos.clinica || 0);
+        const chavesProdutivas = [
+          "lavoura",
+          "horta",
+          "feijao",
+          "pastagem",
+          "celeiro",
+          "moinho",
+          "padaria",
+          "lenhador",
+          "reflorestador",
+          "coletor",
+          "armeiroMadeira",
+          "flecheiro",
+          "pesca",
+          "estaleiro",
+          "mina",
+          "pedreira",
+          "comercio",
+          "ferraria",
+          "forja",
+        ];
+        const trabalhadoresProdutivos = chavesProdutivas.reduce(
+          (total, chave) => total + (empregos[chave] || 0),
+          0,
+        );
+        return arredondarOuro(
+          servicosPublicos * salarioServicoPublico +
+            trabalhadoresProdutivos * salarioCivilPadrao,
+        );
+      }
+
+      function limiteFolhaCivilColonia() {
+        return Math.max(
+          0,
+          Math.floor(
+            receitaGarantidaMunicipalColonia() *
+              fracaoMaximaFolhaCivilColonia -
+              manutencaoMunicipalColonia(),
+          ),
+        );
+      }
+
+      function despesasEssenciaisMunicipaisColonia(
+        empregos = estado.empregosColonia,
+      ) {
+        return arredondarOuro(
+          folhaCivilColonia(empregos) +
+            manutencaoMunicipalColonia() +
+            folhaSoldosColonia(),
+        );
+      }
+
+      function saldoOperacionalMunicipalColonia(
+        empregos = estado.empregosColonia,
+      ) {
+        return arredondarOuro(
+          receitaGarantidaMunicipalColonia() -
+            despesasEssenciaisMunicipaisColonia(empregos),
+        );
+      }
+
+      function reservaMunicipalDinamicaColonia(
+        empregos = estado.empregosColonia,
+      ) {
+        return Math.max(
+          reservaMinimaMunicipal,
+          Math.ceil(
+            despesasEssenciaisMunicipaisColonia(empregos) *
+              ciclosReservaMunicipal,
+          ),
+        );
+      }
+
+      function obraEmergencialColonia(tipo) {
+        return [
+          "moradia",
+          "escola",
+          "pastagem",
+          "celeiro",
+          "horta",
+          "armazemHortalicas",
+          "feijao",
+          "armazemFeijao",
+          "lavoura",
+          "armazemGraos",
+          "clinica",
+        ].includes(tipo);
+      }
+
+      function manutencaoAdicionalObraColonia(tipo) {
+        const manutencoes = {
+          moradia: 0.25,
+          lavoura: 0.75,
+          horta: 0.75,
+          feijao: 0.75,
+          pastagem: 0.75,
+          moinho: 0.75,
+          padaria: 0.75,
+          mina: 0.75,
+          pedreira: 0.75,
+          ferraria: 0.75,
+          forja: 0.75,
+          oficinaArmasMadeira: 0.75,
+          flecharia: 0.75,
+          armazemGraos: 0.25,
+          armazemHortalicas: 0.25,
+          armazemFeijao: 0.25,
+          armazemFarinha: 0.25,
+          armazemPaes: 0.25,
+          celeiro: 0.25,
+          depositoMadeira: 0.25,
+          ervario: 0.25,
+          arsenalMadeira: 0.25,
+          depositoFlechas: 0.25,
+          mercadoPeixes: 0.25,
+          feitoria: 0.25,
+          cabanaLenhadores: 0.5,
+          cabanaColeta: 0.5,
+          cabanaReflorestamento: 0.5,
+          clinica: 1,
+          escola: 1,
+          banco: 1,
+          caisPesca: 1,
+          caisPesca2: 1,
+          caisComercial: 1.5,
+          estaleiro: 2,
+          palicadaInterna: 0.5,
+          palicadaExterna: 0.5,
+          patioTreino: 1,
+          campoGuarda: 1,
+          quartelMilitar: 1,
+          cisterna: 1.5,
+          estradasTerra: 2,
+          saneamento: 3,
+          postoGuarda: 1,
+        };
+        return manutencoes[tipo] || 0;
+      }
+
+      function reservaAposObraColonia(tipo) {
+        return Math.max(
+          reservaMinimaMunicipal,
+          Math.ceil(
+            (despesasEssenciaisMunicipaisColonia() +
+              manutencaoAdicionalObraColonia(tipo)) *
+              ciclosReservaMunicipal,
+          ),
+        );
+      }
+
+      function podeFinanciarObraColonia(tipo) {
+        const custo = custoObraAutomaticaColonia(tipo);
+        if (!Number.isFinite(custo) || estado.tesouroColonia < custo) {
+          return false;
+        }
+        if (obraEmergencialColonia(tipo)) return true;
+        return (
+          saldoOperacionalMunicipalColonia() -
+              manutencaoAdicionalObraColonia(tipo) >
+            0 &&
+          estado.tesouroColonia - custo >= reservaAposObraColonia(tipo)
+        );
+      }
+
+      function situacaoOrcamentoMunicipalColonia() {
+        if (estado.ciclosSoldosAtrasados > 0) return "Soldos em atraso";
+        if (estado.ciclosManutencaoAtrasada > 0) {
+          return "Manutenção em atraso";
+        }
+        if (saldoOperacionalMunicipalColonia() <= 0) {
+          return "Novas despesas suspensas";
+        }
+        return "Sustentável";
+      }
+
       function limiteSoldosColonia() {
         return Math.floor(
           valorTransferenciaPosto *
@@ -4372,7 +4804,8 @@
           100,
           Math.round(
             (estado.quantidadeMilicianos * 3 +
-              estado.quantidadeGuardas * 6) *
+              estado.quantidadeGuardas * 6 +
+              estado.quantidadePostosGuarda * 5) *
               fatorAtraso,
           ),
         );
@@ -4530,13 +4963,80 @@
         if (folhaSoldosColonia() + proxima.soldo > limiteSoldosColonia()) {
           return "Limite sustentável de soldos atingido";
         }
-        if (estado.tesouroColonia - proxima.custo < reservaDefesaColonia) {
-          return `Preservando reserva de ${formatarOuro(reservaDefesaColonia)}`;
+        if (
+          saldoOperacionalMunicipalColonia() - proxima.soldo <= 0
+        ) {
+          return "Orçamento municipal sem margem para novo soldo";
+        }
+        const reserva = Math.max(
+          reservaMinimaMunicipal,
+          Math.ceil(
+            (despesasEssenciaisMunicipaisColonia() + proxima.soldo) *
+              ciclosReservaMunicipal,
+          ),
+        );
+        if (estado.tesouroColonia - proxima.custo < reserva) {
+          return `Preservando reserva de ${formatarOuro(reserva)}`;
         }
         if (!escolherEquipamentoDefesaColonia(proxima.categoria)) {
           return "Aguardando arma ou arco com 20 flechas";
         }
         return `${proxima.nome} · ${proxima.custo} ouro + ${proxima.soldo}/60 s`;
+      }
+
+      function atualizarOrcamentoMunicipalColonia(delta) {
+        if (!estado.coloniaIniciada) return;
+        estado.tempoOrcamentoColonia += delta;
+        if (estado.tempoOrcamentoColonia < intervaloOrcamentoColonia) return;
+
+        const ciclos = Math.floor(
+          estado.tempoOrcamentoColonia / intervaloOrcamentoColonia,
+        );
+        estado.tempoOrcamentoColonia %= intervaloOrcamentoColonia;
+        for (let ciclo = 0; ciclo < ciclos; ciclo += 1) {
+          const empregos = redistribuirTrabalhadoresColonia();
+          const folhaCivil = folhaCivilColonia(empregos);
+          const soldos = folhaSoldosColonia();
+          const manutencao = manutencaoMunicipalColonia();
+          const salarios = arredondarOuro(folhaCivil + soldos);
+          let pago = 0;
+
+          if (estado.tesouroColonia >= salarios) {
+            estado.tesouroColonia = arredondarOuro(
+              estado.tesouroColonia - salarios,
+            );
+            pago += salarios;
+            estado.ciclosSoldosAtrasados = 0;
+          } else {
+            pago += estado.tesouroColonia;
+            estado.tesouroColonia = 0;
+            estado.ciclosSoldosAtrasados += 1;
+          }
+
+          if (estado.tesouroColonia >= manutencao) {
+            estado.tesouroColonia = arredondarOuro(
+              estado.tesouroColonia - manutencao,
+            );
+            pago += manutencao;
+            estado.ciclosManutencaoAtrasada = 0;
+          } else {
+            pago += estado.tesouroColonia;
+            estado.tesouroColonia = 0;
+            estado.ciclosManutencaoAtrasada += 1;
+          }
+
+          estado.ultimaFolhaCivil = folhaCivil;
+          estado.ultimaManutencao = manutencao;
+          estado.ultimaDespesaMunicipal = arredondarOuro(pago);
+        }
+
+        if (estado.mapaAtual === "expansao") {
+          definirMensagem(
+            `${situacaoOrcamentoMunicipalColonia()}: ${formatarOuro(estado.ultimaFolhaCivil)} de folha civil, ${formatarOuro(folhaSoldosColonia())} de soldos e ${formatarOuro(estado.ultimaManutencao)} de manutenção pagos antes de novas obras.`,
+          );
+        }
+        atualizarInterface();
+        salvarProgresso();
       }
 
       function atualizarDefesaColonia(delta) {
@@ -4550,25 +5050,22 @@
         estado.tempoDefesaColonia %= intervaloDefesaColonia;
         let ultimaContratacao = null;
         for (let ciclo = 0; ciclo < ciclos; ciclo += 1) {
-          const soldos = folhaSoldosColonia();
-          if (soldos > 0) {
-            if (estado.tesouroColonia >= soldos) {
-              estado.tesouroColonia = arredondarOuro(
-                estado.tesouroColonia - soldos,
-              );
-              estado.ciclosSoldosAtrasados = 0;
-            } else {
-              estado.tesouroColonia = 0;
-              estado.ciclosSoldosAtrasados += 1;
-              continue;
-            }
-          }
-
           const proxima = proximaContratacaoDefesaColonia();
+          const reservaAposContratacao = proxima
+            ? Math.max(
+                reservaMinimaMunicipal,
+                Math.ceil(
+                  (despesasEssenciaisMunicipaisColonia() + proxima.soldo) *
+                    ciclosReservaMunicipal,
+                ),
+              )
+            : reservaMunicipalDinamicaColonia();
           if (
             !proxima ||
             folhaSoldosColonia() + proxima.soldo > limiteSoldosColonia() ||
-            estado.tesouroColonia - proxima.custo < reservaDefesaColonia
+            saldoOperacionalMunicipalColonia() - proxima.soldo <= 0 ||
+            estado.tesouroColonia - proxima.custo <
+              reservaAposContratacao
           ) continue;
           const equipamento = escolherEquipamentoDefesaColonia(
             proxima.categoria,
@@ -4645,6 +5142,12 @@
           return "ampliação para campo de treinamento da guarda";
         }
         if (tipo === "quartelMilitar") return "quartel militar";
+        if (tipo === "cisterna") return "poço e cisterna";
+        if (tipo === "estradasTerra") return "rede de estradas de terra";
+        if (tipo === "saneamento") return "saneamento básico";
+        if (tipo === "postoGuarda") {
+          return `posto da guarda ${estado.quantidadePostosGuarda + 1}/${totalPostosGuardaColonia}`;
+        }
         if (tipo === "palicadaInterna") {
           return `trecho ${estado.trechosPalicadaInterna + 1}/${totalTrechosPalicadaColonia} da paliçada interna`;
         }
@@ -4693,6 +5196,10 @@
           patioTreino: custoPatioTreinoColonia,
           campoGuarda: custoCampoGuardaColonia,
           quartelMilitar: custoQuartelMilitarColonia,
+          cisterna: custoCisternaColonia,
+          estradasTerra: custoEstradasTerraColonia,
+          saneamento: custoSaneamentoColonia,
+          postoGuarda: custoPostoGuardaColonia,
         };
         return custos[tipo];
       }
@@ -4714,10 +5221,12 @@
         if (!estado.armazemFeijaoConstruido) return "armazemFeijao";
         if (!estado.lavouraConstruida) return "lavoura";
         if (!estado.armazemGraosConstruido) return "armazemGraos";
+        if (!estado.cisternaConstruida) return "cisterna";
         if (!estado.moinhoConstruido) return "moinho";
         if (!estado.armazemFarinhaConstruido) return "armazemFarinha";
         if (!estado.padariaConstruida) return "padaria";
         if (!estado.armazemPaesConstruido) return "armazemPaes";
+        if (!estado.estradasTerraConstruidas) return "estradasTerra";
         if (!estado.bancoColoniaConstruido) return "banco";
         if (!estado.caisPescaConstruido) return "caisPesca";
         if (!estado.mercadoPeixesConstruido) return "mercadoPeixes";
@@ -4739,6 +5248,7 @@
         if (estado.quantidadeCabanasColeta < 1) return "cabanaColeta";
         if (!estado.ervarioConstruido) return "ervario";
         if (!estado.clinicaConstruida) return "clinica";
+        if (!estado.saneamentoConstruido) return "saneamento";
         if (estado.quantidadeCabanasLenhadores < 2) {
           return "cabanaLenhadores";
         }
@@ -4752,6 +5262,9 @@
         if (
           estado.trechosPalicadaInterna < totalTrechosPalicadaColonia
         ) return "palicadaInterna";
+        if (estado.quantidadePostosGuarda < totalPostosGuardaColonia) {
+          return "postoGuarda";
+        }
         if (
           estado.trechosPalicadaExterna < totalTrechosPalicadaColonia
         ) return "palicadaExterna";
@@ -4776,14 +5289,10 @@
         const proximaObra = proximaObraAutomaticaColonia();
         if (proximaObra) {
           const custo = custoObraAutomaticaColonia(proximaObra);
-          const obraDefensiva =
-            proximaObra === "patioTreino" ||
-            proximaObra === "campoGuarda" ||
-            proximaObra === "quartelMilitar";
-          const saldoNecessario = obraDefensiva
-            ? custo + reservaDefesaColonia
-            : custo;
-          return estado.tesouroColonia >= saldoNecessario
+          const saldoNecessario = obraEmergencialColonia(proximaObra)
+            ? custo
+            : custo + reservaAposObraColonia(proximaObra);
+          return podeFinanciarObraColonia(proximaObra)
             ? `Construir ${nomeObraAutomaticaColonia(proximaObra)}`
             : `Aguardar ${saldoNecessario} para ${nomeObraAutomaticaColonia(proximaObra)}`;
         }
@@ -4893,6 +5402,18 @@
         tesouroColoniaEl.textContent = formatarOuro(estado.tesouroColonia);
         sincronizarFamiliasColonia();
         const empregos = redistribuirTrabalhadoresColonia();
+        const receitaGarantida = receitaGarantidaMunicipalColonia();
+        const folhaCivil = folhaCivilColonia(empregos);
+        const manutencaoMunicipal = manutencaoMunicipalColonia();
+        const despesasEssenciais = despesasEssenciaisMunicipaisColonia(
+          empregos,
+        );
+        const saldoOperacional = saldoOperacionalMunicipalColonia(empregos);
+        const reservaMunicipal = reservaMunicipalDinamicaColonia(empregos);
+        const situacaoOrcamento = situacaoOrcamentoMunicipalColonia();
+        orcamentoColoniaStatusEl.textContent = estado.coloniaIniciada
+          ? `${situacaoOrcamento} · ${saldoOperacional >= 0 ? "+" : ""}${formatarOuro(saldoOperacional)}/60 s`
+          : "Aguardando fundação";
         const segundosParaTransferencia = Math.max(
           1,
           Math.ceil(
@@ -5089,6 +5610,19 @@
         defesaForcaEl.textContent = `${forcaMilitar} / 100`;
         defesaSoldosEl.textContent = `${folhaSoldos} / ${limiteSoldosColonia()} ouro / 60 s`;
         defesaProximaContratacaoEl.textContent = proximaDefesa;
+        orcamentoReceitaEl.textContent =
+          `${formatarOuro(receitaGarantida)} ouro / 60 s`;
+        orcamentoFolhaCivilEl.textContent =
+          `${formatarOuro(folhaCivil)} / ${formatarOuro(limiteFolhaCivilColonia())} ouro / 60 s`;
+        orcamentoManutencaoEl.textContent =
+          `${formatarOuro(manutencaoMunicipal)} ouro / 60 s`;
+        orcamentoSoldosEl.textContent =
+          `${formatarOuro(folhaSoldos)} ouro / 60 s`;
+        orcamentoSaldoEl.textContent =
+          `${saldoOperacional >= 0 ? "+" : ""}${formatarOuro(saldoOperacional)} ouro / 60 s`;
+        orcamentoReservaEl.textContent =
+          `${formatarOuro(reservaMunicipal)} ouro`;
+        orcamentoSituacaoEl.textContent = situacaoOrcamento;
         estoqueAlimentosDetalheEl.textContent =
           `${formatarQuantidade(estado.estoqueAlimentos)} / ${capacidadeCeleiroColonia}`;
         estoqueGraosEl.textContent =
@@ -5264,6 +5798,23 @@
           "quartelMilitar",
           estado.quartelMilitarConstruido,
         );
+        edificioCisternaEl.textContent = statusEdificioColonia(
+          "cisterna",
+          estado.cisternaConstruida,
+        );
+        edificioEstradasEl.textContent = statusEdificioColonia(
+          "estradasTerra",
+          estado.estradasTerraConstruidas,
+        );
+        edificioSaneamentoEl.textContent = statusEdificioColonia(
+          "saneamento",
+          estado.saneamentoConstruido,
+        );
+        edificioPostosGuardaEl.textContent = statusEstruturaRepetidaColonia(
+          "postoGuarda",
+          estado.quantidadePostosGuarda,
+          totalPostosGuardaColonia,
+        );
         const aljavasCompletas = Math.floor(
           estado.estoqueFlechas / flechasPorAljava,
         );
@@ -5292,6 +5843,20 @@
           : `${vagasMigracao} disponíveis`;
         registrosEls.fiscalizacao.textContent =
           `${escriturariosFiscais} · +${formatarOuro(adicionalFiscalPorMinuto)} ouro / 60 s`;
+        registrosEls["folha-civil"].textContent =
+          `${formatarOuro(folhaCivil)} / ${formatarOuro(limiteFolhaCivilColonia())} ouro / 60 s`;
+        registrosEls.manutencao.textContent =
+          `${formatarOuro(manutencaoMunicipal)} ouro / 60 s`;
+        registrosEls["despesas-essenciais"].textContent =
+          `${formatarOuro(despesasEssenciais)} ouro / 60 s`;
+        registrosEls["saldo-operacional"].textContent =
+          `${saldoOperacional >= 0 ? "+" : ""}${formatarOuro(saldoOperacional)} ouro / 60 s`;
+        registrosEls["reserva-municipal"].textContent =
+          `${formatarOuro(reservaMunicipal)} ouro`;
+        registrosEls["ultimo-orcamento"].textContent =
+          estado.ultimaDespesaMunicipal > 0
+            ? `${formatarOuro(estado.ultimaDespesaMunicipal)} pagos · ${situacaoOrcamento}`
+            : "Ainda não processado";
         registrosEls.adultos.textContent = String(estado.populacaoColonia);
         registrosEls.familias.textContent = String(estado.familiasColonia.length);
         registrosEls.bebes.textContent = String(quantidadeBebes);
@@ -5393,7 +5958,7 @@
         registrosEls.soldos.textContent =
           `${folhaSoldos} / ${limiteSoldosColonia()} ouro por 60 s`;
         registrosEls["reserva-defesa"].textContent =
-          `${formatarOuro(reservaDefesaColonia)} ouro`;
+          `${formatarOuro(reservaMunicipal)} ouro · reserva geral`;
         registrosEls["sustentabilidade-defesa"].textContent =
           estado.ciclosSoldosAtrasados > 0
             ? `${estado.ciclosSoldosAtrasados} ciclo(s) em atraso`
@@ -6692,15 +7257,7 @@
 
       function iniciarObraAutomaticaColonia(tipo) {
         const custo = custoObraAutomaticaColonia(tipo);
-        const obraDefensiva =
-          tipo === "patioTreino" ||
-          tipo === "campoGuarda" ||
-          tipo === "quartelMilitar";
-        if (
-          estado.tesouroColonia < custo ||
-          (obraDefensiva &&
-            estado.tesouroColonia - custo < reservaDefesaColonia)
-        ) return false;
+        if (!podeFinanciarObraColonia(tipo)) return false;
 
         estado.tesouroColonia = arredondarOuro(
           estado.tesouroColonia - custo,
@@ -6828,6 +7385,28 @@
             x: areaQuartelMilitarColonia.x + areaQuartelMilitarColonia.largura / 2,
             y: areaQuartelMilitarColonia.y + areaQuartelMilitarColonia.altura / 2,
           },
+          cisterna: {
+            x: areaCisternaColonia.x + areaCisternaColonia.largura / 2,
+            y: areaCisternaColonia.y + areaCisternaColonia.altura / 2,
+          },
+          estradasTerra: {
+            x: recintoExterno.x + recintoExterno.largura / 2,
+            y: yEstradaCampoColonia,
+          },
+          saneamento: {
+            x: recintoInterno.x + recintoInterno.largura / 2,
+            y: recintoInterno.y + recintoInterno.altura / 2,
+          },
+          postoGuarda: {
+            x:
+              estado.quantidadePostosGuarda % 2 === 0
+                ? recintoExterno.x
+                : recintoExterno.x + recintoExterno.largura,
+            y:
+              estado.quantidadePostosGuarda < 2
+                ? recintoExterno.y
+                : recintoExterno.y + recintoExterno.altura,
+          },
         };
         focarCameraExpansao(
           alvos[tipo] || centroObraColonia(tipo),
@@ -6950,6 +7529,17 @@
           estado.campoGuardaConstruido = true;
         } else if (obraConcluida === "quartelMilitar") {
           estado.quartelMilitarConstruido = true;
+        } else if (obraConcluida === "cisterna") {
+          estado.cisternaConstruida = true;
+        } else if (obraConcluida === "estradasTerra") {
+          estado.estradasTerraConstruidas = true;
+        } else if (obraConcluida === "saneamento") {
+          estado.saneamentoConstruido = true;
+        } else if (obraConcluida === "postoGuarda") {
+          estado.quantidadePostosGuarda = Math.min(
+            totalPostosGuardaColonia,
+            estado.quantidadePostosGuarda + 1,
+          );
         } else if (obraConcluida === "palicadaInterna") {
           estado.trechosPalicadaInterna = Math.min(
             totalTrechosPalicadaColonia,
@@ -10458,6 +11048,90 @@
         }
       }
 
+      function desenharObrasPublicasColonia() {
+        if (estado.etapaConstrucaoColonia < 4) return;
+
+        const progressoEstradas = progressoEdificioColonia(
+          "estradasTerra",
+          estado.estradasTerraConstruidas,
+        );
+        if (progressoEstradas > 0) {
+          contexto.fillStyle = "#aa8b58";
+          contexto.fillRect(
+            3900,
+            yEstradaCampoColonia - 45,
+            9100 * progressoEstradas,
+            90,
+          );
+          contexto.fillRect(
+            8455,
+            1250,
+            90,
+            6500 * progressoEstradas,
+          );
+        }
+
+        desenharEdificioColonia(
+          areaCisternaColonia,
+          "cisterna",
+          estado.cisternaConstruida,
+          "POÇO E CISTERNA",
+          "#688a91",
+        );
+        if (
+          progressoEdificioColonia("cisterna", estado.cisternaConstruida) >
+          0.7
+        ) {
+          desenharCirculo(
+            areaCisternaColonia.x + areaCisternaColonia.largura / 2,
+            areaCisternaColonia.y + areaCisternaColonia.altura / 2 + 25,
+            52,
+            "#39738d",
+            "#e1d3a4",
+          );
+        }
+
+        const progressoSaneamento = progressoEdificioColonia(
+          "saneamento",
+          estado.saneamentoConstruido,
+        );
+        if (progressoSaneamento > 0) {
+          contexto.fillStyle = "#587a72";
+          contexto.fillRect(7300, 5180, 2650 * progressoSaneamento, 22);
+          contexto.fillRect(8720, 3180, 22, 2750 * progressoSaneamento);
+          contexto.fillStyle = "#263528";
+          contexto.font = "bold 18px sans-serif";
+          contexto.textAlign = "center";
+          contexto.fillText(
+            "SANEAMENTO",
+            8700,
+            5150,
+          );
+          contexto.textAlign = "start";
+        }
+
+        const postos = [
+          { x: 7890, y: 1370 },
+          { x: 7890, y: 7250 },
+          { x: 4870, y: 4040 },
+          { x: 11070, y: 4040 },
+        ];
+        postos.forEach((posicao, indice) => {
+          const construido = indice < estado.quantidadePostosGuarda;
+          const emObra =
+            estado.obraAutomaticaColonia === "postoGuarda" &&
+            indice === estado.quantidadePostosGuarda;
+          if (!construido && !emObra) return;
+          desenharEdificioColonia(
+            { x: posicao.x, y: posicao.y, largura: 220, altura: 220 },
+            "postoGuarda",
+            construido,
+            `POSTO ${indice + 1}`,
+            "#596448",
+          );
+        });
+      }
+
       function desenharInfraestruturaColonia() {
         if (estado.etapaConstrucaoColonia < 4) return;
 
@@ -10964,6 +11638,7 @@
         desenharFlorestaNoroesteColonia();
         desenharAreasProdutivasColonia();
         desenharDefesasColonia();
+        desenharObrasPublicasColonia();
         desenharAdministracaoColonia();
         desenharMoradiasPrestigioColonia();
         desenharCeleiroColonia();
@@ -11629,6 +12304,7 @@
         atualizarBanqueiro(delta);
         atualizarEscriturario(delta);
         atualizarTransferenciaPosto(delta);
+        atualizarOrcamentoMunicipalColonia(delta);
         atualizarMigracaoColonia(delta);
         atualizarPrioridadesColonia(delta);
         atualizarNecessidadesColonia(delta);
