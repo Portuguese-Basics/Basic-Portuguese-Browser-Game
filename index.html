@@ -43,8 +43,8 @@
         display: flex;
         align-items: center;
         justify-content: space-between;
-        gap: 0.75rem;
-        padding: 0.75rem;
+        gap: 0.4rem;
+        padding: 0.4rem;
         border-bottom: 2px solid #594126;
         background: #211d15;
         box-shadow: 0 3px 0 rgb(0 0 0 / 20%);
@@ -54,36 +54,37 @@
       .acoes {
         display: flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.3rem;
         flex-wrap: wrap;
       }
 
       .indicador {
-        min-width: 6.6rem;
-        padding: 0.55rem 0.7rem;
+        min-width: 5.2rem;
+        padding: 0.32rem 0.45rem;
         border: 1px solid #544b39;
         border-radius: 0.35rem;
         background: #302a1e;
-        font-size: 0.9rem;
-        line-height: 1.15;
+        font-size: 0.78rem;
+        line-height: 1.08;
       }
 
       .indicador span {
         display: block;
-        margin-top: 0.18rem;
+        margin-top: 0.1rem;
         color: #fff9df;
-        font-size: 1rem;
+        font-size: 0.86rem;
         font-weight: 750;
       }
 
       button {
-        min-height: 2.75rem;
-        padding: 0.65rem 0.9rem;
+        min-height: 2.15rem;
+        padding: 0.38rem 0.55rem;
         border: 1px solid #8f6a35;
         border-radius: 0.35rem;
         background: #72502a;
         color: #fff8e5;
         font: inherit;
+        font-size: 0.8rem;
         font-weight: 750;
         cursor: pointer;
         touch-action: manipulation;
@@ -239,36 +240,44 @@
         .barra {
           align-items: stretch;
           flex-direction: column;
-          padding: 0.55rem;
+          gap: 0.3rem;
+          padding: 0.3rem;
         }
 
         .estado,
         .acoes {
-          display: grid;
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          display: flex;
+          flex-wrap: nowrap;
+          gap: 0.3rem;
+          overflow-x: auto;
+          padding-bottom: 0.15rem;
         }
 
         .indicador {
-          min-width: 0;
-          padding: 0.45rem 0.55rem;
-          font-size: 0.78rem;
+          min-width: 4.7rem;
+          flex: 0 0 auto;
+          padding: 0.27rem 0.38rem;
+          font-size: 0.7rem;
         }
 
         .indicador span {
-          font-size: 0.9rem;
+          font-size: 0.78rem;
         }
 
         button {
-          min-width: 0;
-          padding: 0.55rem 0.35rem;
-          font-size: 0.85rem;
+          min-width: max-content;
+          min-height: 2rem;
+          flex: 0 0 auto;
+          padding: 0.34rem 0.45rem;
+          font-size: 0.76rem;
+          white-space: nowrap;
         }
 
         .mensagem {
           right: 0.6rem;
           bottom: 0.6rem;
           left: 0.6rem;
-          font-size: 0.85rem;
+          font-size: 0.78rem;
         }
 
         .grade-loja {
@@ -395,8 +404,11 @@
       const novoJogoBotao = document.querySelector("#novo-jogo");
       const apagarBotao = document.querySelector("#apagar");
 
-      const larguraMundo = 1000;
-      const alturaMundo = 700;
+      const larguraMundo = 1400;
+      const alturaMundo = 900;
+      const versaoMapa = 2;
+      const posicaoAssentamento = { x: 700, y: 510 };
+      const posicaoFloresta = { x: 700, y: 790 };
       const custoDescanso = 3;
       const custoDerrota = 15;
       const custoFazendeiro = 100;
@@ -430,7 +442,7 @@
         ouro: 5,
         ataque: 1,
         armadura: 0,
-        jogador: { x: 500, y: 390 },
+        jogador: { ...posicaoAssentamento },
         inimigos: [],
         tempoAtaque: 0,
         tempoReforco: 0,
@@ -443,22 +455,30 @@
       };
 
       const arvores = [
-        [90, 105, 26],
-        [185, 185, 34],
-        [310, 90, 25],
-        [430, 165, 33],
-        [570, 100, 31],
-        [720, 175, 38],
-        [880, 100, 29],
-        [930, 275, 35],
-        [790, 345, 30],
-        [640, 270, 25],
-        [355, 310, 31],
-        [170, 350, 28],
-        [75, 485, 36],
-        [245, 555, 30],
-        [735, 570, 33],
-        [910, 520, 27],
+        [90, 120, 26],
+        [210, 240, 34],
+        [330, 100, 25],
+        [480, 190, 33],
+        [620, 95, 31],
+        [820, 180, 38],
+        [1040, 90, 29],
+        [1240, 155, 33],
+        [1320, 310, 35],
+        [1190, 420, 30],
+        [1030, 350, 25],
+        [880, 300, 25],
+        [500, 340, 31],
+        [290, 390, 28],
+        [120, 520, 36],
+        [350, 650, 30],
+        [1050, 700, 33],
+        [1280, 650, 27],
+        [180, 800, 28],
+        [500, 820, 34],
+        [850, 780, 30],
+        [1180, 840, 29],
+        [1320, 520, 26],
+        [65, 330, 29],
       ];
 
       function definirMensagem(texto) {
@@ -474,6 +494,7 @@
       function dadosParaSalvar() {
         return {
           versao: versaoSalvamento,
+          mapaVersao: versaoMapa,
           salvoEm: Date.now(),
           local: estado.local,
           vida: estado.vida,
@@ -526,6 +547,11 @@
 
           const salvo = JSON.parse(textoSalvo);
           if (salvo.versao !== versaoSalvamento) return false;
+          const mapaAntigo = salvo.mapaVersao !== versaoMapa;
+          const larguraSalva = mapaAntigo ? 1000 : larguraMundo;
+          const alturaSalva = mapaAntigo ? 700 : alturaMundo;
+          const escalaMigracaoX = larguraMundo / larguraSalva;
+          const escalaMigracaoY = alturaMundo / alturaSalva;
 
           estado.local = salvo.local === "floresta" ? "floresta" : "assentamento";
           estado.vida = Math.round(
@@ -540,18 +566,20 @@
           estado.armadura = Math.round(
             numeroValido(salvo.combate?.armadura, 0, nivelMaximo, 0),
           );
-          estado.jogador.x = numeroValido(
-            salvo.jogador?.x,
-            0,
-            larguraMundo,
-            estado.local === "floresta" ? 500 : 500,
-          );
-          estado.jogador.y = numeroValido(
-            salvo.jogador?.y,
-            0,
-            alturaMundo,
-            estado.local === "floresta" ? 610 : 390,
-          );
+          estado.jogador.x =
+            numeroValido(
+              salvo.jogador?.x,
+              0,
+              larguraSalva,
+              mapaAntigo ? 500 : posicaoAssentamento.x,
+            ) * escalaMigracaoX;
+          estado.jogador.y =
+            numeroValido(
+              salvo.jogador?.y,
+              0,
+              alturaSalva,
+              mapaAntigo ? 390 : posicaoAssentamento.y,
+            ) * escalaMigracaoY;
 
           estado.inimigos = Array.isArray(salvo.inimigos)
             ? salvo.inimigos.slice(0, 20).map((inimigo, indice) => {
@@ -561,8 +589,12 @@
                 const vidaDoNivel = 2 + nivel;
                 return {
                   id: String(inimigo.id || `salvo-${indice}`),
-                  x: numeroValido(inimigo.x, 0, larguraMundo, 100),
-                  y: numeroValido(inimigo.y, 0, alturaMundo, 100),
+                  x:
+                    numeroValido(inimigo.x, 0, larguraSalva, 100) *
+                    escalaMigracaoX,
+                  y:
+                    numeroValido(inimigo.y, 0, alturaSalva, 100) *
+                    escalaMigracaoY,
                   nivel,
                   vidaMaxima: vidaDoNivel,
                   vida: Math.round(
@@ -599,8 +631,8 @@
           }
 
           if (estado.local === "assentamento") {
-            estado.jogador.x = 500;
-            estado.jogador.y = 390;
+            estado.jogador.x = posicaoAssentamento.x;
+            estado.jogador.y = posicaoAssentamento.y;
             estado.inimigos = [];
           } else if (estado.inimigos.length === 0 && estado.vida > 0) {
             povoarFloresta();
@@ -611,6 +643,9 @@
             definirMensagem(
               "Você foi derrotado, voltou com vida completa e perdeu 15 de ouro.",
             );
+            salvarProgresso();
+          } else if (mapaAntigo) {
+            definirMensagem("Progresso adaptado ao mapa ampliado.");
             salvarProgresso();
           } else {
             definirMensagem("Progresso carregado automaticamente.");
@@ -634,8 +669,8 @@
         estado.ouro = 5;
         estado.ataque = 1;
         estado.armadura = 0;
-        estado.jogador.x = 500;
-        estado.jogador.y = 390;
+        estado.jogador.x = posicaoAssentamento.x;
+        estado.jogador.y = posicaoAssentamento.y;
         estado.inimigos = [];
         estado.tempoAtaque = 0;
         estado.tempoReforco = 0;
@@ -676,13 +711,13 @@
       }
 
       function criarInimigo() {
-        const margem = 90;
+        const margem = 120;
         const nivel = 1 + Math.floor(Math.random() * 3);
         const vidaDoNivel = 2 + nivel;
         let x = margem + Math.random() * (larguraMundo - margem * 2);
         let y = margem + Math.random() * (alturaMundo - margem * 2);
 
-        if (Math.hypot(x - estado.jogador.x, y - estado.jogador.y) < 230) {
+        if (Math.hypot(x - estado.jogador.x, y - estado.jogador.y) < 320) {
           x = x < larguraMundo / 2 ? margem : larguraMundo - margem;
           y = y < alturaMundo / 2 ? margem : alturaMundo - margem;
         }
@@ -709,8 +744,8 @@
       function iniciarCacada() {
         estado.salvamentoAtivo = true;
         estado.local = "floresta";
-        estado.jogador.x = 500;
-        estado.jogador.y = 610;
+        estado.jogador.x = posicaoFloresta.x;
+        estado.jogador.y = posicaoFloresta.y;
         estado.tempoAtaque = 0;
         estado.tempoReforco = 0;
         povoarFloresta();
@@ -722,8 +757,8 @@
       function voltarAoAssentamento() {
         estado.salvamentoAtivo = true;
         estado.local = "assentamento";
-        estado.jogador.x = 500;
-        estado.jogador.y = 390;
+        estado.jogador.x = posicaoAssentamento.x;
+        estado.jogador.y = posicaoAssentamento.y;
         estado.inimigos = [];
         estado.alvoGolpeado = null;
         definirMensagem("Você voltou ao assentamento.");
@@ -756,8 +791,8 @@
         estado.local = "assentamento";
         estado.vida = vidaMaxima;
         estado.ouro -= custoDerrota;
-        estado.jogador.x = 500;
-        estado.jogador.y = 390;
+        estado.jogador.x = posicaoAssentamento.x;
+        estado.jogador.y = posicaoAssentamento.y;
         estado.inimigos = [];
         estado.tempoAtaque = 0;
         estado.tempoReforco = 0;
@@ -1041,7 +1076,7 @@
         contexto.fillRect(0, 0, larguraMundo, alturaMundo);
 
         contexto.fillStyle = "#b7a773";
-        for (let i = 0; i < 34; i += 1) {
+        for (let i = 0; i < 48; i += 1) {
           const x = (i * 149) % larguraMundo;
           const y = (i * 83) % alturaMundo;
           desenharCirculo(x, y, 3, "#9f9165");
@@ -1049,10 +1084,10 @@
 
         const plantacoes = [];
         if (estado.quantidadeFazendeiros > 0) {
-          plantacoes.push({ x: 210, y: 575, largura: 220, altura: 92 });
+          plantacoes.push({ x: 270, y: 740, largura: 220, altura: 106 });
         }
         if (estado.quantidadeFazendeiros > 5) {
-          plantacoes.push({ x: 570, y: 575, largura: 220, altura: 92 });
+          plantacoes.push({ x: 910, y: 740, largura: 220, altura: 106 });
         }
 
         for (const plantacao of plantacoes) {
@@ -1075,19 +1110,19 @@
         }
 
         contexto.fillStyle = "#7a512d";
-        contexto.fillRect(280, 165, 440, 22);
-        contexto.fillRect(280, 513, 440, 22);
-        contexto.fillRect(280, 165, 22, 370);
-        contexto.fillRect(698, 165, 22, 370);
+        contexto.fillRect(420, 190, 560, 22);
+        contexto.fillRect(420, 678, 560, 22);
+        contexto.fillRect(420, 190, 22, 510);
+        contexto.fillRect(958, 190, 22, 510);
 
         contexto.fillStyle = "#c9b982";
-        contexto.fillRect(466, 509, 68, 30);
+        contexto.fillRect(660, 674, 80, 30);
 
         const casas = [
-          [345, 240],
-          [550, 240],
-          [355, 390],
-          [565, 390],
+          [500, 295],
+          [810, 295],
+          [515, 500],
+          [825, 500],
         ];
         for (const [x, y] of casas) {
           contexto.fillStyle = "#9a6737";
@@ -1102,17 +1137,17 @@
         }
 
         contexto.fillStyle = "#e7d6a6";
-        contexto.fillRect(568, 262, 54, 24);
+        contexto.fillRect(828, 317, 54, 24);
         contexto.fillStyle = "#3d2a1b";
         contexto.font = "bold 15px sans-serif";
         contexto.textAlign = "center";
         contexto.textBaseline = "middle";
-        contexto.fillText("LOJA", 595, 274);
+        contexto.fillText("LOJA", 855, 329);
         contexto.textAlign = "start";
         contexto.textBaseline = "alphabetic";
 
         contexto.fillStyle = "#817249";
-        contexto.fillRect(482, 430, 36, 79);
+        contexto.fillRect(682, 590, 36, 84);
       }
 
       function interpolarPonto(inicio, fim, progresso) {
@@ -1140,34 +1175,34 @@
         const segundoCampo = indice >= 5;
         const vaga = indice % 5;
         const casas = [
-          { x: 390, y: 275 },
-          { x: 595, y: 275 },
-          { x: 400, y: 425 },
-          { x: 610, y: 425 },
-          { x: 500, y: 350 },
+          { x: 545, y: 330 },
+          { x: 855, y: 330 },
+          { x: 560, y: 535 },
+          { x: 870, y: 535 },
+          { x: 700, y: 445 },
         ];
         const casaBase = casas[vaga];
         const casa = {
           x: casaBase.x + (segundoCampo ? 8 : -8),
           y: casaBase.y + (segundoCampo ? 8 : -8),
         };
-        const portao = { x: 500, y: 548 };
-        const yPlantacao = 589 + vaga * 16;
+        const portao = { x: 700, y: 714 };
+        const yPlantacao = 754 + vaga * 16;
         const entradaPlantacao = {
-          x: segundoCampo ? 585 : 415,
+          x: segundoCampo ? 925 : 475,
           y: yPlantacao,
         };
         const fimPlantacao = {
-          x: segundoCampo ? 775 : 225,
+          x: segundoCampo ? 1115 : 285,
           y: yPlantacao,
         };
         const bifurcacao = {
-          x: segundoCampo ? 555 : 445,
-          y: 562,
+          x: segundoCampo ? 850 : 550,
+          y: 728,
         };
         const ida = [
           casa,
-          { x: 500, y: 480 },
+          { x: 700, y: 620 },
           portao,
           bifurcacao,
           entradaPlantacao,
@@ -1182,7 +1217,7 @@
           fimPlantacao,
           bifurcacao,
           portao,
-          { x: 500, y: 480 },
+          { x: 700, y: 620 },
           casa,
         ];
 
@@ -1222,12 +1257,12 @@
 
         contexto.fillStyle = "#536b3c";
         contexto.beginPath();
-        contexto.moveTo(460, alturaMundo);
-        contexto.bezierCurveTo(430, 540, 530, 420, 500, 250);
-        contexto.bezierCurveTo(490, 165, 530, 80, 545, 0);
-        contexto.lineTo(625, 0);
-        contexto.bezierCurveTo(590, 145, 610, 230, 580, 335);
-        contexto.bezierCurveTo(550, 480, 545, 585, 560, alturaMundo);
+        contexto.moveTo(660, alturaMundo);
+        contexto.bezierCurveTo(610, 720, 740, 580, 700, 360);
+        contexto.bezierCurveTo(680, 240, 735, 120, 750, 0);
+        contexto.lineTo(850, 0);
+        contexto.bezierCurveTo(805, 190, 835, 310, 790, 450);
+        contexto.bezierCurveTo(750, 640, 760, 780, 775, alturaMundo);
         contexto.closePath();
         contexto.fill();
 
