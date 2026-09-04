@@ -105,6 +105,10 @@
         opacity: 0.38;
       }
 
+      button[hidden] {
+        display: none;
+      }
+
       button.secundario {
         border-color: #655e4d;
         background: #3b382f;
@@ -437,6 +441,7 @@
         <div class="indicador">Banqueiro<span id="banqueiro-status">Não contratado</span></div>
         <div class="indicador">Escriturário<span id="escriturario-status">Não contratado</span></div>
         <div class="indicador">Fundo de expansão<span id="fundo-expansao">0 / 10.000</span></div>
+        <div class="indicador">Nova colônia<span id="colonia-status">Não fundada</span></div>
         <div class="indicador">Combate<span id="combate-status">ATQ 1 · ARM 0</span></div>
       </section>
 
@@ -470,6 +475,9 @@
         </button>
         <button id="mapa-expansao" type="button" disabled>
           Comprar novo mapa · 10.000 no fundo
+        </button>
+        <button id="construir-colonia" type="button" hidden>
+          Construir administração · 500 ouro
         </button>
         <button id="abrir-loja" type="button">Loja</button>
         <button id="abrir-transferencia" class="secundario" type="button">
@@ -555,6 +563,8 @@
             <li>Cada escriturário custa 100 de ouro e transfere 0,5% do ouro atual para o fundo de expansão a cada 60 segundos.</li>
             <li>Com 10.000 de ouro no fundo, o escritório pode comprar o mapa de uma nova colônia.</li>
             <li>Na nova colônia, 10% da produção do posto avançado é recebida como tributo.</li>
+            <li>A nova colônia começa vazia, com o administrador e 20 colonos na costa.</li>
+            <li>A administração custa 500 de ouro e o primeiro bairro residencial custa 750.</li>
             <li>Descansar custa 3 de ouro e recupera até 30 de vida.</li>
             <li>Ao ser derrotado, você volta com vida completa e perde 15 de ouro.</li>
             <li>Cada ponto de ataque causa 1 de dano.</li>
@@ -651,6 +661,7 @@
       const banqueiroStatusEl = document.querySelector("#banqueiro-status");
       const escriturarioStatusEl = document.querySelector("#escriturario-status");
       const fundoExpansaoEl = document.querySelector("#fundo-expansao");
+      const coloniaStatusEl = document.querySelector("#colonia-status");
       const mensagemEl = document.querySelector("#mensagem");
       const cacarBotao = document.querySelector("#cacar");
       const voltarBotao = document.querySelector("#voltar");
@@ -691,6 +702,9 @@
         "#contratar-escriturario",
       );
       const mapaExpansaoBotao = document.querySelector("#mapa-expansao");
+      const construirColoniaBotao = document.querySelector(
+        "#construir-colonia",
+      );
       const controlesMapaEl = document.querySelector("#controles-mapa");
       const diminuirZoomBotao = document.querySelector("#diminuir-zoom");
       const centralizarMapaBotao = document.querySelector("#centralizar-mapa");
@@ -725,14 +739,25 @@
       const versaoMapa = 2;
       const posicaoAssentamento = { x: 700, y: 510 };
       const posicaoFloresta = { x: 700, y: 790 };
-      const origemNovaColonia = {
-        x: (larguraMundoExpansao - larguraMundo) / 2,
-        y: (alturaMundoExpansao - alturaMundo) / 2,
+      const limiteCosta = 6100;
+      const posicaoNovaColonia = { x: 5740, y: 2250 };
+      const areaAdministracao = {
+        x: 3370,
+        y: 2050,
+        largura: 260,
+        altura: 170,
       };
-      const posicaoNovaColonia = {
-        x: origemNovaColonia.x + 700,
-        y: origemNovaColonia.y + 520,
+      const posicaoAdministrador = { x: 3500, y: 2250 };
+      const areaMoradias = {
+        x: 1950,
+        y: 2850,
+        largura: 700,
+        altura: 500,
       };
+      const quantidadeColonosExpansao = 20;
+      const custoAdministracaoColonia = 500;
+      const custoMoradiasColonia = 750;
+      const duracaoConstrucaoColonia = 20;
       const custoDescanso = 3;
       const custoDerrota = 15;
       const custoFazendeiro = 100;
@@ -825,6 +850,8 @@
         fundoExpansao: 0,
         mapaExpansaoComprado: false,
         mapaAtual: "posto",
+        etapaConstrucaoColonia: 0,
+        tempoConstrucaoColonia: 0,
         cameraExpansao: {
           x: posicaoNovaColonia.x - larguraMundo / 2,
           y: posicaoNovaColonia.y - alturaMundo / 2,
@@ -946,6 +973,10 @@
           expansao: {
             mapaComprado: estado.mapaExpansaoComprado,
             mapaAtual: estado.mapaAtual,
+            construcao: {
+              etapa: estado.etapaConstrucaoColonia,
+              tempo: estado.tempoConstrucaoColonia,
+            },
             camera: {
               x: estado.cameraExpansao.x,
               y: estado.cameraExpansao.y,
@@ -1357,6 +1388,24 @@
             estado.mapaExpansaoComprado && salvo.expansao?.mapaAtual === "expansao"
               ? "expansao"
               : "posto";
+          estado.etapaConstrucaoColonia = Math.round(
+            numeroValido(
+              salvo.expansao?.construcao?.etapa,
+              0,
+              4,
+              0,
+            ),
+          );
+          estado.tempoConstrucaoColonia =
+            estado.etapaConstrucaoColonia === 1 ||
+            estado.etapaConstrucaoColonia === 3
+              ? numeroValido(
+                  salvo.expansao?.construcao?.tempo,
+                  0,
+                  duracaoConstrucaoColonia,
+                  0,
+                )
+              : 0;
           estado.cameraExpansao.zoom = numeroValido(
             salvo.expansao?.camera?.zoom,
             zoomMinimoExpansao,
@@ -1387,8 +1436,9 @@
 
           if (estado.mapaAtual === "expansao") {
             estado.local = "assentamento";
-            estado.jogador.x = posicaoNovaColonia.x;
-            estado.jogador.y = posicaoNovaColonia.y;
+            const posicaoColonia = posicaoJogadorNovaColonia();
+            estado.jogador.x = posicaoColonia.x;
+            estado.jogador.y = posicaoColonia.y;
             estado.inimigos = [];
           } else if (estado.local === "assentamento") {
             estado.jogador.x = posicaoAssentamento.x;
@@ -1455,9 +1505,61 @@
         estado.fundoExpansao = 0;
         estado.mapaExpansaoComprado = false;
         estado.mapaAtual = "posto";
+        estado.etapaConstrucaoColonia = 0;
+        estado.tempoConstrucaoColonia = 0;
         estado.cameraExpansao.x = posicaoNovaColonia.x - larguraMundo / 2;
         estado.cameraExpansao.y = posicaoNovaColonia.y - alturaMundo / 2;
         estado.cameraExpansao.zoom = 1;
+      }
+
+      function percentualConstrucaoColonia() {
+        return Math.min(
+          100,
+          Math.round(
+            (estado.tempoConstrucaoColonia / duracaoConstrucaoColonia) * 100,
+          ),
+        );
+      }
+
+      function atualizarInterfaceConstrucao() {
+        const naNovaColonia = estado.mapaAtual === "expansao";
+        construirColoniaBotao.hidden = !naNovaColonia;
+
+        if (!estado.mapaExpansaoComprado) {
+          coloniaStatusEl.textContent = "Não fundada";
+          construirColoniaBotao.disabled = true;
+          return;
+        }
+
+        if (estado.etapaConstrucaoColonia === 0) {
+          coloniaStatusEl.textContent = "20 colonos · costa vazia";
+          construirColoniaBotao.textContent =
+            "Construir administração · 500 ouro";
+          construirColoniaBotao.disabled =
+            !naNovaColonia || estado.ouro < custoAdministracaoColonia;
+        } else if (estado.etapaConstrucaoColonia === 1) {
+          const percentual = percentualConstrucaoColonia();
+          coloniaStatusEl.textContent = `Administração · ${percentual}%`;
+          construirColoniaBotao.textContent =
+            `Administração em construção · ${percentual}%`;
+          construirColoniaBotao.disabled = true;
+        } else if (estado.etapaConstrucaoColonia === 2) {
+          coloniaStatusEl.textContent = "Administração concluída";
+          construirColoniaBotao.textContent =
+            "Construir bairro residencial · 750 ouro";
+          construirColoniaBotao.disabled =
+            !naNovaColonia || estado.ouro < custoMoradiasColonia;
+        } else if (estado.etapaConstrucaoColonia === 3) {
+          const percentual = percentualConstrucaoColonia();
+          coloniaStatusEl.textContent = `Moradias · ${percentual}%`;
+          construirColoniaBotao.textContent =
+            `Bairro residencial em construção · ${percentual}%`;
+          construirColoniaBotao.disabled = true;
+        } else {
+          coloniaStatusEl.textContent = "Administração e moradias concluídas";
+          construirColoniaBotao.textContent = "Primeiras fundações concluídas";
+          construirColoniaBotao.disabled = true;
+        }
       }
 
       function atualizarInterface() {
@@ -1584,6 +1686,7 @@
         }
         controlesMapaEl.hidden = !naNovaColonia;
         atualizarControlesCamera();
+        atualizarInterfaceConstrucao();
         canvas.setAttribute("data-interativo", String(naNovaColonia));
         if (!naNovaColonia) {
           canvas.setAttribute("data-arrastando", "false");
@@ -1592,7 +1695,7 @@
         canvas.setAttribute(
           "aria-label",
           naNovaColonia
-            ? "Mapa ampliado da nova colônia. Arraste para explorar e use dois dedos para ampliar. O administrador é o ponto verde."
+            ? "Mapa costeiro ampliado da nova colônia com 20 colonos. Arraste para explorar e use dois dedos para ampliar. O administrador é o ponto verde."
             : noAssentamento
             ? `Mapa do assentamento com rio, cais, ferraria, banco, minas, ${estado.quantidadeFazendeiros} fazendeiros, ${estado.quantidadeFruticultores} fruticultores, ${estado.quantidadePescadores} pescadores, ${estado.quantidadeComerciantes} comerciantes, ${estado.quantidadeFerreiros} ferreiros, ${estado.quantidadeMineiros} mineiros e ${estado.quantidadeBanqueiros} banqueiros. O arqueiro é o ponto verde.`
             : `Mapa da floresta com ${estado.inimigos.length} inimigos vermelhos. O arqueiro é o ponto verde.`,
@@ -1936,6 +2039,147 @@
         salvarProgresso();
       }
 
+      function posicaoJogadorNovaColonia() {
+        if (estado.etapaConstrucaoColonia === 1) {
+          const progressoViagem = Math.min(
+            1,
+            estado.tempoConstrucaoColonia /
+              (duracaoConstrucaoColonia * 0.55),
+          );
+          return interpolarPonto(
+            posicaoNovaColonia,
+            posicaoAdministrador,
+            progressoViagem,
+          );
+        }
+        return estado.etapaConstrucaoColonia >= 2
+          ? { ...posicaoAdministrador }
+          : { ...posicaoNovaColonia };
+      }
+
+      function focarCameraExpansao(alvo, zoom) {
+        estado.cameraExpansao.zoom = numeroValido(
+          zoom,
+          zoomMinimoExpansao,
+          zoomMaximoExpansao,
+          1,
+        );
+        const visao = dimensoesVisaoExpansao();
+        estado.cameraExpansao.x = alvo.x - visao.largura / 2;
+        estado.cameraExpansao.y = alvo.y - visao.altura / 2;
+        limitarCameraExpansao();
+        atualizarControlesCamera();
+      }
+
+      function iniciarConstrucaoColonia() {
+        if (estado.mapaAtual !== "expansao") {
+          definirMensagem("Viaje para a nova colônia para iniciar as obras.");
+          return;
+        }
+
+        if (estado.etapaConstrucaoColonia === 0) {
+          if (estado.ouro < custoAdministracaoColonia) {
+            definirMensagem(
+              "Você precisa de 500 de ouro para construir a administração.",
+            );
+            return;
+          }
+          estado.ouro = arredondarOuro(
+            estado.ouro - custoAdministracaoColonia,
+          );
+          estado.etapaConstrucaoColonia = 1;
+          estado.tempoConstrucaoColonia = 0;
+          focarCameraExpansao(
+            {
+              x: (posicaoNovaColonia.x + posicaoAdministrador.x) / 2,
+              y: (posicaoNovaColonia.y + posicaoAdministrador.y) / 2,
+            },
+            0.55,
+          );
+          definirMensagem(
+            "Os 20 colonos seguem da costa para construir a administração.",
+          );
+        } else if (estado.etapaConstrucaoColonia === 2) {
+          if (estado.ouro < custoMoradiasColonia) {
+            definirMensagem(
+              "Você precisa de 750 de ouro para construir o bairro residencial.",
+            );
+            return;
+          }
+          estado.ouro = arredondarOuro(estado.ouro - custoMoradiasColonia);
+          estado.etapaConstrucaoColonia = 3;
+          estado.tempoConstrucaoColonia = 0;
+          focarCameraExpansao(
+            {
+              x:
+                (posicaoAdministrador.x +
+                  areaMoradias.x +
+                  areaMoradias.largura / 2) /
+                2,
+              y:
+                (posicaoAdministrador.y +
+                  areaMoradias.y +
+                  areaMoradias.altura / 2) /
+                2,
+            },
+            0.7,
+          );
+          definirMensagem(
+            "Os colonos começaram um bairro residencial afastado do centro.",
+          );
+        } else if (
+          estado.etapaConstrucaoColonia === 1 ||
+          estado.etapaConstrucaoColonia === 3
+        ) {
+          definirMensagem("Os colonos ainda estão trabalhando nesta obra.");
+          return;
+        } else {
+          definirMensagem("As primeiras fundações da colônia estão concluídas.");
+          return;
+        }
+
+        estado.salvamentoAtivo = true;
+        atualizarInterface();
+        salvarProgresso();
+      }
+
+      function atualizarConstrucaoColonia(delta) {
+        if (
+          estado.etapaConstrucaoColonia !== 1 &&
+          estado.etapaConstrucaoColonia !== 3
+        ) {
+          return;
+        }
+
+        estado.tempoConstrucaoColonia += delta;
+        if (estado.mapaAtual === "expansao") {
+          const posicaoColonia = posicaoJogadorNovaColonia();
+          estado.jogador.x = posicaoColonia.x;
+          estado.jogador.y = posicaoColonia.y;
+        }
+
+        if (estado.tempoConstrucaoColonia >= duracaoConstrucaoColonia) {
+          const administracaoConcluida =
+            estado.etapaConstrucaoColonia === 1;
+          estado.etapaConstrucaoColonia += 1;
+          estado.tempoConstrucaoColonia = 0;
+          if (estado.mapaAtual === "expansao") {
+            const posicaoColonia = posicaoJogadorNovaColonia();
+            estado.jogador.x = posicaoColonia.x;
+            estado.jogador.y = posicaoColonia.y;
+            definirMensagem(
+              administracaoConcluida
+                ? "Administração concluída. Agora a colônia precisa de moradias."
+                : "Bairro residencial concluído. A colônia possui suas primeiras fundações.",
+            );
+          }
+          atualizarInterface();
+          salvarProgresso();
+        } else {
+          atualizarInterfaceConstrucao();
+        }
+      }
+
       function dimensoesVisaoExpansao() {
         return {
           largura: larguraMundo / estado.cameraExpansao.zoom,
@@ -1969,9 +2213,10 @@
       }
 
       function centralizarMapaExpansao(anunciar = true) {
+        const alvo = posicaoJogadorNovaColonia();
         estado.cameraExpansao.zoom = 1;
-        estado.cameraExpansao.x = posicaoNovaColonia.x - larguraMundo / 2;
-        estado.cameraExpansao.y = posicaoNovaColonia.y - alturaMundo / 2;
+        estado.cameraExpansao.x = alvo.x - larguraMundo / 2;
+        estado.cameraExpansao.y = alvo.y - alturaMundo / 2;
         limitarCameraExpansao();
         atualizarControlesCamera();
         if (anunciar) {
@@ -2204,7 +2449,7 @@
           estado.inimigos = [];
           centralizarMapaExpansao(false);
           definirMensagem(
-            "Novo mapa comprado. Você agora administra uma colônia maior e recebe 10% da produção do posto avançado.",
+            "Você e 20 colonos desembarcaram em uma costa vazia. Escolha onde iniciar as fundações.",
           );
         } else if (estado.mapaAtual === "expansao") {
           estado.mapaAtual = "posto";
@@ -2219,10 +2464,11 @@
           }
           estado.mapaAtual = "expansao";
           estado.local = "assentamento";
-          estado.jogador.x = posicaoNovaColonia.x;
-          estado.jogador.y = posicaoNovaColonia.y;
+          const posicaoColonia = posicaoJogadorNovaColonia();
+          estado.jogador.x = posicaoColonia.x;
+          estado.jogador.y = posicaoColonia.y;
           estado.inimigos = [];
-          definirMensagem("Você viajou para a nova colônia.");
+          definirMensagem("Você viajou para a colônia costeira.");
         }
         estado.salvamentoAtivo = true;
         atualizarInterface();
@@ -3110,122 +3356,206 @@
         contexto.fillRect(682, 590, 36, 84);
       }
 
+      function progressoEtapaColonia(etapa) {
+        if (estado.etapaConstrucaoColonia > etapa) return 1;
+        if (estado.etapaConstrucaoColonia !== etapa) return 0;
+        return Math.min(
+          1,
+          estado.tempoConstrucaoColonia / duracaoConstrucaoColonia,
+        );
+      }
+
+      function limitarProgresso(valor) {
+        return Math.min(1, Math.max(0, valor));
+      }
+
+      function posicaoFormacaoColonos(centro, indice) {
+        return {
+          x: centro.x + (indice % 5 - 2) * 25,
+          y: centro.y + (Math.floor(indice / 5) - 1.5) * 25,
+        };
+      }
+
+      function posicaoTrabalhoAdministracao(indice) {
+        const angulo = (indice / quantidadeColonosExpansao) * Math.PI * 2;
+        return {
+          x:
+            areaAdministracao.x +
+            areaAdministracao.largura / 2 +
+            Math.cos(angulo) * 185,
+          y:
+            areaAdministracao.y +
+            areaAdministracao.altura / 2 +
+            Math.sin(angulo) * 135,
+        };
+      }
+
+      function posicaoTrabalhoMoradias(indice) {
+        const coluna = indice % 5;
+        const linha = Math.floor(indice / 5);
+        return {
+          x: areaMoradias.x + 80 + coluna * 135,
+          y: areaMoradias.y + 75 + linha * 115,
+        };
+      }
+
+      function posicaoColonoNovaColonia(indice) {
+        const desembarque = posicaoFormacaoColonos(
+          { x: posicaoNovaColonia.x + 35, y: posicaoNovaColonia.y + 75 },
+          indice,
+        );
+        const administracao = posicaoTrabalhoAdministracao(indice);
+        const moradias = posicaoTrabalhoMoradias(indice);
+        let posicao = desembarque;
+
+        if (estado.etapaConstrucaoColonia === 1) {
+          const progresso = limitarProgresso(
+            progressoEtapaColonia(1) * 1.35 - indice * 0.018,
+          );
+          posicao = interpolarPonto(desembarque, administracao, progresso);
+        } else if (estado.etapaConstrucaoColonia === 2) {
+          posicao = administracao;
+        } else if (estado.etapaConstrucaoColonia === 3) {
+          const progresso = limitarProgresso(
+            progressoEtapaColonia(3) * 1.35 - indice * 0.018,
+          );
+          posicao = interpolarPonto(administracao, moradias, progresso);
+        } else if (estado.etapaConstrucaoColonia >= 4) {
+          posicao = indice < 6 ? administracao : moradias;
+        }
+
+        return {
+          x: posicao.x + Math.sin(tempoRio * 2.2 + indice) * 3,
+          y: posicao.y + Math.cos(tempoRio * 1.8 + indice) * 3,
+        };
+      }
+
+      function desenharAdministracaoColonia() {
+        const progresso = progressoEtapaColonia(1);
+        if (progresso <= 0) return;
+        const { x, y, largura, altura } = areaAdministracao;
+
+        contexto.strokeStyle = "#6a5130";
+        contexto.lineWidth = 12;
+        contexto.strokeRect(x, y, largura, altura);
+        contexto.fillStyle = "#b99b62";
+        contexto.fillRect(x, y + altura - 14, largura * progresso, 14);
+
+        const paredes = limitarProgresso((progresso - 0.22) / 0.58);
+        if (paredes > 0) {
+          const alturaParedes = (altura - 24) * paredes;
+          contexto.fillStyle = "#8d5b31";
+          contexto.fillRect(
+            x + 14,
+            y + altura - 14 - alturaParedes,
+            largura - 28,
+            alturaParedes,
+          );
+        }
+
+        if (progresso > 0.78) {
+          const telhado = limitarProgresso((progresso - 0.78) / 0.22);
+          contexto.fillStyle = "#4f3522";
+          contexto.beginPath();
+          contexto.moveTo(x - 18, y + 12);
+          contexto.lineTo(x + largura / 2, y - 80 * telhado);
+          contexto.lineTo(x + largura + 18, y + 12);
+          contexto.closePath();
+          contexto.fill();
+        }
+
+        if (progresso >= 1) {
+          contexto.fillStyle = "#684328";
+          contexto.fillRect(x + largura / 2 - 28, y + altura - 70, 56, 70);
+          contexto.fillStyle = "#e7d6a6";
+          contexto.fillRect(x + 38, y + 34, largura - 76, 32);
+          contexto.fillStyle = "#3d2a1b";
+          contexto.font = "bold 16px sans-serif";
+          contexto.textAlign = "center";
+          contexto.textBaseline = "middle";
+          contexto.fillText("ADMINISTRAÇÃO", x + largura / 2, y + 50);
+          contexto.textAlign = "start";
+          contexto.textBaseline = "alphabetic";
+        }
+      }
+
+      function desenharMoradiasColonia() {
+        const progresso = progressoEtapaColonia(3);
+        if (progresso <= 0) return;
+        contexto.strokeStyle = "#66744c";
+        contexto.lineWidth = 8;
+        contexto.strokeRect(
+          areaMoradias.x,
+          areaMoradias.y,
+          areaMoradias.largura,
+          areaMoradias.altura,
+        );
+
+        const casas = [
+          [areaMoradias.x + 70, areaMoradias.y + 70],
+          [areaMoradias.x + 285, areaMoradias.y + 70],
+          [areaMoradias.x + 500, areaMoradias.y + 70],
+          [areaMoradias.x + 70, areaMoradias.y + 300],
+          [areaMoradias.x + 285, areaMoradias.y + 300],
+          [areaMoradias.x + 500, areaMoradias.y + 300],
+        ];
+        casas.forEach(([x, y], indice) => {
+          const progressoCasa = limitarProgresso(progresso * 6 - indice);
+          if (progressoCasa <= 0) return;
+          contexto.strokeStyle = "#6a5130";
+          contexto.lineWidth = 8;
+          contexto.strokeRect(x, y, 130, 105);
+          if (progressoCasa > 0.35) {
+            const parede = limitarProgresso((progressoCasa - 0.35) / 0.45);
+            contexto.fillStyle = "#9a6737";
+            contexto.fillRect(x + 8, y + 97 - 85 * parede, 114, 85 * parede);
+          }
+          if (progressoCasa > 0.8) {
+            contexto.fillStyle = "#5b3a23";
+            contexto.beginPath();
+            contexto.moveTo(x - 10, y + 18);
+            contexto.lineTo(x + 65, y - 38);
+            contexto.lineTo(x + 140, y + 18);
+            contexto.closePath();
+            contexto.fill();
+          }
+        });
+      }
+
+      function desenharColonosNovaColonia() {
+        for (
+          let indice = 0;
+          indice < quantidadeColonosExpansao;
+          indice += 1
+        ) {
+          const posicao = posicaoColonoNovaColonia(indice);
+          desenharCirculo(posicao.x, posicao.y, 7, "#e1c27a", "#59462c");
+        }
+      }
+
       function desenharNovaColonia() {
         contexto.fillStyle = "#899e62";
         contexto.fillRect(0, 0, larguraMundoExpansao, alturaMundoExpansao);
 
-        contexto.fillStyle = "#7f945b";
-        for (let indice = 0; indice < 180; indice += 1) {
-          const x = (indice * 997 + 260) % larguraMundoExpansao;
-          const y = (indice * 613 + 180) % alturaMundoExpansao;
-          if (
-            Math.abs(x - posicaoNovaColonia.x) < 850 &&
-            Math.abs(y - posicaoNovaColonia.y) < 650
-          ) {
-            continue;
-          }
-          desenharCirculo(x, y, 16 + (indice % 4) * 3, "#526f43", "#405a38");
-        }
-
-        contexto.fillStyle = "#4c7890";
-        contexto.fillRect(0, 520, larguraMundoExpansao, 150);
-        contexto.fillStyle = "#6e99a8";
-        contexto.fillRect(0, 555, larguraMundoExpansao, 28);
-
-        contexto.fillStyle = "#b8a474";
-        contexto.fillRect(posicaoNovaColonia.x - 40, 0, 80, alturaMundoExpansao);
-        contexto.fillRect(0, posicaoNovaColonia.y - 41, larguraMundoExpansao, 82);
-        contexto.fillRect(posicaoNovaColonia.x - 50, 510, 100, 170);
-
-        const areasFuturas = [
-          [950, 1200, 420, 300],
-          [5350, 1150, 470, 320],
-          [1050, 3300, 500, 340],
-          [5250, 3260, 520, 350],
-        ];
-        contexto.strokeStyle = "#6f8154";
-        contexto.lineWidth = 14;
-        for (const [x, y, largura, altura] of areasFuturas) {
-          contexto.strokeRect(x, y, largura, altura);
-        }
-
-        contexto.save();
-        contexto.translate(origemNovaColonia.x, origemNovaColonia.y);
-
-        contexto.fillStyle = "#b8a474";
-        contexto.fillRect(660, 130, 80, 680);
-        contexto.fillRect(170, 470, 1060, 82);
-
-        contexto.fillStyle = "#67452b";
-        contexto.fillRect(170, 130, 1060, 24);
-        contexto.fillRect(170, 786, 1060, 24);
-        contexto.fillRect(170, 130, 24, 680);
-        contexto.fillRect(1206, 130, 24, 680);
-
-        contexto.fillStyle = "#b8a474";
-        contexto.fillRect(650, 126, 100, 34);
-        contexto.fillRect(650, 780, 100, 36);
-        contexto.fillRect(164, 462, 36, 98);
-        contexto.fillRect(1200, 462, 36, 98);
-
-        const fundacoes = [
-          [280, 240, 190, 120],
-          [930, 240, 190, 120],
-          [280, 620, 190, 110],
-          [930, 620, 190, 110],
-        ];
-        contexto.strokeStyle = "#596b43";
-        contexto.lineWidth = 8;
-        for (const [x, y, largura, altura] of fundacoes) {
-          contexto.strokeRect(x, y, largura, altura);
-        }
-
-        contexto.fillStyle = "#8d5b31";
-        contexto.fillRect(570, 330, 260, 150);
-        contexto.fillStyle = "#4f3522";
-        contexto.beginPath();
-        contexto.moveTo(545, 330);
-        contexto.lineTo(700, 245);
-        contexto.lineTo(855, 330);
-        contexto.closePath();
-        contexto.fill();
-        contexto.fillStyle = "#684328";
-        contexto.fillRect(670, 405, 60, 75);
-        contexto.fillStyle = "#e7d6a6";
-        contexto.fillRect(610, 350, 180, 34);
-        contexto.fillStyle = "#3d2a1b";
-        contexto.font = "bold 17px sans-serif";
-        contexto.textAlign = "center";
-        contexto.textBaseline = "middle";
-        contexto.fillText("ADMINISTRAÇÃO", 700, 367);
-
-        contexto.fillStyle = "#4c3825";
-        contexto.fillRect(760, 220, 8, 82);
-        contexto.fillStyle = "#d6b34f";
-        contexto.beginPath();
-        contexto.moveTo(768, 222);
-        contexto.lineTo(826, 238);
-        contexto.lineTo(768, 254);
-        contexto.closePath();
-        contexto.fill();
-
-        contexto.fillStyle = "#eee2bd";
-        contexto.fillRect(520, 70, 360, 44);
-        contexto.fillStyle = "#3d2a1b";
-        contexto.font = "bold 22px sans-serif";
-        contexto.fillText("NOVA COLÔNIA", 700, 92);
-        contexto.textAlign = "start";
-        contexto.textBaseline = "alphabetic";
-        contexto.restore();
-
-        contexto.strokeStyle = "#526440";
-        contexto.lineWidth = 18;
-        contexto.strokeRect(
-          12,
-          12,
-          larguraMundoExpansao - 24,
-          alturaMundoExpansao - 24,
+        contexto.fillStyle = "#d1b978";
+        contexto.fillRect(limiteCosta - 180, 0, 180, alturaMundoExpansao);
+        contexto.fillStyle = "#39738d";
+        contexto.fillRect(
+          limiteCosta,
+          0,
+          larguraMundoExpansao - limiteCosta,
+          alturaMundoExpansao,
         );
+        contexto.fillStyle = "#5b93a6";
+        for (let y = 80; y < alturaMundoExpansao; y += 170) {
+          const movimento = (tempoRio * 14 + y) % 90;
+          contexto.fillRect(limiteCosta + 70 + movimento, y, 170, 9);
+          contexto.fillRect(limiteCosta + 430 - movimento, y + 55, 130, 7);
+        }
+
+        desenharAdministracaoColonia();
+        desenharMoradiasColonia();
+        desenharColonosNovaColonia();
       }
 
       function interpolarPonto(inicio, fim, progresso) {
@@ -3881,6 +4211,7 @@
         atualizarMineiro(delta);
         atualizarBanqueiro(delta);
         atualizarEscriturario(delta);
+        atualizarConstrucaoColonia(delta);
         if (
           estado.local === "floresta" ||
           estado.quantidadeFazendeiros > 0 ||
@@ -3929,6 +4260,10 @@
       contratarBanqueiroBotao.addEventListener("click", contratarBanqueiro);
       contratarEscriturarioBotao.addEventListener("click", contratarEscriturario);
       mapaExpansaoBotao.addEventListener("click", alternarMapaExpansao);
+      construirColoniaBotao.addEventListener(
+        "click",
+        iniciarConstrucaoColonia,
+      );
       diminuirZoomBotao.addEventListener("click", () =>
         alterarZoomExpansao(0.8),
       );
