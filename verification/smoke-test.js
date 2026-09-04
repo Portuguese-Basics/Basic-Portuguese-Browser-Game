@@ -168,7 +168,7 @@ function createHarness(storage) {
   };
 
   vm.runInNewContext(
-    `${source}\nglobalThis.__testeJogo = { estado, atualizarFazendeiro, atualizarFruticultor, atualizarPescador, atualizarComerciante, atualizarFerreiro, atualizarMineiro, atualizarBanqueiro, atualizarEscriturario, atualizarTransferenciaPosto, atualizarOrcamentoMunicipalColonia, atualizarPrioridadesColonia, atualizarNecessidadesColonia, atualizarDefesaColonia, atualizarConstrucaoColonia, atualizarMigracaoColonia, atualizarEnvelhecimentoEObitosColonia, redistribuirTrabalhadoresColonia, migracaoNecessariaColonia, migracaoIncentivadaPermitidaColonia, motivoBloqueioIncentivoMigracaoColonia, folhaCivilColonia, limiteFolhaCivilColonia, manutencaoMunicipalColonia, despesasEssenciaisMunicipaisColonia, saldoOperacionalMunicipalColonia, reservaMunicipalDinamicaColonia, folhaSoldosColonia, limiteSoldosColonia, segurancaCivilColonia, forcaMilitarColonia, posicaoColonoNovaColonia, posicaoCasaColonia, quantidadeColonosExpansao, totalMoradoresColonia, quantidadeBebesColonia, quantidadeCriancasColonia, chanceNascimentoColonia, idadeMediaAdultosColonia, duracaoBebeColonia, duracaoInfanciaColonia, barcoComercialAtracado, proximaObraAutomaticaColonia, custoObraAutomaticaColonia, casasNecessariasColonia, reservaPlanejadaMoradiaColonia, maximoCasasDisponiveisColonia, capacidadeMoradiasColonia, vagasMigracaoColonia, vagasFisicasMigracaoColonia, necessidadeAlimentosColonia, producaoAlimentarPorCiclo, valorAlimentarTotalColonia, consumirAlimentosColonia, capacidadesEmpregoColonia, totalCapacidadeEmpregosColonia, totalEmpregosOcupadosColonia, tipoArmaduraPrioritariaColonia, tipoArmaduraProduzivelColonia, escolherArmaduraDefesaColonia, totalArmadurasEstoqueColonia, proximoTrechoEstradaColonia, quantidadeTrechosEstradaNoNivelColonia, multiplicadorProducaoEstradasColonia, multiplicadorMovimentoEstradasColonia, multiplicadorConstrucaoEstradasColonia, multiplicadorConstrucaoColonia, catalogoArmazenamentoAlimentosColonia, capacidadeArmazemInternoColonia, trabalhadoresComFerramentasColonia, bonusFerramentasColonia, bonusLogisticaColonia, bonusEducacaoColonia, nivelFerramentasAtivoColonia, protecaoIncendioColonia, satisfacaoFeColonia, festivalAtivoColonia, materiaisObraColonia, trechosEstradaColonia, caminhosTrechoEstradaColonia, rotaMaisRapidaColonia, destinoEmpregoColonia, acessoCasaColonia, definirTempoRio(valor) { tempoRio = valor; } };`,
+    `${source}\nglobalThis.__testeJogo = { estado, atualizarFazendeiro, atualizarFruticultor, atualizarPescador, atualizarComerciante, atualizarFerreiro, atualizarMineiro, atualizarBanqueiro, atualizarEscriturario, atualizarTransferenciaPosto, atualizarOrcamentoMunicipalColonia, atualizarPrioridadesColonia, atualizarNecessidadesColonia, atualizarDefesaColonia, atualizarConstrucaoColonia, atualizarMigracaoColonia, atualizarEnvelhecimentoEObitosColonia, redistribuirTrabalhadoresColonia, migracaoNecessariaColonia, migracaoIncentivadaPermitidaColonia, motivoBloqueioIncentivoMigracaoColonia, folhaCivilColonia, limiteFolhaCivilColonia, manutencaoMunicipalColonia, despesasEssenciaisMunicipaisColonia, saldoOperacionalMunicipalColonia, reservaMunicipalDinamicaColonia, folhaSoldosColonia, limiteSoldosColonia, segurancaCivilColonia, forcaMilitarColonia, posicaoColonoNovaColonia, posicaoCasaColonia, quantidadeColonosExpansao, totalMoradoresColonia, quantidadeBebesColonia, quantidadeCriancasColonia, chanceNascimentoColonia, idadeMediaAdultosColonia, duracaoBebeColonia, duracaoInfanciaColonia, barcoComercialAtracado, proximaObraAutomaticaColonia, custoObraAutomaticaColonia, casasNecessariasColonia, reservaPlanejadaMoradiaColonia, maximoCasasDisponiveisColonia, capacidadeMoradiasColonia, vagasMigracaoColonia, vagasFisicasMigracaoColonia, necessidadeAlimentosColonia, producaoAlimentarPorCiclo, valorAlimentarTotalColonia, consumirAlimentosColonia, capacidadesEmpregoColonia, totalCapacidadeEmpregosColonia, totalEmpregosOcupadosColonia, tipoArmaduraPrioritariaColonia, tipoArmaduraProduzivelColonia, escolherArmaduraDefesaColonia, totalArmadurasEstoqueColonia, proximoTrechoEstradaColonia, quantidadeTrechosEstradaNoNivelColonia, multiplicadorProducaoEstradasColonia, multiplicadorMovimentoEstradasColonia, multiplicadorConstrucaoEstradasColonia, multiplicadorConstrucaoColonia, catalogoArmazenamentoAlimentosColonia, capacidadeArmazemInternoColonia, trabalhadoresComFerramentasColonia, bonusFerramentasColonia, bonusLogisticaColonia, bonusEducacaoColonia, nivelFerramentasAtivoColonia, protecaoIncendioColonia, satisfacaoFeColonia, festivalAtivoColonia, materiaisObraColonia, trechosEstradaColonia, caminhosTrechoEstradaColonia, rotaMaisRapidaColonia, destinoEmpregoColonia, acessoCasaColonia, areasHotfixCozinhas: { recintoExterno, recintoInterno, areaCozinhaCarneColonia, areaCozinhaHortalicasColonia, areaCozinhaFeijaoColonia, areaCofreCortesColonia, areaDespensaRefeicoesColonia, areaAdegaFriaColonia, areaDefumadorioColonia, areaCemiterioColonia, areaPatioTreinoColonia }, definirTempoRio(valor) { tempoRio = valor; } };`,
     context,
   );
   return {
@@ -179,6 +179,7 @@ function createHarness(storage) {
     fillTexts,
     arcs,
     lineSegments,
+    areasHotfixCozinhas: context.__testeJogo.areasHotfixCozinhas,
     estado: context.__testeJogo.estado,
     quantidadeColonosExpansao: context.__testeJogo.quantidadeColonosExpansao,
     resetDrawCalls() {
@@ -3733,6 +3734,13 @@ if (
   throw new Error("As casas do segundo bairro não foram colocadas no lote reservado.");
 }
 housingGame.resetDrawCalls();
+Object.assign(housingGame.estado, {
+  cozinhaHortalicasConstruida: true,
+  cozinhaFeijaoConstruida: true,
+  defumadorioConstruido: true,
+  adegaFriaConstruida: true,
+  cemiterioConstruido: true,
+});
 housingGame.step(100);
 const protectedMeatSites = [
   [420, 500, 600, 260],
@@ -3756,6 +3764,73 @@ if (
   )
 ) {
   throw new Error("O bairro ou a cadeia de carnes não apareceu nos locais seguros planejados.");
+}
+
+const {
+  recintoExterno: limiteExternoCozinhas,
+  recintoInterno: limiteInternoCozinhas,
+  areaCozinhaCarneColonia: cozinhaCarneExterna,
+  areaCozinhaHortalicasColonia: cozinhaHortalicasExterna,
+  areaCozinhaFeijaoColonia: cozinhaFeijaoExterna,
+  areaCofreCortesColonia: cofreCortesInterno,
+  areaDespensaRefeicoesColonia: despensaRefeicoesInterna,
+  areaAdegaFriaColonia: adegaFriaInterna,
+  areaDefumadorioColonia: defumadorioInterno,
+  areaCemiterioColonia: cemiterioSul,
+  areaPatioTreinoColonia: patioTreinoSul,
+} = housingGame.areasHotfixCozinhas;
+const areaContida = (area, limite) =>
+  area.x >= limite.x &&
+  area.y >= limite.y &&
+  area.x + area.largura <= limite.x + limite.largura &&
+  area.y + area.altura <= limite.y + limite.altura;
+const areasSobrepostas = (a, b) =>
+  a.x < b.x + b.largura &&
+  a.x + a.largura > b.x &&
+  a.y < b.y + b.altura &&
+  a.y + a.altura > b.y;
+const cozinhasExternas = [
+  cozinhaCarneExterna,
+  cozinhaHortalicasExterna,
+  cozinhaFeijaoExterna,
+];
+const estoquesPreservadosInternos = [
+  cofreCortesInterno,
+  despensaRefeicoesInterna,
+  adegaFriaInterna,
+  defumadorioInterno,
+];
+if (
+  !cozinhasExternas.every(
+    (area) =>
+      areaContida(area, limiteExternoCozinhas) &&
+      !areasSobrepostas(area, limiteInternoCozinhas),
+  ) ||
+  !estoquesPreservadosInternos.every((area) =>
+    areaContida(area, limiteInternoCozinhas),
+  ) ||
+  areasSobrepostas(cemiterioSul, limiteExternoCozinhas) ||
+  cemiterioSul.y < 8200 ||
+  cemiterioSul.y + cemiterioSul.altura < 8800 ||
+  cemiterioSul.x - (patioTreinoSul.x + patioTreinoSul.largura) !== 200 ||
+  cemiterioSul.y >= patioTreinoSul.y + patioTreinoSul.altura ||
+  cemiterioSul.y + cemiterioSul.altura <= patioTreinoSul.y ||
+  ![
+    [8400, 6400, 360, 430],
+    [8810, 6400, 430, 340],
+    [9290, 6400, 430, 340],
+  ].every(([sx, sy, sw, sh]) =>
+    housingGame.strokeRects.some(
+      ([x, y, width, height]) =>
+        x === sx && y === sy && width === sw && height === sh,
+    ),
+  ) ||
+  !housingGame.strokeRects.some(
+    ([x, y, width, height]) =>
+      x === 8350 && y === 8200 && width === 1800 && height === 650,
+  )
+) {
+  throw new Error("As cozinhas, os estoques preservados ou o cemitério não ficaram nas zonas planejadas.");
 }
 
 const meatStorage = new Map();

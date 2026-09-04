@@ -712,7 +712,7 @@
             <li>A cabana dos caçadores fica no alto da floresta e aceita 4 caçadores, com 3 carnes selvagens por trabalhador. A pastagem também entrega 1 carne de criação por pastor quando o açougue existe.</li>
             <li>O açougue transforma 3 carnes cruas em 2 cortes; a cozinha transforma 2 cortes em 3 refeições, cada uma valendo 4 alimentos. Cada etapa aceita 4 trabalhadores.</li>
             <li>Cortes e refeições, os produtos mais valiosos da cadeia de carnes, ficam em depósitos separados dentro da paliçada interna. Excedentes valem 6 e 10 de ouro.</li>
-            <li>As cozinhas de hortaliças e de feijão transformam 2 unidades frescas em 3 refeições. A adega fria interna recebe somente cortes e refeições preparadas.</li>
+            <li>As três cozinhas produtivas ficam no recinto externo. As cozinhas de hortaliças e de feijão transformam 2 unidades frescas em 3 refeições; a adega fria interna recebe somente cortes e refeições preparadas.</li>
             <li>O defumadório transforma 2 cortes em 2 carnes defumadas e 3 peixes em 2 peixes secos. A despensa seca interna recebe somente esses alimentos duráveis.</li>
             <li>Refeições frescas e alimentos comuns são consumidos antes das reservas duráveis. Carne defumada e peixe seco são sempre as últimas fontes de comida usadas.</li>
             <li>Os empregos alimentares são preenchidos antes dos demais até cobrir consumo +20%; se o estoque cair abaixo de um ciclo ou houver fome, a meta sobe para +40%.</li>
@@ -928,8 +928,8 @@
               <li>Segundo bairro de moradias <span id="edificio-segundo-bairro">Planejado</span></li>
               <li>Cabana dos caçadores <span id="edificio-cacadores">Planejada</span></li>
               <li>Açougue + cofre interno de cortes <span id="edificio-acougue">Planejados</span></li>
-              <li>Cozinha de carnes + despensa interna <span id="edificio-cozinha-carne">Planejadas</span></li>
-              <li>Cozinhas de hortaliças e feijão <span id="edificio-cozinhas-novas">Planejadas</span></li>
+              <li>Cozinha de carnes externa + despensa interna <span id="edificio-cozinha-carne">Planejadas</span></li>
+              <li>Cozinhas de hortaliças e feijão no recinto externo <span id="edificio-cozinhas-novas">Planejadas</span></li>
               <li>Adega fria + defumadório <span id="edificio-conservacao">Planejados</span></li>
               <li>Armazéns internos reforçados em pedra <span id="edificio-armazens-pedra">Planejados</span></li>
               <li>Cabanas de lenhadores <span id="edificio-lenhadores">0 / 2</span></li>
@@ -1990,8 +1990,8 @@
         altura: 280,
       };
       const areaCozinhaCarneColonia = {
-        x: 9450,
-        y: 5540,
+        x: 8400,
+        y: 6400,
         largura: 360,
         altura: 430,
       };
@@ -2212,14 +2212,14 @@
         altura: 300,
       };
       const areaCozinhaHortalicasColonia = {
-        x: 7000,
-        y: 3420,
+        x: 8810,
+        y: 6400,
         largura: 430,
         altura: 340,
       };
       const areaCozinhaFeijaoColonia = {
-        x: 7470,
-        y: 3420,
+        x: 9290,
+        y: 6400,
         largura: 430,
         altura: 340,
       };
@@ -2284,8 +2284,8 @@
         altura: 350,
       };
       const areaCemiterioColonia = {
-        x: 5200,
-        y: 8100,
+        x: 8350,
+        y: 8200,
         largura: 1800,
         altura: 650,
       };
@@ -12792,7 +12792,7 @@
             x:
               areaCozinhaCarneColonia.x +
               areaCozinhaCarneColonia.largura / 2,
-            y: areaCozinhaCarneColonia.y + areaCozinhaCarneColonia.altura,
+            y: areaCozinhaCarneColonia.y,
           },
           cozinhaHortalicas: {
             x:
@@ -15665,7 +15665,7 @@
           areaCozinhaCarneColonia,
           "cozinhaCarne",
           estado.cozinhaCarneConstruida,
-          "COZINHA · 4 VAGAS",
+          "COZINHA DE CARNES · 4 VAGAS",
           "#a3633f",
         );
         desenharArmazemAlimentoColonia(
