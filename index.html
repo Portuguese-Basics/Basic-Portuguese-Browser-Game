@@ -296,6 +296,7 @@
         <div class="indicador">Fazendeiro<span id="fazendeiro-status">Não contratado</span></div>
         <div class="indicador">Fruticultor<span id="fruticultor-status">Não contratado</span></div>
         <div class="indicador">Pescador<span id="pescador-status">Não contratado</span></div>
+        <div class="indicador">Comerciante<span id="comerciante-status">Não contratado</span></div>
         <div class="indicador">Combate<span id="combate-status">ATQ 1 · ARM 0</span></div>
       </section>
 
@@ -311,6 +312,9 @@
         </button>
         <button id="contratar-pescador" type="button">
           Contratar pescador · 100 ouro
+        </button>
+        <button id="contratar-comerciante" type="button">
+          Contratar comerciante · 100 ouro
         </button>
         <button id="abrir-loja" type="button">Loja</button>
         <button id="novo-jogo" class="secundario" type="button">Novo jogo</button>
@@ -373,6 +377,7 @@
             <li>Cada fazendeiro produz 1 de ouro a cada 10 segundos.</li>
             <li>Cada fruticultor custa 100 de ouro e produz 2 de ouro a cada 20 segundos.</li>
             <li>Cada pescador custa 100 de ouro e produz 3 de ouro a cada 30 segundos.</li>
+            <li>Cada comerciante custa 100 de ouro e produz 1 de ouro a cada 10 segundos.</li>
             <li>Descansar custa 3 de ouro e recupera até 30 de vida.</li>
             <li>Ao ser derrotado, você volta com vida completa e perde 15 de ouro.</li>
             <li>Cada ponto de ataque causa 1 de dano.</li>
@@ -395,6 +400,7 @@
       const fazendeiroStatusEl = document.querySelector("#fazendeiro-status");
       const fruticultorStatusEl = document.querySelector("#fruticultor-status");
       const pescadorStatusEl = document.querySelector("#pescador-status");
+      const comercianteStatusEl = document.querySelector("#comerciante-status");
       const mensagemEl = document.querySelector("#mensagem");
       const cacarBotao = document.querySelector("#cacar");
       const voltarBotao = document.querySelector("#voltar");
@@ -419,6 +425,9 @@
       const contratarPescadorBotao = document.querySelector(
         "#contratar-pescador",
       );
+      const contratarComercianteBotao = document.querySelector(
+        "#contratar-comerciante",
+      );
       const novoJogoBotao = document.querySelector("#novo-jogo");
       const apagarBotao = document.querySelector("#apagar");
 
@@ -432,16 +441,20 @@
       const custoFazendeiro = 100;
       const custoFruticultor = 100;
       const custoPescador = 100;
+      const custoComerciante = 100;
       const custoMelhoria = 100;
       const intervaloFazendeiro = 10;
       const intervaloFruticultor = 20;
       const intervaloPescador = 30;
+      const intervaloComerciante = 10;
       const ouroPorFruticultor = 2;
       const ouroPorPescador = 3;
+      const ouroPorComerciante = 1;
       const vidaMaxima = 100;
       const maximoFazendeiros = 10;
       const maximoFruticultores = 10;
       const maximoPescadores = 10;
+      const maximoComerciantes = 10;
       const nivelMaximo = 5;
       const chaveSalvamento = "arqueiro-do-assentamento-v1";
       const versaoSalvamento = 1;
@@ -482,6 +495,8 @@
         tempoFruticultor: 0,
         quantidadePescadores: 0,
         tempoPescador: 0,
+        quantidadeComerciantes: 0,
+        tempoComerciante: 0,
       };
 
       const arvores = [
@@ -559,6 +574,10 @@
           pescador: {
             quantidade: estado.quantidadePescadores,
             tempo: estado.tempoPescador,
+          },
+          comerciante: {
+            quantidade: estado.quantidadeComerciantes,
+            tempo: estado.tempoComerciante,
           },
         };
       }
@@ -692,6 +711,22 @@
                 0,
               )
             : 0;
+          estado.quantidadeComerciantes = Math.round(
+            numeroValido(
+              salvo.comerciante?.quantidade,
+              0,
+              maximoComerciantes,
+              0,
+            ),
+          );
+          estado.tempoComerciante = estado.quantidadeComerciantes > 0
+            ? numeroValido(
+                salvo.comerciante?.tempo,
+                0,
+                intervaloComerciante,
+                0,
+              )
+            : 0;
 
           const derrotadoAoCarregar = estado.vida === 0;
           if (derrotadoAoCarregar) {
@@ -752,6 +787,8 @@
         estado.tempoFruticultor = 0;
         estado.quantidadePescadores = 0;
         estado.tempoPescador = 0;
+        estado.quantidadeComerciantes = 0;
+        estado.tempoComerciante = 0;
       }
 
       function atualizarInterface() {
@@ -797,11 +834,22 @@
         pescadorStatusEl.textContent = estado.quantidadePescadores > 0
           ? `${estado.quantidadePescadores} / 10 · +${estado.quantidadePescadores * ouroPorPescador} ouro / 30 s`
           : "Não contratado";
+        contratarComercianteBotao.disabled =
+          !noAssentamento ||
+          estado.quantidadeComerciantes >= maximoComerciantes ||
+          estado.ouro < custoComerciante;
+        contratarComercianteBotao.textContent =
+          estado.quantidadeComerciantes >= maximoComerciantes
+            ? "Máximo de comerciantes"
+            : `Contratar comerciante ${estado.quantidadeComerciantes + 1}/10 · 100 ouro`;
+        comercianteStatusEl.textContent = estado.quantidadeComerciantes > 0
+          ? `${estado.quantidadeComerciantes} / 10 · +${estado.quantidadeComerciantes * ouroPorComerciante} ouro / 10 s`
+          : "Não contratado";
         atualizarLoja();
         canvas.setAttribute(
           "aria-label",
           noAssentamento
-            ? `Mapa do assentamento com um rio, dois cais e barcos ao norte, ${estado.quantidadeFazendeiros} fazendeiros, ${estado.quantidadeFruticultores} fruticultores e ${estado.quantidadePescadores} pescadores. O arqueiro é o ponto verde.`
+            ? `Mapa do assentamento com um rio, cais de pesca e um cais comercial ao norte, ${estado.quantidadeFazendeiros} fazendeiros, ${estado.quantidadeFruticultores} fruticultores, ${estado.quantidadePescadores} pescadores e ${estado.quantidadeComerciantes} comerciantes. O arqueiro é o ponto verde.`
             : `Mapa da floresta com ${estado.inimigos.length} inimigos vermelhos. O arqueiro é o ponto verde.`,
         );
       }
@@ -980,6 +1028,35 @@
         salvarProgresso();
       }
 
+      function contratarComerciante() {
+        if (estado.local !== "assentamento") {
+          definirMensagem("Volte ao assentamento para contratar um comerciante.");
+          return;
+        }
+
+        if (estado.quantidadeComerciantes >= maximoComerciantes) {
+          definirMensagem("Você já contratou o máximo de 10 comerciantes.");
+          return;
+        }
+
+        if (estado.ouro < custoComerciante) {
+          definirMensagem("Você precisa de 100 de ouro para contratar o comerciante.");
+          return;
+        }
+
+        const primeiroComerciante = estado.quantidadeComerciantes === 0;
+        estado.ouro -= custoComerciante;
+        estado.quantidadeComerciantes += 1;
+        estado.salvamentoAtivo = true;
+        definirMensagem(
+          primeiroComerciante
+            ? "Primeiro comerciante contratado. O cais comercial e os armazéns foram construídos."
+            : `Comerciante ${estado.quantidadeComerciantes} contratado. O cais agora produz ${estado.quantidadeComerciantes * ouroPorComerciante} de ouro a cada 10 segundos.`,
+        );
+        atualizarInterface();
+        salvarProgresso();
+      }
+
       function atualizarLoja() {
         const ataqueMaximo = estado.ataque >= nivelMaximo;
         const armaduraMaxima = estado.armadura >= nivelMaximo;
@@ -1128,6 +1205,28 @@
               : "Os pescadores voltaram";
           definirMensagem(
             `${trabalhadores} com ${ouroProduzido} de ouro da pesca.`,
+          );
+        }
+        atualizarInterface();
+        salvarProgresso();
+      }
+
+      function atualizarComerciante(delta) {
+        if (estado.quantidadeComerciantes === 0) return;
+
+        estado.tempoComerciante += delta;
+        if (estado.tempoComerciante < intervaloComerciante) return;
+
+        const pagamentos = Math.floor(
+          estado.tempoComerciante / intervaloComerciante,
+        );
+        estado.tempoComerciante %= intervaloComerciante;
+        const ouroProduzido =
+          pagamentos * estado.quantidadeComerciantes * ouroPorComerciante;
+        estado.ouro += ouroProduzido;
+        if (estado.local === "assentamento") {
+          definirMensagem(
+            `O cais comercial rendeu ${ouroProduzido} de ouro em trocas.`,
           );
         }
         atualizarInterface();
@@ -1311,6 +1410,15 @@
         contexto.fill();
       }
 
+      function faseBarcoComercial() {
+        return (tempoRio + 3) % 27;
+      }
+
+      function barcoComercialAtracado() {
+        const fase = faseBarcoComercial();
+        return estado.quantidadeComerciantes > 0 && fase >= 8 && fase < 15;
+      }
+
       function desenharBarcosRio() {
         const barcos = [
           {
@@ -1318,20 +1426,39 @@
             passagem: 14,
             atraso: 3,
             direcao: 1,
-            y: 103,
+            y: 98,
             corVela: "#eee1bd",
+            comercial: true,
           },
           {
             periodo: 27,
             passagem: 15,
             atraso: 16,
             direcao: -1,
-            y: 125,
+            y: 70,
             corVela: "#d6a953",
+            comercial: false,
           },
         ];
 
         for (const barco of barcos) {
+          if (barco.comercial && estado.quantidadeComerciantes > 0) {
+            const fase = faseBarcoComercial();
+            if (fase >= 23) continue;
+
+            let x;
+            if (fase < 8) {
+              x = -75 + (625 * fase) / 8;
+            } else if (fase < 15) {
+              x = 550;
+            } else {
+              x = 550 + (925 * (fase - 15)) / 8;
+            }
+            const y = barco.y + Math.sin(fase * 0.9) * 2;
+            desenharBarco(x, y, barco.direcao, barco.corVela);
+            continue;
+          }
+
           const momento = (tempoRio + barco.atraso) % barco.periodo;
           if (momento >= barco.passagem) continue;
 
@@ -1360,6 +1487,42 @@
         contexto.fillStyle = "#49301e";
         contexto.fillRect(x - 48, 134, 7, 28);
         contexto.fillRect(x + 41, 134, 7, 28);
+      }
+
+      function desenharArmazem(x, y, largura, altura) {
+        contexto.fillStyle = "#8d5b31";
+        contexto.fillRect(x, y, largura, altura);
+        contexto.fillStyle = "#52331f";
+        contexto.beginPath();
+        contexto.moveTo(x - 5, y);
+        contexto.lineTo(x + largura / 2, y - 15);
+        contexto.lineTo(x + largura + 5, y);
+        contexto.closePath();
+        contexto.fill();
+        contexto.fillStyle = "#3e2a1c";
+        contexto.fillRect(x + largura / 2 - 6, y + altura - 14, 12, 14);
+      }
+
+      function desenharCaisComercial() {
+        contexto.fillStyle = "#6b4325";
+        contexto.fillRect(676, 108, 48, 82);
+        contexto.fillRect(585, 108, 230, 30);
+
+        contexto.fillStyle = "#a1703c";
+        for (let y = 114; y < 188; y += 12) {
+          contexto.fillRect(679, y, 42, 3);
+        }
+        for (let x = 592; x < 810; x += 18) {
+          contexto.fillRect(x, 111, 3, 24);
+        }
+
+        contexto.fillStyle = "#49301e";
+        contexto.fillRect(590, 136, 8, 27);
+        contexto.fillRect(802, 136, 8, 27);
+        desenharArmazem(615, 84, 48, 24);
+        desenharArmazem(737, 84, 48, 24);
+        desenharArmazem(625, 158, 58, 30);
+        desenharArmazem(717, 158, 58, 30);
       }
 
       function desenharPomar(x, y) {
@@ -1393,13 +1556,16 @@
         }
 
         desenharRio();
-        desenharBarcosRio();
+        if (estado.quantidadeComerciantes > 0) {
+          desenharCaisComercial();
+        }
         if (estado.quantidadePescadores > 0) {
           desenharCais(320);
         }
         if (estado.quantidadePescadores > 5) {
           desenharCais(1080);
         }
+        desenharBarcosRio();
 
         const plantacoes = [];
         if (estado.quantidadeFazendeiros > 0) {
@@ -1754,6 +1920,57 @@
         }
       }
 
+      function posicaoComerciante(indice) {
+        const postos = [
+          { x: 610, y: 145 },
+          { x: 650, y: 145 },
+          { x: 700, y: 148 },
+          { x: 750, y: 145 },
+          { x: 790, y: 145 },
+          { x: 610, y: 177 },
+          { x: 690, y: 177 },
+          { x: 710, y: 177 },
+          { x: 790, y: 177 },
+          { x: 700, y: 125 },
+        ];
+        const posto = postos[indice];
+
+        if (barcoComercialAtracado()) {
+          const ciclo = (tempoRio * 0.42 + indice * 0.19) % 2;
+          const idaEVolta = ciclo <= 1 ? ciclo : 2 - ciclo;
+          const juntoAoBarco = {
+            x: 590 + (indice % 2) * 8,
+            y: 108 + (indice % 3) * 8,
+          };
+          return interpolarPonto(posto, juntoAoBarco, idaEVolta);
+        }
+
+        const destino = indice % 2 === 0
+          ? { x: 640 + (indice % 5) * 12, y: 115 }
+          : { x: 760 - (indice % 5) * 12, y: 135 };
+        const caminho = [posto, { x: 700, y: 145 }, destino, posto];
+        const progresso = (tempoRio / 8 + indice * 0.11) % 1;
+        return percorrerCaminho(caminho, progresso);
+      }
+
+      function desenharComerciante() {
+        if (
+          estado.quantidadeComerciantes === 0 ||
+          estado.local !== "assentamento"
+        ) {
+          return;
+        }
+
+        for (
+          let indice = 0;
+          indice < estado.quantidadeComerciantes;
+          indice += 1
+        ) {
+          const posicao = posicaoComerciante(indice);
+          desenharCirculo(posicao.x, posicao.y, 7, "#ad76d6", "#4e2d6b");
+        }
+      }
+
       function desenharFloresta() {
         contexto.fillStyle = "#405c35";
         contexto.fillRect(0, 0, larguraMundo, alturaMundo);
@@ -1826,6 +2043,7 @@
         desenharFazendeiro();
         desenharFruticultor();
         desenharPescador();
+        desenharComerciante();
         desenharJogador();
         contexto.setTransform(1, 0, 0, 1, 0, 0);
 
@@ -1854,11 +2072,13 @@
         atualizarFazendeiro(delta);
         atualizarFruticultor(delta);
         atualizarPescador(delta);
+        atualizarComerciante(delta);
         if (
           estado.local === "floresta" ||
           estado.quantidadeFazendeiros > 0 ||
           estado.quantidadeFruticultores > 0 ||
-          estado.quantidadePescadores > 0
+          estado.quantidadePescadores > 0 ||
+          estado.quantidadeComerciantes > 0
         ) {
           tempoSalvamento += delta;
           if (tempoSalvamento >= 2) {
@@ -1881,6 +2101,7 @@
       contratarFazendeiroBotao.addEventListener("click", contratarFazendeiro);
       contratarFruticultorBotao.addEventListener("click", contratarFruticultor);
       contratarPescadorBotao.addEventListener("click", contratarPescador);
+      contratarComercianteBotao.addEventListener("click", contratarComerciante);
       novoJogoBotao.addEventListener("click", iniciarNovoJogo);
       apagarBotao.addEventListener("click", apagarProgresso);
       window.addEventListener("resize", redimensionar);
