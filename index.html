@@ -300,6 +300,8 @@
         <div class="indicador">Ferreiro<span id="ferreiro-status">Não contratado</span></div>
         <div class="indicador">Mineiro<span id="mineiro-status">Não contratado</span></div>
         <div class="indicador">Banqueiro<span id="banqueiro-status">Não contratado</span></div>
+        <div class="indicador">Escriturário<span id="escriturario-status">Não contratado</span></div>
+        <div class="indicador">Fundo de expansão<span id="fundo-expansao">0 / 10.000</span></div>
         <div class="indicador">Combate<span id="combate-status">ATQ 1 · ARM 0</span></div>
       </section>
 
@@ -327,6 +329,12 @@
         </button>
         <button id="contratar-banqueiro" type="button">
           Contratar banqueiro · 100 ouro
+        </button>
+        <button id="contratar-escriturario" type="button">
+          Contratar escriturário · 100 ouro
+        </button>
+        <button id="mapa-expansao" type="button" disabled>
+          Comprar novo mapa · 10.000 no fundo
         </button>
         <button id="abrir-loja" type="button">Loja</button>
         <button id="novo-jogo" class="secundario" type="button">Novo jogo</button>
@@ -393,6 +401,9 @@
             <li>Cada ferreiro custa 100 de ouro e produz 1 de ouro a cada 10 segundos.</li>
             <li>Cada mineiro custa 100 de ouro e produz 1 de ouro a cada 10 segundos.</li>
             <li>Cada banqueiro custa 100 de ouro e rende 1% sobre o ouro atual a cada 60 segundos.</li>
+            <li>Cada escriturário custa 100 de ouro e transfere 0,5% do ouro atual para o fundo de expansão a cada 60 segundos.</li>
+            <li>Com 10.000 de ouro no fundo, o escritório pode comprar o mapa de uma nova colônia.</li>
+            <li>Na nova colônia, 10% da produção do posto avançado é recebida como tributo.</li>
             <li>Descansar custa 3 de ouro e recupera até 30 de vida.</li>
             <li>Ao ser derrotado, você volta com vida completa e perde 15 de ouro.</li>
             <li>Cada ponto de ataque causa 1 de dano.</li>
@@ -419,6 +430,8 @@
       const ferreiroStatusEl = document.querySelector("#ferreiro-status");
       const mineiroStatusEl = document.querySelector("#mineiro-status");
       const banqueiroStatusEl = document.querySelector("#banqueiro-status");
+      const escriturarioStatusEl = document.querySelector("#escriturario-status");
+      const fundoExpansaoEl = document.querySelector("#fundo-expansao");
       const mensagemEl = document.querySelector("#mensagem");
       const cacarBotao = document.querySelector("#cacar");
       const voltarBotao = document.querySelector("#voltar");
@@ -455,6 +468,10 @@
       const contratarBanqueiroBotao = document.querySelector(
         "#contratar-banqueiro",
       );
+      const contratarEscriturarioBotao = document.querySelector(
+        "#contratar-escriturario",
+      );
+      const mapaExpansaoBotao = document.querySelector("#mapa-expansao");
       const novoJogoBotao = document.querySelector("#novo-jogo");
       const apagarBotao = document.querySelector("#apagar");
 
@@ -463,6 +480,7 @@
       const versaoMapa = 2;
       const posicaoAssentamento = { x: 700, y: 510 };
       const posicaoFloresta = { x: 700, y: 790 };
+      const posicaoNovaColonia = { x: 700, y: 520 };
       const custoDescanso = 3;
       const custoDerrota = 15;
       const custoFazendeiro = 100;
@@ -472,6 +490,7 @@
       const custoFerreiro = 100;
       const custoMineiro = 100;
       const custoBanqueiro = 100;
+      const custoEscriturario = 100;
       const custoMelhoria = 100;
       const intervaloFazendeiro = 10;
       const intervaloFruticultor = 20;
@@ -480,12 +499,16 @@
       const intervaloFerreiro = 10;
       const intervaloMineiro = 10;
       const intervaloBanqueiro = 60;
+      const intervaloEscriturario = 60;
       const ouroPorFruticultor = 2;
       const ouroPorPescador = 3;
       const ouroPorComerciante = 1;
       const ouroPorFerreiro = 1;
       const ouroPorMineiro = 1;
       const taxaJurosPorBanqueiro = 0.01;
+      const taxaColetaPorEscriturario = 0.005;
+      const taxaTributoPostoAvancado = 0.1;
+      const metaFundoExpansao = 10000;
       const vidaMaxima = 100;
       const maximoFazendeiros = 10;
       const maximoFruticultores = 10;
@@ -494,6 +517,7 @@
       const maximoFerreiros = 10;
       const maximoMineiros = 10;
       const maximoBanqueiros = 10;
+      const maximoEscriturarios = 10;
       const nivelMaximo = 5;
       const chaveSalvamento = "arqueiro-do-assentamento-v1";
       const versaoSalvamento = 1;
@@ -542,6 +566,11 @@
         tempoMineiro: 0,
         quantidadeBanqueiros: 0,
         tempoBanqueiro: 0,
+        quantidadeEscriturarios: 0,
+        tempoEscriturario: 0,
+        fundoExpansao: 0,
+        mapaExpansaoComprado: false,
+        mapaAtual: "posto",
       };
 
       const arvores = [
@@ -589,6 +618,10 @@
         return Number.isInteger(valor)
           ? String(valor)
           : valor.toFixed(2).replace(".", ",");
+      }
+
+      function formatarPercentual(valor) {
+        return String(valor).replace(".", ",");
       }
 
       function dadosParaSalvar() {
@@ -645,6 +678,15 @@
           banqueiro: {
             quantidade: estado.quantidadeBanqueiros,
             tempo: estado.tempoBanqueiro,
+          },
+          escritorio: {
+            quantidade: estado.quantidadeEscriturarios,
+            tempo: estado.tempoEscriturario,
+            fundo: estado.fundoExpansao,
+          },
+          expansao: {
+            mapaComprado: estado.mapaExpansaoComprado,
+            mapaAtual: estado.mapaAtual,
           },
         };
       }
@@ -842,15 +884,50 @@
                 0,
               )
             : 0;
+          estado.quantidadeEscriturarios = Math.round(
+            numeroValido(
+              salvo.escritorio?.quantidade,
+              0,
+              maximoEscriturarios,
+              0,
+            ),
+          );
+          estado.tempoEscriturario = estado.quantidadeEscriturarios > 0
+            ? numeroValido(
+                salvo.escritorio?.tempo,
+                0,
+                intervaloEscriturario,
+                0,
+              )
+            : 0;
+          estado.fundoExpansao = arredondarOuro(
+            numeroValido(
+              salvo.escritorio?.fundo,
+              0,
+              metaFundoExpansao,
+              0,
+            ),
+          );
+          estado.mapaExpansaoComprado = salvo.expansao?.mapaComprado === true;
+          estado.mapaAtual =
+            estado.mapaExpansaoComprado && salvo.expansao?.mapaAtual === "expansao"
+              ? "expansao"
+              : "posto";
 
           const derrotadoAoCarregar = estado.vida === 0;
           if (derrotadoAoCarregar) {
+            estado.mapaAtual = "posto";
             estado.local = "assentamento";
             estado.vida = vidaMaxima;
             estado.ouro -= custoDerrota;
           }
 
-          if (estado.local === "assentamento") {
+          if (estado.mapaAtual === "expansao") {
+            estado.local = "assentamento";
+            estado.jogador.x = posicaoNovaColonia.x;
+            estado.jogador.y = posicaoNovaColonia.y;
+            estado.inimigos = [];
+          } else if (estado.local === "assentamento") {
             estado.jogador.x = posicaoAssentamento.x;
             estado.jogador.y = posicaoAssentamento.y;
             estado.inimigos = [];
@@ -910,16 +987,29 @@
         estado.tempoMineiro = 0;
         estado.quantidadeBanqueiros = 0;
         estado.tempoBanqueiro = 0;
+        estado.quantidadeEscriturarios = 0;
+        estado.tempoEscriturario = 0;
+        estado.fundoExpansao = 0;
+        estado.mapaExpansaoComprado = false;
+        estado.mapaAtual = "posto";
       }
 
       function atualizarInterface() {
-        const noAssentamento = estado.local === "assentamento";
-        localEl.textContent = noAssentamento ? "Assentamento" : "Floresta";
+        const noPostoAvancado = estado.mapaAtual === "posto";
+        const noAssentamento =
+          noPostoAvancado && estado.local === "assentamento";
+        const naFloresta = noPostoAvancado && estado.local === "floresta";
+        const naNovaColonia = estado.mapaAtual === "expansao";
+        localEl.textContent = naNovaColonia
+          ? "Nova colônia"
+          : noAssentamento
+            ? "Posto avançado"
+            : "Floresta";
         vidaEl.textContent = `${estado.vida} / ${vidaMaxima}`;
         ouroEl.textContent = formatarOuro(estado.ouro);
         combateStatusEl.textContent = `ATQ ${estado.ataque} · ARM ${estado.armadura}`;
         cacarBotao.disabled = !noAssentamento || estado.vida <= 0;
-        voltarBotao.disabled = noAssentamento;
+        voltarBotao.disabled = !naFloresta;
         descansarBotao.disabled = !noAssentamento;
         abrirLojaBotao.disabled = !noAssentamento;
         contratarFazendeiroBotao.disabled =
@@ -999,10 +1089,39 @@
         banqueiroStatusEl.textContent = estado.quantidadeBanqueiros > 0
           ? `${estado.quantidadeBanqueiros} / 10 · ${estado.quantidadeBanqueiros}% / 60 s`
           : "Não contratado";
+        contratarEscriturarioBotao.disabled =
+          !noAssentamento ||
+          estado.mapaExpansaoComprado ||
+          estado.quantidadeEscriturarios >= maximoEscriturarios ||
+          estado.ouro < custoEscriturario;
+        contratarEscriturarioBotao.textContent = estado.mapaExpansaoComprado
+          ? "Projeto de expansão concluído"
+          : estado.quantidadeEscriturarios >= maximoEscriturarios
+            ? "Máximo de escriturários"
+            : `Contratar escriturário ${estado.quantidadeEscriturarios + 1}/10 · 100 ouro`;
+        escriturarioStatusEl.textContent = estado.quantidadeEscriturarios > 0
+          ? `${estado.quantidadeEscriturarios} / 10 · ${formatarPercentual(estado.quantidadeEscriturarios * 0.5)}% / 60 s`
+          : "Não contratado";
+        fundoExpansaoEl.textContent = estado.mapaExpansaoComprado
+          ? "Mapa comprado"
+          : `${formatarOuro(estado.fundoExpansao)} / 10.000`;
+        if (estado.mapaExpansaoComprado) {
+          mapaExpansaoBotao.disabled = naFloresta;
+          mapaExpansaoBotao.textContent = naNovaColonia
+            ? "Voltar ao posto avançado"
+            : "Ir para nova colônia";
+        } else {
+          mapaExpansaoBotao.disabled =
+            !noAssentamento || estado.fundoExpansao < metaFundoExpansao;
+          mapaExpansaoBotao.textContent =
+            "Comprar novo mapa · 10.000 no fundo";
+        }
         atualizarLoja();
         canvas.setAttribute(
           "aria-label",
-          noAssentamento
+          naNovaColonia
+            ? "Mapa da nova colônia, um assentamento maior em construção. O administrador é o ponto verde."
+            : noAssentamento
             ? `Mapa do assentamento com rio, cais, ferraria, banco, minas, ${estado.quantidadeFazendeiros} fazendeiros, ${estado.quantidadeFruticultores} fruticultores, ${estado.quantidadePescadores} pescadores, ${estado.quantidadeComerciantes} comerciantes, ${estado.quantidadeFerreiros} ferreiros, ${estado.quantidadeMineiros} mineiros e ${estado.quantidadeBanqueiros} banqueiros. O arqueiro é o ponto verde.`
             : `Mapa da floresta com ${estado.inimigos.length} inimigos vermelhos. O arqueiro é o ponto verde.`,
         );
@@ -1304,6 +1423,100 @@
         salvarProgresso();
       }
 
+      function contratarEscriturario() {
+        if (
+          estado.mapaAtual !== "posto" ||
+          estado.local !== "assentamento"
+        ) {
+          definirMensagem(
+            "Volte ao posto avançado para contratar um escriturário.",
+          );
+          return;
+        }
+
+        if (estado.mapaExpansaoComprado) {
+          definirMensagem("O projeto de expansão deste escritório foi concluído.");
+          return;
+        }
+
+        if (estado.quantidadeEscriturarios >= maximoEscriturarios) {
+          definirMensagem("Você já contratou o máximo de 10 escriturários.");
+          return;
+        }
+
+        if (estado.ouro < custoEscriturario) {
+          definirMensagem(
+            "Você precisa de 100 de ouro para contratar o escriturário.",
+          );
+          return;
+        }
+
+        const primeiroEscriturario = estado.quantidadeEscriturarios === 0;
+        estado.ouro = arredondarOuro(estado.ouro - custoEscriturario);
+        estado.quantidadeEscriturarios += 1;
+        estado.salvamentoAtivo = true;
+        definirMensagem(
+          primeiroEscriturario
+            ? "Primeiro escriturário contratado. O escritório de expansão está funcionando."
+            : `Escriturário ${estado.quantidadeEscriturarios} contratado. A coleta para o fundo agora é de ${formatarPercentual(estado.quantidadeEscriturarios * 0.5)}% a cada 60 segundos.`,
+        );
+        atualizarInterface();
+        salvarProgresso();
+      }
+
+      function alternarMapaExpansao() {
+        if (!estado.mapaExpansaoComprado) {
+          if (
+            estado.mapaAtual !== "posto" ||
+            estado.local !== "assentamento"
+          ) {
+            definirMensagem(
+              "Volte ao escritório do posto avançado para comprar o mapa.",
+            );
+            return;
+          }
+          if (estado.fundoExpansao < metaFundoExpansao) {
+            definirMensagem(
+              `Ainda faltam ${formatarOuro(metaFundoExpansao - estado.fundoExpansao)} de ouro no fundo de expansão.`,
+            );
+            return;
+          }
+
+          estado.fundoExpansao = arredondarOuro(
+            estado.fundoExpansao - metaFundoExpansao,
+          );
+          estado.mapaExpansaoComprado = true;
+          estado.mapaAtual = "expansao";
+          estado.local = "assentamento";
+          estado.jogador.x = posicaoNovaColonia.x;
+          estado.jogador.y = posicaoNovaColonia.y;
+          estado.inimigos = [];
+          definirMensagem(
+            "Novo mapa comprado. Você agora administra uma colônia maior e recebe 10% da produção do posto avançado.",
+          );
+        } else if (estado.mapaAtual === "expansao") {
+          estado.mapaAtual = "posto";
+          estado.local = "assentamento";
+          estado.jogador.x = posicaoAssentamento.x;
+          estado.jogador.y = posicaoAssentamento.y;
+          definirMensagem("Você voltou ao posto avançado.");
+        } else {
+          if (estado.local === "floresta") {
+            definirMensagem("Volte da caçada antes de viajar para a nova colônia.");
+            return;
+          }
+          estado.mapaAtual = "expansao";
+          estado.local = "assentamento";
+          estado.jogador.x = posicaoNovaColonia.x;
+          estado.jogador.y = posicaoNovaColonia.y;
+          estado.inimigos = [];
+          definirMensagem("Você viajou para a nova colônia.");
+        }
+        estado.salvamentoAtivo = true;
+        atualizarInterface();
+        salvarProgresso();
+      }
+
       function atualizarLoja() {
         const ataqueMaximo = estado.ataque >= nivelMaximo;
         const armaduraMaxima = estado.armadura >= nivelMaximo;
@@ -1381,6 +1594,22 @@
         comprarMelhoria("armadura");
       }
 
+      function receberProducaoPostoAvancado(valorProduzido) {
+        const proporcao =
+          estado.mapaAtual === "expansao" ? taxaTributoPostoAvancado : 1;
+        const ouroRecebido = arredondarOuro(valorProduzido * proporcao);
+        estado.ouro = arredondarOuro(estado.ouro + ouroRecebido);
+        return ouroRecebido;
+      }
+
+      function informarTributoPostoAvancado(ouroRecebido) {
+        if (estado.mapaAtual !== "expansao") return false;
+        definirMensagem(
+          `O posto avançado enviou ${formatarOuro(ouroRecebido)} de ouro em tributos.`,
+        );
+        return true;
+      }
+
       function atualizarFazendeiro(delta) {
         if (estado.quantidadeFazendeiros === 0) return;
 
@@ -1392,8 +1621,11 @@
         );
         estado.tempoFazendeiro %= intervaloFazendeiro;
         const ouroProduzido = pagamentos * estado.quantidadeFazendeiros;
-        estado.ouro += ouroProduzido;
-        if (estado.local === "assentamento") {
+        const ouroRecebido = receberProducaoPostoAvancado(ouroProduzido);
+        if (
+          !informarTributoPostoAvancado(ouroRecebido) &&
+          estado.local === "assentamento"
+        ) {
           const trabalhadores =
             estado.quantidadeFazendeiros === 1
               ? "O fazendeiro voltou"
@@ -1418,8 +1650,11 @@
         estado.tempoFruticultor %= intervaloFruticultor;
         const ouroProduzido =
           pagamentos * estado.quantidadeFruticultores * ouroPorFruticultor;
-        estado.ouro += ouroProduzido;
-        if (estado.local === "assentamento") {
+        const ouroRecebido = receberProducaoPostoAvancado(ouroProduzido);
+        if (
+          !informarTributoPostoAvancado(ouroRecebido) &&
+          estado.local === "assentamento"
+        ) {
           const trabalhadores =
             estado.quantidadeFruticultores === 1
               ? "O fruticultor voltou"
@@ -1444,8 +1679,11 @@
         estado.tempoPescador %= intervaloPescador;
         const ouroProduzido =
           pagamentos * estado.quantidadePescadores * ouroPorPescador;
-        estado.ouro += ouroProduzido;
-        if (estado.local === "assentamento") {
+        const ouroRecebido = receberProducaoPostoAvancado(ouroProduzido);
+        if (
+          !informarTributoPostoAvancado(ouroRecebido) &&
+          estado.local === "assentamento"
+        ) {
           const trabalhadores =
             estado.quantidadePescadores === 1
               ? "O pescador voltou"
@@ -1470,8 +1708,11 @@
         estado.tempoComerciante %= intervaloComerciante;
         const ouroProduzido =
           pagamentos * estado.quantidadeComerciantes * ouroPorComerciante;
-        estado.ouro += ouroProduzido;
-        if (estado.local === "assentamento") {
+        const ouroRecebido = receberProducaoPostoAvancado(ouroProduzido);
+        if (
+          !informarTributoPostoAvancado(ouroRecebido) &&
+          estado.local === "assentamento"
+        ) {
           definirMensagem(
             `O cais comercial rendeu ${ouroProduzido} de ouro em trocas.`,
           );
@@ -1492,8 +1733,11 @@
         estado.tempoFerreiro %= intervaloFerreiro;
         const ouroProduzido =
           pagamentos * estado.quantidadeFerreiros * ouroPorFerreiro;
-        estado.ouro += ouroProduzido;
-        if (estado.local === "assentamento") {
+        const ouroRecebido = receberProducaoPostoAvancado(ouroProduzido);
+        if (
+          !informarTributoPostoAvancado(ouroRecebido) &&
+          estado.local === "assentamento"
+        ) {
           definirMensagem(
             `A ferraria produziu mercadorias no valor de ${ouroProduzido} de ouro.`,
           );
@@ -1514,8 +1758,11 @@
         estado.tempoMineiro %= intervaloMineiro;
         const ouroProduzido =
           pagamentos * estado.quantidadeMineiros * ouroPorMineiro;
-        estado.ouro += ouroProduzido;
-        if (estado.local === "assentamento") {
+        const ouroRecebido = receberProducaoPostoAvancado(ouroProduzido);
+        if (
+          !informarTributoPostoAvancado(ouroRecebido) &&
+          estado.local === "assentamento"
+        ) {
           definirMensagem(
             `As minas produziram minério no valor de ${ouroProduzido} de ouro.`,
           );
@@ -1550,6 +1797,58 @@
               ? `O banco rendeu ${formatarOuro(ouroProduzido)} de ouro em juros.`
               : "O banco não rendeu juros porque não há ouro positivo guardado.",
           );
+        }
+        atualizarInterface();
+        salvarProgresso();
+      }
+
+      function atualizarEscriturario(delta) {
+        if (
+          estado.quantidadeEscriturarios === 0 ||
+          estado.mapaExpansaoComprado
+        ) {
+          return;
+        }
+
+        estado.tempoEscriturario += delta;
+        if (estado.tempoEscriturario < intervaloEscriturario) return;
+
+        const pagamentos = Math.floor(
+          estado.tempoEscriturario / intervaloEscriturario,
+        );
+        estado.tempoEscriturario %= intervaloEscriturario;
+        let ouroColetado = 0;
+        for (let pagamento = 0; pagamento < pagamentos; pagamento += 1) {
+          const coletaCalculada = arredondarOuro(
+            Math.max(0, estado.ouro) *
+              taxaColetaPorEscriturario *
+              estado.quantidadeEscriturarios,
+          );
+          const coleta = Math.min(
+            coletaCalculada,
+            arredondarOuro(metaFundoExpansao - estado.fundoExpansao),
+          );
+          estado.ouro = arredondarOuro(estado.ouro - coleta);
+          estado.fundoExpansao = arredondarOuro(
+            estado.fundoExpansao + coleta,
+          );
+          ouroColetado = arredondarOuro(ouroColetado + coleta);
+        }
+
+        if (estado.local === "assentamento") {
+          if (estado.fundoExpansao >= metaFundoExpansao) {
+            definirMensagem(
+              "O fundo chegou a 10.000 de ouro. O novo mapa já pode ser comprado.",
+            );
+          } else if (ouroColetado > 0) {
+            definirMensagem(
+              `O escritório transferiu ${formatarOuro(ouroColetado)} de ouro para o fundo de expansão.`,
+            );
+          } else {
+            definirMensagem(
+              "O escritório não coletou ouro porque o saldo atual não é positivo.",
+            );
+          }
         }
         atualizarInterface();
         salvarProgresso();
@@ -2057,6 +2356,29 @@
         contexto.textBaseline = "alphabetic";
 
         contexto.fillStyle = "#e7d6a6";
+        contexto.fillRect(523, 522, 74, 24);
+        contexto.fillStyle = "#3d2a1b";
+        contexto.font = "bold 11px sans-serif";
+        contexto.textAlign = "center";
+        contexto.textBaseline = "middle";
+        contexto.fillText("EXPANSÃO", 560, 534);
+        contexto.fillStyle = "#6d5030";
+        contexto.fillRect(542, 542, 36, 24);
+        contexto.fillStyle = "#efe3bd";
+        contexto.fillRect(604, 548, 44, 28);
+        contexto.strokeStyle = "#57422a";
+        contexto.lineWidth = 3;
+        contexto.strokeRect(604, 548, 44, 28);
+        contexto.beginPath();
+        contexto.moveTo(611, 557);
+        contexto.lineTo(641, 557);
+        contexto.moveTo(611, 566);
+        contexto.lineTo(634, 566);
+        contexto.stroke();
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
+
+        contexto.fillStyle = "#e7d6a6";
         contexto.fillRect(833, 522, 74, 24);
         contexto.fillStyle = "#3d2a1b";
         contexto.font = "bold 13px sans-serif";
@@ -2074,6 +2396,83 @@
 
         contexto.fillStyle = "#817249";
         contexto.fillRect(682, 590, 36, 84);
+      }
+
+      function desenharNovaColonia() {
+        contexto.fillStyle = "#899e62";
+        contexto.fillRect(0, 0, larguraMundo, alturaMundo);
+
+        contexto.fillStyle = "#7f945b";
+        for (let indice = 0; indice < 42; indice += 1) {
+          const x = (indice * 173) % larguraMundo;
+          const y = (indice * 97) % alturaMundo;
+          desenharCirculo(x, y, 5, "#728753");
+        }
+
+        contexto.fillStyle = "#b8a474";
+        contexto.fillRect(660, 130, 80, 680);
+        contexto.fillRect(170, 470, 1060, 82);
+
+        contexto.fillStyle = "#67452b";
+        contexto.fillRect(170, 130, 1060, 24);
+        contexto.fillRect(170, 786, 1060, 24);
+        contexto.fillRect(170, 130, 24, 680);
+        contexto.fillRect(1206, 130, 24, 680);
+
+        contexto.fillStyle = "#b8a474";
+        contexto.fillRect(650, 126, 100, 34);
+        contexto.fillRect(650, 780, 100, 36);
+        contexto.fillRect(164, 462, 36, 98);
+        contexto.fillRect(1200, 462, 36, 98);
+
+        const fundacoes = [
+          [280, 240, 190, 120],
+          [930, 240, 190, 120],
+          [280, 620, 190, 110],
+          [930, 620, 190, 110],
+        ];
+        contexto.strokeStyle = "#596b43";
+        contexto.lineWidth = 8;
+        for (const [x, y, largura, altura] of fundacoes) {
+          contexto.strokeRect(x, y, largura, altura);
+        }
+
+        contexto.fillStyle = "#8d5b31";
+        contexto.fillRect(570, 330, 260, 150);
+        contexto.fillStyle = "#4f3522";
+        contexto.beginPath();
+        contexto.moveTo(545, 330);
+        contexto.lineTo(700, 245);
+        contexto.lineTo(855, 330);
+        contexto.closePath();
+        contexto.fill();
+        contexto.fillStyle = "#684328";
+        contexto.fillRect(670, 405, 60, 75);
+        contexto.fillStyle = "#e7d6a6";
+        contexto.fillRect(610, 350, 180, 34);
+        contexto.fillStyle = "#3d2a1b";
+        contexto.font = "bold 17px sans-serif";
+        contexto.textAlign = "center";
+        contexto.textBaseline = "middle";
+        contexto.fillText("ADMINISTRAÇÃO", 700, 367);
+
+        contexto.fillStyle = "#4c3825";
+        contexto.fillRect(760, 220, 8, 82);
+        contexto.fillStyle = "#d6b34f";
+        contexto.beginPath();
+        contexto.moveTo(768, 222);
+        contexto.lineTo(826, 238);
+        contexto.lineTo(768, 254);
+        contexto.closePath();
+        contexto.fill();
+
+        contexto.fillStyle = "#eee2bd";
+        contexto.fillRect(520, 70, 360, 44);
+        contexto.fillStyle = "#3d2a1b";
+        contexto.font = "bold 22px sans-serif";
+        contexto.fillText("NOVA COLÔNIA", 700, 92);
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
       }
 
       function interpolarPonto(inicio, fim, progresso) {
@@ -2161,6 +2560,7 @@
       function desenharFazendeiro() {
         if (
           estado.quantidadeFazendeiros === 0 ||
+          estado.mapaAtual !== "posto" ||
           estado.local !== "assentamento"
         ) {
           return;
@@ -2246,6 +2646,7 @@
       function desenharFruticultor() {
         if (
           estado.quantidadeFruticultores === 0 ||
+          estado.mapaAtual !== "posto" ||
           estado.local !== "assentamento"
         ) {
           return;
@@ -2338,6 +2739,7 @@
       function desenharPescador() {
         if (
           estado.quantidadePescadores === 0 ||
+          estado.mapaAtual !== "posto" ||
           estado.local !== "assentamento"
         ) {
           return;
@@ -2390,6 +2792,7 @@
       function desenharComerciante() {
         if (
           estado.quantidadeComerciantes === 0 ||
+          estado.mapaAtual !== "posto" ||
           estado.local !== "assentamento"
         ) {
           return;
@@ -2434,6 +2837,7 @@
       function desenharFerreiro() {
         if (
           estado.quantidadeFerreiros === 0 ||
+          estado.mapaAtual !== "posto" ||
           estado.local !== "assentamento"
         ) {
           return;
@@ -2490,6 +2894,7 @@
       function desenharMineiro() {
         if (
           estado.quantidadeMineiros === 0 ||
+          estado.mapaAtual !== "posto" ||
           estado.local !== "assentamento"
         ) {
           return;
@@ -2532,6 +2937,7 @@
       function desenharBanqueiro() {
         if (
           estado.quantidadeBanqueiros === 0 ||
+          estado.mapaAtual !== "posto" ||
           estado.local !== "assentamento"
         ) {
           return;
@@ -2544,6 +2950,52 @@
         ) {
           const posicao = posicaoBanqueiro(indice);
           desenharCirculo(posicao.x, posicao.y, 7, "#e0bd54", "#5a451c");
+        }
+      }
+
+      function posicaoEscriturario(indice) {
+        const postos = [
+          { x: 490, y: 585 },
+          { x: 510, y: 605 },
+          { x: 530, y: 590 },
+          { x: 550, y: 610 },
+          { x: 570, y: 590 },
+          { x: 590, y: 610 },
+          { x: 610, y: 590 },
+          { x: 500, y: 625 },
+          { x: 555, y: 630 },
+          { x: 610, y: 625 },
+        ];
+        const posto = postos[indice];
+        const porta = { x: 560, y: 570 };
+        const mesa = {
+          x: 530 + (indice % 4) * 20,
+          y: 540 + (indice % 2) * 12,
+        };
+        const mapa = { x: 626, y: 580 };
+        const progresso = (tempoRio / 9 + indice * 0.12) % 1;
+        return percorrerCaminho(
+          [posto, porta, mesa, mapa, porta, posto],
+          progresso,
+        );
+      }
+
+      function desenharEscriturario() {
+        if (
+          estado.quantidadeEscriturarios === 0 ||
+          estado.mapaAtual !== "posto" ||
+          estado.local !== "assentamento"
+        ) {
+          return;
+        }
+
+        for (
+          let indice = 0;
+          indice < estado.quantidadeEscriturarios;
+          indice += 1
+        ) {
+          const posicao = posicaoEscriturario(indice);
+          desenharCirculo(posicao.x, posicao.y, 7, "#f0eee4", "#4b5662");
         }
       }
 
@@ -2610,7 +3062,9 @@
         );
         contexto.clearRect(0, 0, larguraMundo, alturaMundo);
 
-        if (estado.local === "assentamento") {
+        if (estado.mapaAtual === "expansao") {
+          desenharNovaColonia();
+        } else if (estado.local === "assentamento") {
           desenharAssentamento();
         } else {
           desenharFloresta();
@@ -2623,6 +3077,7 @@
         desenharFerreiro();
         desenharMineiro();
         desenharBanqueiro();
+        desenharEscriturario();
         desenharJogador();
         contexto.setTransform(1, 0, 0, 1, 0, 0);
 
@@ -2655,6 +3110,7 @@
         atualizarFerreiro(delta);
         atualizarMineiro(delta);
         atualizarBanqueiro(delta);
+        atualizarEscriturario(delta);
         if (
           estado.local === "floresta" ||
           estado.quantidadeFazendeiros > 0 ||
@@ -2663,7 +3119,9 @@
           estado.quantidadeComerciantes > 0 ||
           estado.quantidadeFerreiros > 0 ||
           estado.quantidadeMineiros > 0 ||
-          estado.quantidadeBanqueiros > 0
+          estado.quantidadeBanqueiros > 0 ||
+          estado.quantidadeEscriturarios > 0 ||
+          estado.mapaExpansaoComprado
         ) {
           tempoSalvamento += delta;
           if (tempoSalvamento >= 2) {
@@ -2690,6 +3148,8 @@
       contratarFerreiroBotao.addEventListener("click", contratarFerreiro);
       contratarMineiroBotao.addEventListener("click", contratarMineiro);
       contratarBanqueiroBotao.addEventListener("click", contratarBanqueiro);
+      contratarEscriturarioBotao.addEventListener("click", contratarEscriturario);
+      mapaExpansaoBotao.addEventListener("click", alternarMapaExpansao);
       novoJogoBotao.addEventListener("click", iniciarNovoJogo);
       apagarBotao.addEventListener("click", apagarProgresso);
       window.addEventListener("resize", redimensionar);
