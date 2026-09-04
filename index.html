@@ -629,7 +629,8 @@
             <li>A administração custa 500 e as moradias custam 750, já debitados da transferência inicial; o cofre começa com 1.750.</li>
             <li>O posto original continua financiando a colônia com 300 de ouro a cada 60 segundos: 270 para a cidade e 30 para o administrador.</li>
             <li>Os colonos escolhem suas prioridades automaticamente, começando pela lavoura de 400 e pela pastagem de 500.</li>
-            <li>A lavoura e a pastagem ficam juntas no interior, separadas por uma reserva para estrada.</li>
+            <li>A torre administrativa, as moradias de prestígio e o celeiro ficam protegidos no recinto interno; moradias comuns e casas dos agricultores ficam no recinto externo.</li>
+            <li>A lavoura e a pastagem ficam fora da muralha externa, junto ao portão do campo e separadas por uma reserva para estrada.</li>
             <li>Os 20 colonos consomem 20 alimentos por minuto. A lavoura produz 40 e a pastagem produz 20.</li>
             <li>Alimentos acima da reserva de 80 são vendidos automaticamente; 90% da renda vai para a cidade e 10% para o administrador.</li>
             <li>Descansar custa 3 de ouro e recupera até 30 de vida.</li>
@@ -837,20 +838,45 @@
         altura: 170,
       };
       const posicaoAdministrador = { x: 10500, y: 4500 };
+      const recintoExterno = {
+        x: 8200,
+        y: 2900,
+        largura: 4600,
+        altura: 3400,
+      };
+      const recintoInterno = {
+        x: 9600,
+        y: 3650,
+        largura: 1800,
+        altura: 1650,
+      };
       const areaMoradias = {
-        x: 8950,
-        y: 5100,
+        x: 8800,
+        y: 5150,
         largura: 700,
         altura: 500,
       };
+      const areaCeleiro = {
+        x: 9710,
+        y: 4590,
+        largura: 330,
+        altura: 220,
+      };
+      const casasAgricultores = [
+        { x: 8400, y: 3500 },
+        { x: 8700, y: 3500 },
+        { x: 8400, y: 3980 },
+        { x: 8700, y: 3980 },
+        { x: 8550, y: 4460 },
+      ];
       const areaLavoura = {
-        x: 500,
+        x: 5000,
         y: 3900,
         largura: 1200,
         altura: 750,
       };
       const areaPastagem = {
-        x: 1880,
+        x: 6380,
         y: 3900,
         largura: 1400,
         altura: 750,
@@ -3958,6 +3984,46 @@
         };
       }
 
+      function posicaoRotinaRuralColonia(vaga, tipo) {
+        const area = tipo === "lavoura" ? areaLavoura : areaPastagem;
+        const casa = casasAgricultores[vaga];
+        const centroCasa = { x: casa.x + 75, y: casa.y + 55 };
+        const yEstrada = areaLavoura.y + areaLavoura.altura / 2;
+        const portao = { x: recintoExterno.x, y: yEstrada };
+        const estradaExterior = {
+          x: areaPastagem.x + areaPastagem.largura + 80,
+          y: yEstrada,
+        };
+        const entrada = {
+          x: area.x + area.largura - 90,
+          y: area.y + 105 + vaga * 105,
+        };
+        const trabalho = {
+          x: area.x + 150 + vaga * ((area.largura - 300) / 4),
+          y: area.y + 170 + (vaga % 2) * 300,
+        };
+        const progresso =
+          ((tempoRio + vaga * 2.4 + (tipo === "pastagem" ? 4 : 0)) % 32) /
+          32;
+        return percorrerCaminho(
+          [
+            centroCasa,
+            { x: recintoExterno.x + 190, y: yEstrada },
+            portao,
+            estradaExterior,
+            entrada,
+            trabalho,
+            entrada,
+            trabalho,
+            entrada,
+            estradaExterior,
+            portao,
+            centroCasa,
+          ],
+          progresso,
+        );
+      }
+
       function posicaoColonoNovaColonia(indice) {
         const desembarque = posicaoFormacaoColonos(
           { x: posicaoNovaColonia.x + 35, y: posicaoNovaColonia.y + 75 },
@@ -3987,18 +4053,7 @@
             indice < 11
           ) {
             const vaga = indice - 6;
-            posicao = {
-              x:
-                areaLavoura.x +
-                120 +
-                vaga * ((areaLavoura.largura - 240) / 4) +
-                Math.sin(tempoRio * 0.75 + indice) * 55,
-              y:
-                areaLavoura.y +
-                150 +
-                (vaga % 2) * 280 +
-                Math.cos(tempoRio * 0.9 + indice) * 35,
-            };
+            posicao = posicaoRotinaRuralColonia(vaga, "lavoura");
           } else if (
             (estado.pastagemConstruida ||
               estado.obraAutomaticaColonia === "pastagem") &&
@@ -4006,18 +4061,7 @@
             indice < 16
           ) {
             const vaga = indice - 11;
-            posicao = {
-              x:
-                areaPastagem.x +
-                150 +
-                vaga * ((areaPastagem.largura - 300) / 4) +
-                Math.sin(tempoRio * 0.7 + indice) * 65,
-              y:
-                areaPastagem.y +
-                220 +
-                (vaga % 2) * 260 +
-                Math.cos(tempoRio * 0.8 + indice) * 45,
-            };
+            posicao = posicaoRotinaRuralColonia(vaga, "pastagem");
           } else {
             posicao = indice < 6 ? administracao : moradias;
           }
@@ -4119,6 +4163,231 @@
             contexto.fill();
           }
         });
+      }
+
+      function desenharDefesasColonia() {
+        if (estado.etapaConstrucaoColonia < 4) return;
+
+        const yEstradaCampo =
+          areaLavoura.y + areaLavoura.altura / 2;
+
+        contexto.fillStyle = "#b7a36c";
+        contexto.fillRect(
+          areaPastagem.x + areaPastagem.largura,
+          yEstradaCampo - 60,
+          recintoInterno.x -
+            (areaPastagem.x + areaPastagem.largura) +
+            130,
+          120,
+        );
+
+        contexto.strokeStyle = "#70583a";
+        contexto.lineWidth = 42;
+        contexto.strokeRect(
+          recintoExterno.x,
+          recintoExterno.y,
+          recintoExterno.largura,
+          recintoExterno.altura,
+        );
+        contexto.strokeStyle = "#463522";
+        contexto.lineWidth = 8;
+        contexto.strokeRect(
+          recintoExterno.x,
+          recintoExterno.y,
+          recintoExterno.largura,
+          recintoExterno.altura,
+        );
+
+        contexto.strokeStyle = "#8b7048";
+        contexto.lineWidth = 34;
+        contexto.strokeRect(
+          recintoInterno.x,
+          recintoInterno.y,
+          recintoInterno.largura,
+          recintoInterno.altura,
+        );
+        contexto.strokeStyle = "#4b3824";
+        contexto.lineWidth = 7;
+        contexto.strokeRect(
+          recintoInterno.x,
+          recintoInterno.y,
+          recintoInterno.largura,
+          recintoInterno.altura,
+        );
+
+        contexto.fillStyle = "#b7a36c";
+        contexto.fillRect(
+          recintoExterno.x - 28,
+          yEstradaCampo - 78,
+          56,
+          156,
+        );
+        contexto.fillRect(
+          recintoInterno.x - 24,
+          yEstradaCampo - 72,
+          48,
+          144,
+        );
+
+        contexto.fillStyle = "#4d3824";
+        contexto.fillRect(
+          recintoExterno.x - 58,
+          yEstradaCampo - 108,
+          48,
+          78,
+        );
+        contexto.fillRect(
+          recintoExterno.x - 58,
+          yEstradaCampo + 30,
+          48,
+          78,
+        );
+        contexto.fillRect(
+          recintoInterno.x - 48,
+          yEstradaCampo - 96,
+          40,
+          68,
+        );
+        contexto.fillRect(
+          recintoInterno.x - 48,
+          yEstradaCampo + 28,
+          40,
+          68,
+        );
+
+        const torresExternas = [
+          [recintoExterno.x - 58, recintoExterno.y - 58],
+          [
+            recintoExterno.x + recintoExterno.largura - 42,
+            recintoExterno.y - 58,
+          ],
+          [
+            recintoExterno.x - 58,
+            recintoExterno.y + recintoExterno.altura - 42,
+          ],
+          [
+            recintoExterno.x + recintoExterno.largura - 42,
+            recintoExterno.y + recintoExterno.altura - 42,
+          ],
+        ];
+        contexto.fillStyle = "#5a432b";
+        torresExternas.forEach(([x, y]) => contexto.fillRect(x, y, 100, 100));
+
+        contexto.fillStyle = "#3f3020";
+        contexto.font = "bold 28px sans-serif";
+        contexto.textAlign = "center";
+        contexto.textBaseline = "middle";
+        contexto.fillText(
+          "RECINTO EXTERNO",
+          recintoExterno.x + recintoExterno.largura / 2,
+          recintoExterno.y - 65,
+        );
+        contexto.fillText(
+          "RECINTO INTERNO",
+          recintoInterno.x + recintoInterno.largura / 2,
+          recintoInterno.y - 55,
+        );
+        contexto.font = "bold 18px sans-serif";
+        contexto.fillText(
+          "PORTÃO DO CAMPO",
+          recintoExterno.x + 135,
+          yEstradaCampo - 105,
+        );
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
+      }
+
+      function desenharMoradiasPrestigioColonia() {
+        if (estado.etapaConstrucaoColonia < 4) return;
+
+        const casas = [
+          [10770, 3920],
+          [10770, 4730],
+        ];
+        casas.forEach(([x, y]) => {
+          contexto.strokeStyle = "#5a4028";
+          contexto.lineWidth = 10;
+          contexto.strokeRect(x, y, 180, 125);
+          contexto.fillStyle = "#b5854f";
+          contexto.fillRect(x + 10, y + 10, 160, 105);
+          contexto.fillStyle = "#4c3020";
+          contexto.beginPath();
+          contexto.moveTo(x - 14, y + 18);
+          contexto.lineTo(x + 90, y - 52);
+          contexto.lineTo(x + 194, y + 18);
+          contexto.closePath();
+          contexto.fill();
+        });
+
+        contexto.fillStyle = "#3f2d20";
+        contexto.font = "bold 18px sans-serif";
+        contexto.textAlign = "center";
+        contexto.textBaseline = "middle";
+        contexto.fillText("MORADIAS DE PRESTÍGIO", 10860, 4550);
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
+      }
+
+      function desenharCeleiroColonia() {
+        if (estado.etapaConstrucaoColonia < 4) return;
+
+        const { x, y, largura, altura } = areaCeleiro;
+        contexto.strokeStyle = "#5b4028";
+        contexto.lineWidth = 12;
+        contexto.strokeRect(x, y, largura, altura);
+        contexto.fillStyle = "#a8753f";
+        contexto.fillRect(x + 12, y + 12, largura - 24, altura - 24);
+        contexto.strokeStyle = "#d3a85e";
+        contexto.lineWidth = 10;
+        for (let linha = x + 55; linha < x + largura - 35; linha += 55) {
+          contexto.beginPath();
+          contexto.moveTo(linha, y + 20);
+          contexto.lineTo(linha, y + altura - 20);
+          contexto.stroke();
+        }
+        contexto.fillStyle = "#4a2f1d";
+        contexto.beginPath();
+        contexto.moveTo(x - 20, y + 20);
+        contexto.lineTo(x + largura / 2, y - 80);
+        contexto.lineTo(x + largura + 20, y + 20);
+        contexto.closePath();
+        contexto.fill();
+        contexto.fillStyle = "#f1dfad";
+        contexto.fillRect(x + 85, y + 78, largura - 170, 46);
+        contexto.fillStyle = "#3b291b";
+        contexto.font = "bold 21px sans-serif";
+        contexto.textAlign = "center";
+        contexto.textBaseline = "middle";
+        contexto.fillText("CELEIRO", x + largura / 2, y + 101);
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
+      }
+
+      function desenharCasasAgricultoresColonia() {
+        if (estado.etapaConstrucaoColonia < 4) return;
+
+        casasAgricultores.forEach(({ x, y }) => {
+          contexto.strokeStyle = "#65482c";
+          contexto.lineWidth = 8;
+          contexto.strokeRect(x, y, 150, 105);
+          contexto.fillStyle = "#9b6b39";
+          contexto.fillRect(x + 8, y + 8, 134, 89);
+          contexto.fillStyle = "#533620";
+          contexto.beginPath();
+          contexto.moveTo(x - 10, y + 15);
+          contexto.lineTo(x + 75, y - 40);
+          contexto.lineTo(x + 160, y + 15);
+          contexto.closePath();
+          contexto.fill();
+        });
+
+        contexto.fillStyle = "#3f2d20";
+        contexto.font = "bold 18px sans-serif";
+        contexto.textAlign = "center";
+        contexto.textBaseline = "middle";
+        contexto.fillText("CASAS DOS AGRICULTORES", 8625, 3380);
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
       }
 
       function desenharAreasProdutivasColonia() {
@@ -4313,9 +4582,13 @@
           contexto.fillRect(limiteCosta + 430 - movimento, y + 55, 130, 7);
         }
 
-        desenharAdministracaoColonia();
-        desenharMoradiasColonia();
         desenharAreasProdutivasColonia();
+        desenharDefesasColonia();
+        desenharAdministracaoColonia();
+        desenharMoradiasPrestigioColonia();
+        desenharCeleiroColonia();
+        desenharMoradiasColonia();
+        desenharCasasAgricultoresColonia();
         desenharColonosNovaColonia();
       }
 
