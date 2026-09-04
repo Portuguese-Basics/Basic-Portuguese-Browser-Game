@@ -715,7 +715,10 @@
             <li>A contratação preserva 2.500 de ouro no cofre e limita os soldos a 30% do repasse municipal garantido. Um efetivo completo custa 70 por minuto contra 270 de receita garantida.</li>
             <li>O orçamento municipal paga primeiro a folha civil, os soldos e a manutenção. Empregos produtivos só são preenchidos até o limite sustentável de 60% do repasse municipal, já descontada a manutenção.</li>
             <li>A cidade protege uma reserva de pelo menos 2.500 de ouro ou cinco ciclos de despesas essenciais. Obras não urgentes esperam até que custo e reserva estejam cobertos.</li>
-            <li>Melhorias públicas automáticas: poço e cisterna por 600; estradas de terra por 750; saneamento por 1.200; quatro postos da guarda por 300 cada. Todas acrescentam manutenção recorrente.</li>
+            <li>A colônia começa sem estradas. O movimento dos moradores marca trilhas; os trechos mais usados entram primeiro na fila automática de obras.</li>
+            <li>Cada um dos 8 trechos pode virar estrada básica de terra por 120, receber reforço de madeira por 220 + 12 madeiras e, depois, reforço de pedra por 360 + 18 pedras.</li>
+            <li>As estradas aceleram o deslocamento, a produção e as construções. As melhorias só avançam quando o orçamento permanece positivo, a reserva está protegida e os materiais existem.</li>
+            <li>Melhorias públicas automáticas: poço e cisterna por 600; saneamento por 1.200; quatro postos da guarda por 300 cada. Todas acrescentam manutenção recorrente.</li>
             <li>Poço e saneamento reduzem a pressão sobre a saúde; os postos acrescentam segurança civil. Moradia, comida, escola e clínica continuam sendo prioridades de emergência.</li>
             <li>Cada combatente recebe uma arma de metal ou lança, ou um arco com uma aljava de 20 flechas. Guardas patrulham a cidade; soldados ficam disponíveis para ordens futuras.</li>
             <li>A costa pode sustentar dois cais de pesca com 5 trabalhadores cada. O mercado costeiro guarda 160 peixes; cada pescador entrega 3 peixes e cada barco ativo acrescenta 2 por minuto.</li>
@@ -896,7 +899,7 @@
               <li>Campo de treinamento da guarda <span id="edificio-campo-guarda">Planejado</span></li>
               <li>Quartel militar <span id="edificio-quartel-militar">Planejado</span></li>
               <li>Poço e cisterna <span id="edificio-cisterna">Planejados</span></li>
-              <li>Rede de estradas de terra <span id="edificio-estradas">Planejada</span></li>
+              <li>Rede viária · 8 trechos × 3 níveis <span id="edificio-estradas">Somente trilhas</span></li>
               <li>Saneamento básico <span id="edificio-saneamento">Planejado</span></li>
               <li>Postos da guarda <span id="edificio-postos-guarda">0 / 4</span></li>
             </ul>
@@ -936,6 +939,20 @@
               <li>Saldo operacional garantido <span id="registro-saldo-operacional">+270 ouro / 60 s</span></li>
               <li>Reserva dinâmica · 5 ciclos <span id="registro-reserva-municipal">2.500 ouro</span></li>
               <li>Último pagamento municipal <span id="registro-ultimo-orcamento">Ainda não processado</span></li>
+            </ul>
+          </section>
+
+          <section class="economia" aria-labelledby="titulo-registro-estradas">
+            <h3 id="titulo-registro-estradas">Rede viária segmentada</h3>
+            <ul class="lista-colonia">
+              <li>Trilhas marcadas pelo movimento <span id="registro-estradas-trilhas">0 / 8</span></li>
+              <li>Estradas básicas de terra <span id="registro-estradas-terra">0 / 8</span></li>
+              <li>Reforço de madeira <span id="registro-estradas-madeira">0 / 8</span></li>
+              <li>Reforço de pedra <span id="registro-estradas-pedra">0 / 8</span></li>
+              <li>Próximo trecho pela demanda <span id="registro-estradas-proxima">Aguardando movimento</span></li>
+              <li>Eficiência produtiva <span id="registro-estradas-producao">+0%</span></li>
+              <li>Velocidade de deslocamento <span id="registro-estradas-movimento">+0%</span></li>
+              <li>Velocidade de construção <span id="registro-estradas-construcao">+0%</span></li>
             </ul>
           </section>
 
@@ -1074,7 +1091,9 @@
               <li>A folha civil, os soldos e a manutenção são pagos antes de qualquer nova obra. A cidade só cria empregos não essenciais dentro do orçamento garantido.</li>
               <li>A reserva protegida equivale a pelo menos 2.500 de ouro ou cinco ciclos de despesas essenciais, o que for maior.</li>
               <li>Construções não essenciais só começam quando o custo da obra cabe acima da reserva. Moradia, alimento, escola e saúde continuam como prioridades de emergência.</li>
-              <li>Poço, estradas, saneamento e postos da guarda são melhorias públicas automáticas com custos de construção e manutenção contínua.</li>
+              <li>Trilhas surgem do movimento. Os 8 trechos viários são priorizados pelo tráfego e evoluem separadamente: terra, reforço de madeira e reforço de pedra.</li>
+              <li>Estradas aumentam a velocidade de deslocamento, produção e construção; os níveis superiores consomem madeira ou pedra e acrescentam manutenção contínua.</li>
+              <li>Poço, saneamento e postos da guarda são melhorias públicas automáticas com custos de construção e manutenção contínua.</li>
             </ul>
           </section>
 
@@ -1502,6 +1521,14 @@
           "saldo-operacional",
           "reserva-municipal",
           "ultimo-orcamento",
+          "estradas-trilhas",
+          "estradas-terra",
+          "estradas-madeira",
+          "estradas-pedra",
+          "estradas-proxima",
+          "estradas-producao",
+          "estradas-movimento",
+          "estradas-construcao",
           "adultos",
           "familias",
           "bebes",
@@ -1875,6 +1902,79 @@
         largura: 360,
         altura: 300,
       };
+      const trechosEstradaColonia = [
+        {
+          id: "centro",
+          nome: "eixo central",
+          pontos: [
+            { x: 5000, y: yEstradaCampoColonia },
+            { x: 6800, y: yEstradaCampoColonia },
+            { x: 10300, y: yEstradaCampoColonia },
+          ],
+        },
+        {
+          id: "moradias",
+          nome: "acesso às moradias",
+          pontos: [
+            { x: 6050, y: yEstradaCampoColonia },
+            { x: 6050, y: 5350 },
+            { x: 6050, y: 6550 },
+          ],
+        },
+        {
+          id: "campos",
+          nome: "rota dos campos",
+          pontos: [
+            { x: 3900, y: yEstradaCampoColonia },
+            { x: 5000, y: yEstradaCampoColonia },
+          ],
+        },
+        {
+          id: "floresta",
+          nome: "rota da floresta",
+          pontos: [
+            { x: 5000, y: yEstradaCampoColonia },
+            { x: 4300, y: yEstradaCampoColonia },
+            { x: 4300, y: 2200 },
+            { x: 3000, y: 1800 },
+          ],
+        },
+        {
+          id: "recursos",
+          nome: "rota das minas",
+          pontos: [
+            { x: 5000, y: yEstradaCampoColonia },
+            { x: 4500, y: 5600 },
+            { x: 4200, y: 6800 },
+          ],
+        },
+        {
+          id: "costa",
+          nome: "eixo costeiro",
+          pontos: [
+            { x: 10300, y: yEstradaCampoColonia },
+            { x: 12400, y: yEstradaCampoColonia },
+          ],
+        },
+        {
+          id: "caisNorte",
+          nome: "acesso aos cais de pesca",
+          pontos: [
+            { x: 12400, y: yEstradaCampoColonia },
+            { x: 12400, y: 3150 },
+            { x: 12720, y: 2500 },
+          ],
+        },
+        {
+          id: "caisSul",
+          nome: "acesso ao cais comercial",
+          pontos: [
+            { x: 12400, y: yEstradaCampoColonia },
+            { x: 12400, y: 5600 },
+            { x: 12400, y: 6900 },
+          ],
+        },
+      ];
       const quantidadeColonosExpansao = 20;
       const versaoColonia = 5;
       const ouroInicialAdministrador = 2500;
@@ -1945,7 +2045,11 @@
       const custoCampoGuardaColonia = 900;
       const custoQuartelMilitarColonia = 1400;
       const custoCisternaColonia = 600;
-      const custoEstradasTerraColonia = 750;
+      const custosEstradaPorNivelColonia = [0, 120, 220, 360];
+      const madeiraReforcoEstradaColonia = 12;
+      const pedraReforcoEstradaColonia = 18;
+      const manutencaoEstradaPorNivelColonia = [0, 0.25, 0.5, 0.75];
+      const nivelMaximoEstradaColonia = 3;
       const custoSaneamentoColonia = 1200;
       const custoPostoGuardaColonia = 300;
       const totalPostosGuardaColonia = 4;
@@ -2238,6 +2342,8 @@
         quartelMilitarConstruido: false,
         cisternaConstruida: false,
         estradasTerraConstruidas: false,
+        niveisEstradasColonia: trechosEstradaColonia.map(() => 0),
+        trechoEstradaEmObra: null,
         saneamentoConstruido: false,
         quantidadePostosGuarda: 0,
         quantidadeMilicianos: 0,
@@ -2430,8 +2536,10 @@
           estado.barcosPesca,
           Math.ceil(empregos.pesca / 2),
         );
-        return empregos.pesca * peixesPorPescador +
-          barcosAtivos * peixesPorBarco;
+        return aplicarEficienciaProducaoEstradasColonia(
+          empregos.pesca * peixesPorPescador +
+            barcosAtivos * peixesPorBarco,
+        );
       }
 
       function producaoMercadoriasPorCiclo(
@@ -2443,8 +2551,10 @@
               Math.ceil(empregos.comercio / 2),
             )
           : 0;
-        return empregos.comercio * mercadoriaPorMercador +
-          naviosAtivos * mercadoriaPorNavio;
+        return aplicarEficienciaProducaoEstradasColonia(
+          empregos.comercio * mercadoriaPorMercador +
+            naviosAtivos * mercadoriaPorNavio,
+        );
       }
 
       function formatarPercentual(valor) {
@@ -2696,6 +2806,8 @@
         estado.quartelMilitarConstruido = false;
         estado.cisternaConstruida = false;
         estado.estradasTerraConstruidas = false;
+        estado.niveisEstradasColonia = trechosEstradaColonia.map(() => 0);
+        estado.trechoEstradaEmObra = null;
         estado.saneamentoConstruido = false;
         estado.quantidadePostosGuarda = 0;
         estado.quantidadeMilicianos = 0;
@@ -2904,6 +3016,10 @@
                 banco: estado.bancoColoniaConstruido,
                 cisterna: estado.cisternaConstruida,
                 estradasTerra: estado.estradasTerraConstruidas,
+                estradas: {
+                  niveis: [...estado.niveisEstradasColonia],
+                  trechoEmObra: estado.trechoEstradaEmObra,
+                },
                 saneamento: estado.saneamentoConstruido,
                 postosGuarda: estado.quantidadePostosGuarda,
               },
@@ -3628,6 +3744,7 @@
             salvo.expansao?.economia?.obraAutomatica === "quartelMilitar"
             || salvo.expansao?.economia?.obraAutomatica === "cisterna"
             || salvo.expansao?.economia?.obraAutomatica === "estradasTerra"
+            || salvo.expansao?.economia?.obraAutomatica === "estradaSegmento"
             || salvo.expansao?.economia?.obraAutomatica === "saneamento"
             || salvo.expansao?.economia?.obraAutomatica === "postoGuarda"
               ? salvo.expansao.economia.obraAutomatica
@@ -3863,8 +3980,46 @@
             salvo.expansao?.economia?.edificios?.banco === true;
           estado.cisternaConstruida =
             salvo.expansao?.economia?.edificios?.cisterna === true;
-          estado.estradasTerraConstruidas =
+          const niveisEstradasSalvos =
+            salvo.expansao?.economia?.edificios?.estradas?.niveis;
+          const estradaLegadaConstruida =
             salvo.expansao?.economia?.edificios?.estradasTerra === true;
+          estado.niveisEstradasColonia = Array.isArray(niveisEstradasSalvos)
+            ? trechosEstradaColonia.map((_, indice) =>
+                Math.round(
+                  numeroValido(
+                    niveisEstradasSalvos[indice],
+                    0,
+                    nivelMaximoEstradaColonia,
+                    0,
+                  ),
+                ),
+              )
+            : trechosEstradaColonia.map(() =>
+                estradaLegadaConstruida ? 1 : 0,
+              );
+          estado.estradasTerraConstruidas =
+            estado.niveisEstradasColonia.every((nivel) => nivel >= 1);
+          const trechoEstradaSalvo = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.edificios?.estradas?.trechoEmObra,
+              0,
+              trechosEstradaColonia.length - 1,
+              0,
+            ),
+          );
+          if (estado.obraAutomaticaColonia === "estradasTerra") {
+            estado.obraAutomaticaColonia = "estradaSegmento";
+            estado.trechoEstradaEmObra = Math.max(
+              0,
+              estado.niveisEstradasColonia.findIndex((nivel) => nivel < 1),
+            );
+          } else {
+            estado.trechoEstradaEmObra =
+              estado.obraAutomaticaColonia === "estradaSegmento"
+                ? trechoEstradaSalvo
+                : null;
+          }
           estado.saneamentoConstruido =
             salvo.expansao?.economia?.edificios?.saneamento === true;
           estado.quantidadePostosGuarda = Math.round(
@@ -4142,6 +4297,8 @@
         estado.quartelMilitarConstruido = false;
         estado.cisternaConstruida = false;
         estado.estradasTerraConstruidas = false;
+        estado.niveisEstradasColonia = trechosEstradaColonia.map(() => 0);
+        estado.trechoEstradaEmObra = null;
         estado.saneamentoConstruido = false;
         estado.quantidadePostosGuarda = 0;
         estado.quantidadeMilicianos = 0;
@@ -4468,18 +4625,15 @@
       }
 
       function producaoAlimentarPorCiclo(empregos = estado.empregosColonia) {
-        return (
+        const producaoTerrestre =
           empregos.horta *
             hortalicasPorHorticultor *
             valorAlimentarHortalica +
           empregos.feijao * feijaoPorProdutor * valorAlimentarFeijao +
-          empregos.pastagem * alimentoPorPastor *
-            valorAlimentarProvisao +
-          producaoPeixesPorCiclo(empregos) * valorAlimentarPeixe +
-          empregos.padaria *
-            paesProduzidosPorPadeiro *
-            valorAlimentarPao
-        );
+          empregos.pastagem * alimentoPorPastor * valorAlimentarProvisao +
+          empregos.padaria * paesProduzidosPorPadeiro * valorAlimentarPao;
+        return aplicarEficienciaProducaoEstradasColonia(producaoTerrestre) +
+          producaoPeixesPorCiclo(empregos) * valorAlimentarPeixe;
       }
 
       function migracaoNecessariaColonia(empregos = null) {
@@ -4534,6 +4688,203 @@
             estado.quantidadeAdministradoresMigracao *
               chancePorEscriturarioMigracao,
         );
+      }
+
+      function trafegoTrechoEstradaColonia(
+        indice,
+        empregos = estado.empregosColonia,
+      ) {
+        const rural =
+          (empregos.lavoura || 0) +
+          (empregos.horta || 0) +
+          (empregos.feijao || 0) +
+          (empregos.pastagem || 0) +
+          Number(
+            estado.lavouraConstruida ||
+              estado.hortaConstruida ||
+              estado.feijaoConstruido ||
+              estado.pastagemConstruida,
+          );
+        const floresta =
+          (empregos.lenhador || 0) +
+          (empregos.reflorestador || 0) +
+          (empregos.coletor || 0) +
+          Number(
+            estado.quantidadeCabanasLenhadores > 0 ||
+              estado.quantidadeCabanasColeta > 0 ||
+              estado.cabanaReflorestamentoConstruida,
+          );
+        const recursos =
+          (empregos.mina || 0) +
+          (empregos.pedreira || 0) +
+          Number(estado.minaConstruida || estado.pedreiraConstruida) +
+          Math.ceil(
+            (estado.quantidadeMilicianos +
+              estado.quantidadeGuardas +
+              estado.quantidadeSoldados) /
+              5,
+          );
+        const pesca =
+          (empregos.pesca || 0) + quantidadeCaisPescaColonia();
+        const portoSul =
+          (empregos.comercio || 0) +
+          (empregos.estaleiro || 0) +
+          Number(
+            estado.caisComercialConstruido || estado.estaleiroConstruido,
+          );
+        const trafegos = [
+          Math.max(1, totalMoradoresColonia()),
+          Math.max(0, totalMoradoresColonia() - (empregos.administracao || 0)),
+          rural,
+          floresta,
+          recursos,
+          pesca + portoSul,
+          pesca,
+          portoSul,
+        ];
+        return trafegos[indice] || 0;
+      }
+
+      function quantidadeTrechosEstradaNoNivelColonia(nivelMinimo) {
+        return estado.niveisEstradasColonia.filter(
+          (nivel) => nivel >= nivelMinimo,
+        ).length;
+      }
+
+      function progressoRedeViariaColonia() {
+        const pontos = estado.niveisEstradasColonia.reduce(
+          (total, nivel) => total + nivel,
+          0,
+        );
+        return pontos /
+          (trechosEstradaColonia.length * nivelMaximoEstradaColonia);
+      }
+
+      function multiplicadorProducaoEstradasColonia() {
+        return 1 + progressoRedeViariaColonia() * 0.18;
+      }
+
+      function multiplicadorMovimentoEstradasColonia() {
+        return 1 + progressoRedeViariaColonia() * 0.35;
+      }
+
+      function multiplicadorConstrucaoEstradasColonia() {
+        return 1 + progressoRedeViariaColonia() * 0.25;
+      }
+
+      function aplicarEficienciaProducaoEstradasColonia(valor) {
+        return Math.round(
+          valor * multiplicadorProducaoEstradasColonia() * 100,
+        ) / 100;
+      }
+
+      function nomeNivelEstradaColonia(nivel) {
+        return [
+          "trilha marcada",
+          "estrada básica de terra",
+          "reforço de madeira",
+          "reforço de pedra",
+        ][nivel] || "estrada";
+      }
+
+      function proximoTrechoEstradaColonia(
+        nivelMaximo = nivelMaximoEstradaColonia,
+        limiteTrechosTerra = trechosEstradaColonia.length,
+      ) {
+        if (
+          quantidadeTrechosEstradaNoNivelColonia(1) >= limiteTrechosTerra &&
+          estado.niveisEstradasColonia.some((nivel) => nivel === 0)
+        ) {
+          return null;
+        }
+        const candidatos = trechosEstradaColonia
+          .map((trecho, indice) => ({
+            trecho,
+            indice,
+            nivelAtual: estado.niveisEstradasColonia[indice] || 0,
+            trafego: trafegoTrechoEstradaColonia(indice),
+          }))
+          .filter(
+            ({ nivelAtual, trafego }) =>
+              trafego > 0 && nivelAtual < nivelMaximo,
+          );
+        if (candidatos.length === 0) return null;
+        const menorNivel = Math.min(
+          ...candidatos.map(({ nivelAtual }) => nivelAtual),
+        );
+        const disponiveis = candidatos
+          .filter(({ nivelAtual }) => nivelAtual === menorNivel)
+          .filter(({ nivelAtual }) => {
+            const nivelAlvo = nivelAtual + 1;
+            if (nivelAlvo === 2) {
+              return estado.depositoMadeiraConstruido &&
+                estado.estoqueMadeira >= madeiraReforcoEstradaColonia;
+            }
+            if (nivelAlvo === 3) {
+              return estado.pedreiraConstruida &&
+                estado.estoquePedra >= pedraReforcoEstradaColonia;
+            }
+            return true;
+          })
+          .sort((a, b) => b.trafego - a.trafego || a.indice - b.indice);
+        const escolhido = disponiveis[0];
+        return escolhido
+          ? { ...escolhido, nivelAlvo: escolhido.nivelAtual + 1 }
+          : null;
+      }
+
+      function trechoEstradaSelecionadoColonia() {
+        const indice = Number.isInteger(estado.trechoEstradaEmObra)
+          ? estado.trechoEstradaEmObra
+          : proximoTrechoEstradaColonia()?.indice;
+        if (!Number.isInteger(indice)) return null;
+        const nivelAtual = estado.niveisEstradasColonia[indice] || 0;
+        return {
+          trecho: trechosEstradaColonia[indice],
+          indice,
+          nivelAtual,
+          nivelAlvo: Math.min(nivelMaximoEstradaColonia, nivelAtual + 1),
+          trafego: trafegoTrechoEstradaColonia(indice),
+        };
+      }
+
+      function custoTrechoEstradaColonia() {
+        const selecionado = trechoEstradaSelecionadoColonia();
+        return selecionado
+          ? custosEstradaPorNivelColonia[selecionado.nivelAlvo]
+          : undefined;
+      }
+
+      function textoMateriaisTrechoEstradaColonia(selecionado) {
+        if (!selecionado) return "";
+        if (selecionado.nivelAlvo === 2) {
+          return ` e ${madeiraReforcoEstradaColonia} madeiras`;
+        }
+        if (selecionado.nivelAlvo === 3) {
+          return ` e ${pedraReforcoEstradaColonia} pedras`;
+        }
+        return "";
+      }
+
+      function consumirMateriaisTrechoEstradaColonia() {
+        const selecionado = trechoEstradaSelecionadoColonia();
+        if (!selecionado) return;
+        if (selecionado.nivelAlvo === 2) {
+          estado.estoqueMadeira -= madeiraReforcoEstradaColonia;
+        } else if (selecionado.nivelAlvo === 3) {
+          estado.estoquePedra -= pedraReforcoEstradaColonia;
+        }
+      }
+
+      function resumoRedeViariaColonia() {
+        const terra = quantidadeTrechosEstradaNoNivelColonia(1);
+        const madeira = quantidadeTrechosEstradaNoNivelColonia(2);
+        const pedra = quantidadeTrechosEstradaNoNivelColonia(3);
+        if (pedra === trechosEstradaColonia.length) return "Toda em pedra";
+        if (madeira > 0 || pedra > 0) {
+          return `${terra}/8 terra · ${madeira}/8 madeira · ${pedra}/8 pedra`;
+        }
+        return terra > 0 ? `${terra} / 8 estradas básicas` : "Somente trilhas";
       }
 
       function receitaGarantidaMunicipalColonia() {
@@ -4596,7 +4947,11 @@
           estado.quartelMilitarConstruido,
         ].filter(Boolean).length;
         total += estado.cisternaConstruida ? 1.5 : 0;
-        total += estado.estradasTerraConstruidas ? 2 : 0;
+        total += estado.niveisEstradasColonia.reduce(
+          (subtotal, nivel) =>
+            subtotal + manutencaoEstradaPorNivelColonia[nivel],
+          0,
+        );
         total += estado.saneamentoConstruido ? 3 : 0;
         total += estado.quantidadePostosGuarda;
         return arredondarOuro(total);
@@ -4739,7 +5094,13 @@
           campoGuarda: 1,
           quartelMilitar: 1,
           cisterna: 1.5,
-          estradasTerra: 2,
+          estradaSegmento: (() => {
+            const selecionado = trechoEstradaSelecionadoColonia();
+            return selecionado
+              ? manutencaoEstradaPorNivelColonia[selecionado.nivelAlvo] -
+                  manutencaoEstradaPorNivelColonia[selecionado.nivelAtual]
+              : 0;
+          })(),
           saneamento: 3,
           postoGuarda: 1,
         };
@@ -5143,7 +5504,12 @@
         }
         if (tipo === "quartelMilitar") return "quartel militar";
         if (tipo === "cisterna") return "poço e cisterna";
-        if (tipo === "estradasTerra") return "rede de estradas de terra";
+        if (tipo === "estradaSegmento" || tipo === "estradasTerra") {
+          const selecionado = trechoEstradaSelecionadoColonia();
+          return selecionado
+            ? `${nomeNivelEstradaColonia(selecionado.nivelAlvo)} no ${selecionado.trecho.nome}`
+            : "trecho prioritário da rede viária";
+        }
         if (tipo === "saneamento") return "saneamento básico";
         if (tipo === "postoGuarda") {
           return `posto da guarda ${estado.quantidadePostosGuarda + 1}/${totalPostosGuardaColonia}`;
@@ -5197,7 +5563,8 @@
           campoGuarda: custoCampoGuardaColonia,
           quartelMilitar: custoQuartelMilitarColonia,
           cisterna: custoCisternaColonia,
-          estradasTerra: custoEstradasTerraColonia,
+          estradaSegmento: custoTrechoEstradaColonia(),
+          estradasTerra: custosEstradaPorNivelColonia[1],
           saneamento: custoSaneamentoColonia,
           postoGuarda: custoPostoGuardaColonia,
         };
@@ -5222,24 +5589,40 @@
         if (!estado.lavouraConstruida) return "lavoura";
         if (!estado.armazemGraosConstruido) return "armazemGraos";
         if (!estado.cisternaConstruida) return "cisterna";
+        if (
+          quantidadeTrechosEstradaNoNivelColonia(1) < 2 &&
+          proximoTrechoEstradaColonia(1, 2)
+        ) return "estradaSegmento";
         if (!estado.moinhoConstruido) return "moinho";
         if (!estado.armazemFarinhaConstruido) return "armazemFarinha";
         if (!estado.padariaConstruida) return "padaria";
         if (!estado.armazemPaesConstruido) return "armazemPaes";
-        if (!estado.estradasTerraConstruidas) return "estradasTerra";
+        if (
+          quantidadeTrechosEstradaNoNivelColonia(1) < 3 &&
+          proximoTrechoEstradaColonia(1, 3)
+        ) return "estradaSegmento";
         if (!estado.bancoColoniaConstruido) return "banco";
         if (!estado.caisPescaConstruido) return "caisPesca";
         if (!estado.mercadoPeixesConstruido) return "mercadoPeixes";
+        if (
+          quantidadeTrechosEstradaNoNivelColonia(1) < 4 &&
+          proximoTrechoEstradaColonia(1, 4)
+        ) return "estradaSegmento";
         if (!estado.segundoCaisPescaConstruido) return "caisPesca2";
         if (estado.quantidadeCabanasLenhadores < 1) {
           return "cabanaLenhadores";
         }
         if (!estado.depositoMadeiraConstruido) return "depositoMadeira";
+        if (
+          quantidadeTrechosEstradaNoNivelColonia(1) < 5 &&
+          proximoTrechoEstradaColonia(1, 5)
+        ) return "estradaSegmento";
         if (!estado.cabanaReflorestamentoConstruida) {
           return "cabanaReflorestamento";
         }
         if (!estado.minaConstruida) return "mina";
         if (!estado.pedreiraConstruida) return "pedreira";
+        if (proximoTrechoEstradaColonia(1)) return "estradaSegmento";
         if (!estado.caisComercialConstruido) return "caisComercial";
         if (!estado.feitoriaConstruida) return "feitoria";
         if (!estado.ferrariaColoniaConstruida) return "ferraria";
@@ -5259,6 +5642,8 @@
         if (!estado.arsenalMadeiraConstruido) return "arsenalMadeira";
         if (!estado.flechariaConstruida) return "flecharia";
         if (!estado.depositoFlechasConstruido) return "depositoFlechas";
+        if (proximoTrechoEstradaColonia(2)) return "estradaSegmento";
+        if (proximoTrechoEstradaColonia(3)) return "estradaSegmento";
         if (
           estado.trechosPalicadaInterna < totalTrechosPalicadaColonia
         ) return "palicadaInterna";
@@ -5411,6 +5796,24 @@
         const saldoOperacional = saldoOperacionalMunicipalColonia(empregos);
         const reservaMunicipal = reservaMunicipalDinamicaColonia(empregos);
         const situacaoOrcamento = situacaoOrcamentoMunicipalColonia();
+        const trechosComTrilha = trechosEstradaColonia.filter(
+          (_, indice) => trafegoTrechoEstradaColonia(indice, empregos) > 0,
+        ).length;
+        const trechosTerra = quantidadeTrechosEstradaNoNivelColonia(1);
+        const trechosMadeira = quantidadeTrechosEstradaNoNivelColonia(2);
+        const trechosPedra = quantidadeTrechosEstradaNoNivelColonia(3);
+        const proximoTrechoEstrada = estado.obraAutomaticaColonia === "estradaSegmento"
+          ? trechoEstradaSelecionadoColonia()
+          : proximoTrechoEstradaColonia();
+        const bonusProducaoEstradas = Math.round(
+          (multiplicadorProducaoEstradasColonia() - 1) * 100,
+        );
+        const bonusMovimentoEstradas = Math.round(
+          (multiplicadorMovimentoEstradasColonia() - 1) * 100,
+        );
+        const bonusConstrucaoEstradas = Math.round(
+          (multiplicadorConstrucaoEstradasColonia() - 1) * 100,
+        );
         orcamentoColoniaStatusEl.textContent = estado.coloniaIniciada
           ? `${situacaoOrcamento} · ${saldoOperacional >= 0 ? "+" : ""}${formatarOuro(saldoOperacional)}/60 s`
           : "Aguardando fundação";
@@ -5802,10 +6205,10 @@
           "cisterna",
           estado.cisternaConstruida,
         );
-        edificioEstradasEl.textContent = statusEdificioColonia(
-          "estradasTerra",
-          estado.estradasTerraConstruidas,
-        );
+        edificioEstradasEl.textContent =
+          estado.obraAutomaticaColonia === "estradaSegmento"
+            ? `${resumoRedeViariaColonia()} · ${Math.round((estado.tempoObraAutomaticaColonia / duracaoObraAutomaticaColonia) * 100)}%`
+            : resumoRedeViariaColonia();
         edificioSaneamentoEl.textContent = statusEdificioColonia(
           "saneamento",
           estado.saneamentoConstruido,
@@ -5857,6 +6260,23 @@
           estado.ultimaDespesaMunicipal > 0
             ? `${formatarOuro(estado.ultimaDespesaMunicipal)} pagos · ${situacaoOrcamento}`
             : "Ainda não processado";
+        registrosEls["estradas-trilhas"].textContent =
+          `${trechosComTrilha} / ${trechosEstradaColonia.length}`;
+        registrosEls["estradas-terra"].textContent =
+          `${trechosTerra} / ${trechosEstradaColonia.length}`;
+        registrosEls["estradas-madeira"].textContent =
+          `${trechosMadeira} / ${trechosEstradaColonia.length}`;
+        registrosEls["estradas-pedra"].textContent =
+          `${trechosPedra} / ${trechosEstradaColonia.length}`;
+        registrosEls["estradas-proxima"].textContent = proximoTrechoEstrada
+          ? `${proximoTrechoEstrada.trecho.nome} · ${nomeNivelEstradaColonia(proximoTrechoEstrada.nivelAlvo)} · tráfego ${proximoTrechoEstrada.trafego}`
+          : "Aguardando tráfego ou materiais";
+        registrosEls["estradas-producao"].textContent =
+          `+${bonusProducaoEstradas}%`;
+        registrosEls["estradas-movimento"].textContent =
+          `+${bonusMovimentoEstradas}%`;
+        registrosEls["estradas-construcao"].textContent =
+          `+${bonusConstrucaoEstradas}%`;
         registrosEls.adultos.textContent = String(estado.populacaoColonia);
         registrosEls.familias.textContent = String(estado.familiasColonia.length);
         registrosEls.bebes.textContent = String(quantidadeBebes);
@@ -7256,12 +7676,27 @@
       }
 
       function iniciarObraAutomaticaColonia(tipo) {
+        if (tipo === "estradasTerra") tipo = "estradaSegmento";
+        if (tipo === "estradaSegmento" && !Number.isInteger(estado.trechoEstradaEmObra)) {
+          const proximoTrecho = proximoTrechoEstradaColonia();
+          if (!proximoTrecho) return false;
+          estado.trechoEstradaEmObra = proximoTrecho.indice;
+        }
         const custo = custoObraAutomaticaColonia(tipo);
-        if (!podeFinanciarObraColonia(tipo)) return false;
+        const trechoEstradaReservado = tipo === "estradaSegmento"
+          ? trechoEstradaSelecionadoColonia()
+          : null;
+        if (!podeFinanciarObraColonia(tipo)) {
+          if (tipo === "estradaSegmento") estado.trechoEstradaEmObra = null;
+          return false;
+        }
 
         estado.tesouroColonia = arredondarOuro(
           estado.tesouroColonia - custo,
         );
+        if (tipo === "estradaSegmento") {
+          consumirMateriaisTrechoEstradaColonia();
+        }
         estado.obraAutomaticaColonia = tipo;
         estado.tempoObraAutomaticaColonia = 0;
         const alvos = {
@@ -7389,10 +7824,11 @@
             x: areaCisternaColonia.x + areaCisternaColonia.largura / 2,
             y: areaCisternaColonia.y + areaCisternaColonia.altura / 2,
           },
-          estradasTerra: {
-            x: recintoExterno.x + recintoExterno.largura / 2,
-            y: yEstradaCampoColonia,
-          },
+          estradaSegmento: (() => {
+            const selecionado = trechoEstradaSelecionadoColonia();
+            const pontos = selecionado?.trecho.pontos || [posicaoAdministrador];
+            return pontos[Math.floor(pontos.length / 2)];
+          })(),
           saneamento: {
             x: recintoInterno.x + recintoInterno.largura / 2,
             y: recintoInterno.y + recintoInterno.altura / 2,
@@ -7413,7 +7849,7 @@
           tipo === "moradia" ? 0.8 : 0.6,
         );
         definirMensagem(
-          `Os colonos iniciaram ${nomeObraAutomaticaColonia(tipo)} e reservaram ${custo} do cofre municipal.`,
+          `Os colonos iniciaram ${nomeObraAutomaticaColonia(tipo)} e reservaram ${custo} do cofre municipal${textoMateriaisTrechoEstradaColonia(trechoEstradaReservado)}.`,
         );
         atualizarInterface();
         salvarProgresso();
@@ -7433,7 +7869,8 @@
           }
         }
 
-        estado.tempoObraAutomaticaColonia += delta;
+        estado.tempoObraAutomaticaColonia +=
+          delta * multiplicadorConstrucaoEstradasColonia();
         if (
           estado.tempoObraAutomaticaColonia <
           duracaoObraAutomaticaColonia
@@ -7531,8 +7968,17 @@
           estado.quartelMilitarConstruido = true;
         } else if (obraConcluida === "cisterna") {
           estado.cisternaConstruida = true;
-        } else if (obraConcluida === "estradasTerra") {
-          estado.estradasTerraConstruidas = true;
+        } else if (
+          obraConcluida === "estradaSegmento" ||
+          obraConcluida === "estradasTerra"
+        ) {
+          const selecionado = trechoEstradaSelecionadoColonia();
+          if (selecionado) {
+            estado.niveisEstradasColonia[selecionado.indice] =
+              selecionado.nivelAlvo;
+          }
+          estado.estradasTerraConstruidas =
+            estado.niveisEstradasColonia.every((nivel) => nivel >= 1);
         } else if (obraConcluida === "saneamento") {
           estado.saneamentoConstruido = true;
         } else if (obraConcluida === "postoGuarda") {
@@ -7553,6 +7999,7 @@
         }
         estado.obraAutomaticaColonia = null;
         estado.tempoObraAutomaticaColonia = 0;
+        estado.trechoEstradaEmObra = null;
         definirMensagem(
           `Obra concluída: ${nomeObraConcluida}. Os colonos reavaliaram as necessidades da cidade.`,
         );
@@ -7603,12 +8050,21 @@
 
         for (let ciclo = 0; ciclo < ciclos; ciclo += 1) {
           const empregos = redistribuirTrabalhadoresColonia();
-          const novasProvisoes = empregos.pastagem * alimentoPorPastor;
+          const trabalhoEficiente = (quantidade) =>
+            aplicarEficienciaProducaoEstradasColonia(quantidade);
+          const novasProvisoes = trabalhoEficiente(
+            empregos.pastagem * alimentoPorPastor,
+          );
           const novosPeixes = producaoPeixesPorCiclo(empregos);
-          const novosGraos = empregos.lavoura * graosPorAgricultor;
-          const novasHortalicas =
-            empregos.horta * hortalicasPorHorticultor;
-          const novoFeijao = empregos.feijao * feijaoPorProdutor;
+          const novosGraos = trabalhoEficiente(
+            empregos.lavoura * graosPorAgricultor,
+          );
+          const novasHortalicas = trabalhoEficiente(
+            empregos.horta * hortalicasPorHorticultor,
+          );
+          const novoFeijao = trabalhoEficiente(
+            empregos.feijao * feijaoPorProdutor,
+          );
           estado.estoqueAlimentos += novasProvisoes;
           estado.estoquePeixes += novosPeixes;
           estado.estoqueGraos += novosGraos;
@@ -7620,7 +8076,7 @@
           peixesProduzidos += novosPeixes;
 
           const operacoesMoinho = Math.min(
-            empregos.moinho,
+            trabalhoEficiente(empregos.moinho),
             Math.floor(estado.estoqueGraos / graosPorFarinha),
           );
           const novaFarinha =
@@ -7630,7 +8086,7 @@
           farinhaProduzida += novaFarinha;
 
           const fornadas = Math.min(
-            empregos.padaria,
+            trabalhoEficiente(empregos.padaria),
             Math.floor(estado.estoqueFarinha / farinhaPorPao),
           );
           const novosPaes = fornadas * paesProduzidosPorPadeiro;
@@ -7660,7 +8116,7 @@
             excedenteProvisoes * valorVendaAlimento;
 
           const operacoesLenhadores = Math.min(
-            empregos.lenhador,
+            trabalhoEficiente(empregos.lenhador),
             Math.floor(
               estado.estoqueArvores / arvoresCortadasPorLenhador,
             ),
@@ -7674,12 +8130,16 @@
 
           const novasArvores = Math.min(
             capacidadeArvoresColonia - estado.estoqueArvores,
-            empregos.reflorestador * arvoresPlantadasPorReflorestador,
+            trabalhoEficiente(
+              empregos.reflorestador * arvoresPlantadasPorReflorestador,
+            ),
           );
           estado.estoqueArvores += novasArvores;
           arvoresPlantadas += novasArvores;
 
-          const novasErvas = empregos.coletor * ervasPorColetor;
+          const novasErvas = trabalhoEficiente(
+            empregos.coletor * ervasPorColetor,
+          );
           estado.estoqueErvas += novasErvas;
           ervasProduzidas += novasErvas;
 
@@ -7690,7 +8150,9 @@
             estado.saudeColonia - pressaoSaude,
           );
           const medicamentosPossiveis = Math.min(
-            empregos.clinica * medicamentosPorProfissionalClinica,
+            trabalhoEficiente(
+              empregos.clinica * medicamentosPorProfissionalClinica,
+            ),
             Math.floor(estado.estoqueErvas / ervasPorMedicamento),
             Math.max(
               0,
@@ -7745,7 +8207,7 @@
           }
 
           const lotesFlechas = Math.min(
-            empregos.flecheiro,
+            trabalhoEficiente(empregos.flecheiro),
             Math.floor(estado.estoqueMadeira / madeiraPorLoteFlechas),
           );
           estado.estoqueMadeira -=
@@ -7754,17 +8216,20 @@
           estado.estoqueFlechas += novasFlechas;
           flechasProduzidas += novasFlechas;
 
-          const novoMinerio = empregos.mina * minerioPorMineiro;
+          const novoMinerio = trabalhoEficiente(
+            empregos.mina * minerioPorMineiro,
+          );
           minerioProduzido += novoMinerio;
           estado.estoqueMinerio += novoMinerio;
 
-          const novaPedra =
-            empregos.pedreira * pedraPorTrabalhadorPedreira;
+          const novaPedra = trabalhoEficiente(
+            empregos.pedreira * pedraPorTrabalhadorPedreira,
+          );
           pedraProduzida += novaPedra;
           estado.estoquePedra += novaPedra;
 
           const ferramentasPossiveis = Math.min(
-            empregos.ferraria,
+            trabalhoEficiente(empregos.ferraria),
             Math.floor(estado.estoqueMinerio / minerioPorFerramenta),
           );
           estado.estoqueMinerio -=
@@ -7773,7 +8238,7 @@
           ferramentasProduzidas += ferramentasPossiveis;
 
           const armasPossiveis = Math.min(
-            empregos.forja,
+            trabalhoEficiente(empregos.forja),
             Math.floor(estado.estoqueMinerio / minerioPorArma),
           );
           estado.estoqueMinerio -= armasPossiveis * minerioPorArma;
@@ -7782,7 +8247,7 @@
 
           estado.progressoNavio = Math.min(
             trabalhoPorNavio,
-            estado.progressoNavio + empregos.estaleiro,
+            estado.progressoNavio + trabalhoEficiente(empregos.estaleiro),
           );
           const tipoNavio = tipoNavioPrioritarioColonia();
           if (
@@ -8843,8 +9308,10 @@
           feijao: 6,
           pastagem: 9,
         };
+        const tempoLogistico =
+          tempoRio * multiplicadorMovimentoEstradasColonia();
         const progresso =
-          ((tempoRio + vaga * 2.4 + deslocamentos[tipo]) % 32) / 32;
+          ((tempoLogistico + vaga * 2.4 + deslocamentos[tipo]) % 32) / 32;
         return percorrerCaminho(
           [
             centroCasa,
@@ -8900,8 +9367,10 @@
         };
         const deslocamento =
           tipo === "lenhador" ? 0 : tipo === "reflorestador" ? 7 : 13;
+        const tempoLogistico =
+          tempoRio * multiplicadorMovimentoEstradasColonia();
         const progresso =
-          ((tempoRio + vaga * 2.1 + deslocamento) % 36) / 36;
+          ((tempoLogistico + vaga * 2.1 + deslocamento) % 36) / 36;
         return percorrerCaminho(
           [
             centroCasa,
@@ -11048,28 +11517,93 @@
         }
       }
 
-      function desenharObrasPublicasColonia() {
-        if (estado.etapaConstrucaoColonia < 4) return;
+      function desenharCaminhoTrechoEstradaColonia(trecho) {
+        contexto.beginPath();
+        trecho.pontos.forEach((ponto, indice) => {
+          if (indice === 0) contexto.moveTo(ponto.x, ponto.y);
+          else contexto.lineTo(ponto.x, ponto.y);
+        });
+        contexto.stroke();
+      }
 
-        const progressoEstradas = progressoEdificioColonia(
-          "estradasTerra",
-          estado.estradasTerraConstruidas,
-        );
-        if (progressoEstradas > 0) {
-          contexto.fillStyle = "#aa8b58";
-          contexto.fillRect(
-            3900,
-            yEstradaCampoColonia - 45,
-            9100 * progressoEstradas,
-            90,
-          );
-          contexto.fillRect(
-            8455,
-            1250,
-            90,
-            6500 * progressoEstradas,
-          );
+      function desenharTrechoEstradaColonia(trecho, nivel, opacidade = 1) {
+        const estilos = [
+          { borda: "#665a3d", miolo: "#756849", largura: 13, interna: 7 },
+          { borda: "#6f5938", miolo: "#b0915a", largura: 64, interna: 48 },
+          { borda: "#503a26", miolo: "#8b6039", largura: 72, interna: 52 },
+          { borda: "#4d514b", miolo: "#8e948a", largura: 80, interna: 58 },
+        ];
+        const estilo = estilos[nivel];
+        contexto.globalAlpha = opacidade;
+        contexto.lineCap = "round";
+        contexto.lineJoin = "round";
+        contexto.strokeStyle = estilo.borda;
+        contexto.lineWidth = estilo.largura;
+        desenharCaminhoTrechoEstradaColonia(trecho);
+        contexto.strokeStyle = estilo.miolo;
+        contexto.lineWidth = estilo.interna;
+        desenharCaminhoTrechoEstradaColonia(trecho);
+        if (nivel >= 2) {
+          contexto.fillStyle = nivel === 2 ? "#d1aa69" : "#c8ccc2";
+          trecho.pontos.forEach((ponto) => {
+            contexto.fillRect(ponto.x - 12, ponto.y - 12, 24, 24);
+          });
         }
+        contexto.globalAlpha = 1;
+      }
+
+      function desenharRedeViariaColonia() {
+        if (!estado.coloniaIniciada || estado.etapaConstrucaoColonia < 1) {
+          return;
+        }
+        trechosEstradaColonia.forEach((trecho, indice) => {
+          const nivel = estado.niveisEstradasColonia[indice] || 0;
+          const trafego = trafegoTrechoEstradaColonia(indice);
+          if (nivel === 0 && trafego <= 0) return;
+          const opacidadeTrilha = Math.min(0.72, 0.18 + trafego * 0.025);
+          desenharTrechoEstradaColonia(
+            trecho,
+            nivel,
+            nivel === 0 ? opacidadeTrilha : 1,
+          );
+          if (nivel > 0) {
+            const pontoRotulo = trecho.pontos[Math.floor(trecho.pontos.length / 2)];
+            contexto.fillStyle = "#29291f";
+            contexto.font = "bold 17px sans-serif";
+            contexto.textAlign = "center";
+            contexto.textBaseline = "middle";
+            contexto.fillText(
+              nivel === 1 ? "TERRA" : nivel === 2 ? "MADEIRA" : "PEDRA",
+              pontoRotulo.x,
+              pontoRotulo.y - 52,
+            );
+          }
+        });
+
+        if (
+          estado.obraAutomaticaColonia === "estradaSegmento" &&
+          Number.isInteger(estado.trechoEstradaEmObra)
+        ) {
+          const selecionado = trechoEstradaSelecionadoColonia();
+          if (selecionado) {
+            const progresso = limitarProgresso(
+              estado.tempoObraAutomaticaColonia /
+                duracaoObraAutomaticaColonia,
+            );
+            desenharTrechoEstradaColonia(
+              selecionado.trecho,
+              selecionado.nivelAlvo,
+              0.2 + progresso * 0.8,
+            );
+          }
+        }
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
+      }
+
+      function desenharObrasPublicasColonia() {
+        desenharRedeViariaColonia();
+        if (estado.etapaConstrucaoColonia < 4) return;
 
         desenharEdificioColonia(
           areaCisternaColonia,
@@ -11344,6 +11878,8 @@
       }
 
       function posicaoJovemColonia(crianca, indice) {
+        const tempoLogistico =
+          tempoRio * multiplicadorMovimentoEstradasColonia();
         const quantidadeCasas = Math.max(1, estado.quantidadeCasasColonia);
         const casa = posicaoCasaColonia(
           indice % quantidadeCasas,
@@ -11358,8 +11894,8 @@
           estado.empregosColonia.professor < 1
         ) {
           return {
-            x: origem.x + Math.sin(tempoRio * 0.7 + indice) * 24,
-            y: origem.y + Math.cos(tempoRio * 0.6 + indice) * 18,
+            x: origem.x + Math.sin(tempoLogistico * 0.7 + indice) * 24,
+            y: origem.y + Math.cos(tempoLogistico * 0.6 + indice) * 18,
           };
         }
         const destino = {
@@ -11369,7 +11905,8 @@
             (indice % 5 - 2) * 28,
           y: areaEscolaColonia.y + areaEscolaColonia.altura + 70,
         };
-        const idaEVolta = (Math.sin(tempoRio * 0.35 + indice * 0.8) + 1) / 2;
+        const idaEVolta =
+          (Math.sin(tempoLogistico * 0.35 + indice * 0.8) + 1) / 2;
         return interpolarPonto(origem, destino, idaEVolta);
       }
 
@@ -11568,7 +12105,10 @@
         ];
         for (let indice = 0; indice < estado.quantidadeGuardas; indice += 1) {
           const progresso =
-            (tempoRio * 0.018 + indice / Math.max(1, estado.quantidadeGuardas)) % 1;
+            (tempoRio *
+              multiplicadorMovimentoEstradasColonia() *
+              0.018 +
+              indice / Math.max(1, estado.quantidadeGuardas)) % 1;
           const posicao = percorrerCaminho(rotaGuarda, progresso);
           desenharEfetivoDefesaColonia(
             posicao.x,
