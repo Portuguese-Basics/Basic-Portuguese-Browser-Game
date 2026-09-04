@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="Um pequeno jogo em português sobre um arqueiro, um assentamento e a floresta."
+    />
+    <title>Arqueiro do Assentamento</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        background: #151912;
+        color: #f6f2df;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      body {
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        background: #151912;
+      }
+
+      .barra {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.75rem;
+        border-bottom: 2px solid #594126;
+        background: #211d15;
+        box-shadow: 0 3px 0 rgb(0 0 0 / 20%);
+      }
+
+      .estado,
+      .acoes {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+
+      .indicador {
+        min-width: 6.6rem;
+        padding: 0.55rem 0.7rem;
+        border: 1px solid #544b39;
+        border-radius: 0.35rem;
+        background: #302a1e;
+        font-size: 0.9rem;
+        line-height: 1.15;
+      }
+
+      .indicador span {
+        display: block;
+        margin-top: 0.18rem;
+        color: #fff9df;
+        font-size: 1rem;
+        font-weight: 750;
+      }
+
+      button {
+        min-height: 2.75rem;
+        padding: 0.65rem 0.9rem;
+        border: 1px solid #8f6a35;
+        border-radius: 0.35rem;
+        background: #72502a;
+        color: #fff8e5;
+        font: inherit;
+        font-weight: 750;
+        cursor: pointer;
+        touch-action: manipulation;
+      }
+
+      button:hover:not(:disabled),
+      button:focus-visible:not(:disabled) {
+        background: #8b6334;
+      }
+
+      button:focus-visible {
+        outline: 3px solid #f1cc69;
+        outline-offset: 2px;
+      }
+
+      button:disabled {
+        cursor: not-allowed;
+        opacity: 0.38;
+      }
+
+      .mapa {
+        position: relative;
+        flex: 1;
+        min-height: 0;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      .mensagem {
+        position: absolute;
+        right: 1rem;
+        bottom: 1rem;
+        left: 1rem;
+        max-width: 42rem;
+        margin: 0 auto;
+        padding: 0.7rem 0.9rem;
+        border: 1px solid rgb(255 255 255 / 24%);
+        border-radius: 0.35rem;
+        background: rgb(25 24 18 / 88%);
+        color: #fff9e7;
+        text-align: center;
+        font-size: 0.95rem;
+        line-height: 1.35;
+        pointer-events: none;
+      }
+
+      @media (max-width: 760px) {
+        .barra {
+          align-items: stretch;
+          flex-direction: column;
+          padding: 0.55rem;
+        }
+
+        .estado,
+        .acoes {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+
+        .indicador {
+          min-width: 0;
+          padding: 0.45rem 0.55rem;
+          font-size: 0.78rem;
+        }
+
+        .indicador span {
+          font-size: 0.9rem;
+        }
+
+        button {
+          min-width: 0;
+          padding: 0.55rem 0.35rem;
+          font-size: 0.85rem;
+        }
+
+        .mensagem {
+          right: 0.6rem;
+          bottom: 0.6rem;
+          left: 0.6rem;
+          font-size: 0.85rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="barra" aria-label="Estado e ações do jogo">
+      <section class="estado" aria-label="Estado do arqueiro">
+        <div class="indicador">Local<span id="local">Assentamento</span></div>
+        <div class="indicador">Vida<span id="vida">100 / 100</span></div>
+        <div class="indicador">Ouro<span id="ouro">5</span></div>
+      </section>
+
+      <nav class="acoes" aria-label="Ações">
+        <button id="cacar" type="button">Caçar</button>
+        <button id="voltar" type="button" disabled>Voltar</button>
+        <button id="descansar" type="button">Descansar · 3 ouro</button>
+      </nav>
+    </header>
+
+    <main class="mapa">
+      <canvas
+        id="jogo"
+        role="img"
+        aria-label="Mapa do assentamento. O arqueiro é o ponto verde."
+      ></canvas>
+      <p id="mensagem" class="mensagem" role="status" aria-live="polite">
+        Você está seguro no assentamento.
+      </p>
+    </main>
+
+    <script>
+      "use strict";
+
+      const canvas = document.querySelector("#jogo");
+      const contexto = canvas.getContext("2d");
+      const localEl = document.querySelector("#local");
+      const vidaEl = document.querySelector("#vida");
+      const ouroEl = document.querySelector("#ouro");
+      const mensagemEl = document.querySelector("#mensagem");
+      const cacarBotao = document.querySelector("#cacar");
+      const voltarBotao = document.querySelector("#voltar");
+      const descansarBotao = document.querySelector("#descansar");
+
+      const larguraMundo = 1000;
+      const alturaMundo = 700;
+      const custoDescanso = 3;
+      const vidaMaxima = 100;
+
+      const estado = {
+        local: "assentamento",
+        vida: vidaMaxima,
+        ouro: 5,
+        jogador: { x: 500, y: 390 },
+        inimigos: [],
+        tempoAtaque: 0,
+        tempoReforco: 0,
+        alvoGolpeado: null,
+        brilhoGolpe: 0,
+      };
+
+      const arvores = [
+        [90, 105, 26],
+        [185, 185, 34],
+        [310, 90, 25],
+        [430, 165, 33],
+        [570, 100, 31],
+        [720, 175, 38],
+        [880, 100, 29],
+        [930, 275, 35],
+        [790, 345, 30],
+        [640, 270, 25],
+        [355, 310, 31],
+        [170, 350, 28],
+        [75, 485, 36],
+        [245, 555, 30],
+        [735, 570, 33],
+        [910, 520, 27],
+      ];
+
+      function definirMensagem(texto) {
+        mensagemEl.textContent = texto;
+      }
+
+      function atualizarInterface() {
+        const noAssentamento = estado.local === "assentamento";
+        localEl.textContent = noAssentamento ? "Assentamento" : "Floresta";
+        vidaEl.textContent = `${estado.vida} / ${vidaMaxima}`;
+        ouroEl.textContent = String(estado.ouro);
+        cacarBotao.disabled = !noAssentamento || estado.vida <= 0;
+        voltarBotao.disabled = noAssentamento;
+        descansarBotao.disabled = !noAssentamento;
+        canvas.setAttribute(
+          "aria-label",
+          noAssentamento
+            ? "Mapa do assentamento. O arqueiro é o ponto verde."
+            : `Mapa da floresta com ${estado.inimigos.length} inimigos vermelhos. O arqueiro é o ponto verde.`,
+        );
+      }
+
+      function criarInimigo() {
+        const margem = 90;
+        let x = margem + Math.random() * (larguraMundo - margem * 2);
+        let y = margem + Math.random() * (alturaMundo - margem * 2);
+
+        if (Math.hypot(x - estado.jogador.x, y - estado.jogador.y) < 230) {
+          x = x < larguraMundo / 2 ? margem : larguraMundo - margem;
+          y = y < alturaMundo / 2 ? margem : alturaMundo - margem;
+        }
+
+        return {
+          id: crypto.randomUUID
+            ? crypto.randomUUID()
+            : `${Date.now()}-${Math.random()}`,
+          x,
+          y,
+          vida: 2,
+          velocidade: 24 + Math.random() * 8,
+        };
+      }
+
+      function povoarFloresta() {
+        estado.inimigos = Array.from({ length: 6 }, criarInimigo);
+      }
+
+      function iniciarCacada() {
+        estado.local = "floresta";
+        estado.jogador.x = 500;
+        estado.jogador.y = 610;
+        estado.tempoAtaque = 0;
+        estado.tempoReforco = 0;
+        povoarFloresta();
+        definirMensagem("Caçada iniciada. O arqueiro luta automaticamente.");
+        atualizarInterface();
+      }
+
+      function voltarAoAssentamento() {
+        estado.local = "assentamento";
+        estado.jogador.x = 500;
+        estado.jogador.y = 390;
+        estado.inimigos = [];
+        estado.alvoGolpeado = null;
+        definirMensagem("Você voltou ao assentamento.");
+        atualizarInterface();
+      }
+
+      function descansar() {
+        if (estado.vida >= vidaMaxima) {
+          definirMensagem("Sua vida já está completa.");
+          return;
+        }
+
+        if (estado.ouro < custoDescanso) {
+          definirMensagem("Você não tem ouro suficiente para descansar.");
+          return;
+        }
+
+        estado.ouro -= custoDescanso;
+        const vidaAnterior = estado.vida;
+        estado.vida = Math.min(vidaMaxima, estado.vida + 30);
+        const recuperada = estado.vida - vidaAnterior;
+        definirMensagem(`Descanso concluído. Você recuperou ${recuperada} de vida.`);
+        atualizarInterface();
+      }
+
+      function inimigoMaisProximo() {
+        let escolhido = null;
+        let menorDistancia = Infinity;
+
+        for (const inimigo of estado.inimigos) {
+          const distancia = Math.hypot(
+            inimigo.x - estado.jogador.x,
+            inimigo.y - estado.jogador.y,
+          );
+          if (distancia < menorDistancia) {
+            menorDistancia = distancia;
+            escolhido = inimigo;
+          }
+        }
+
+        return { inimigo: escolhido, distancia: menorDistancia };
+      }
+
+      function moverNaDirecao(objeto, alvo, velocidade, delta) {
+        const dx = alvo.x - objeto.x;
+        const dy = alvo.y - objeto.y;
+        const distancia = Math.hypot(dx, dy) || 1;
+        objeto.x += (dx / distancia) * velocidade * delta;
+        objeto.y += (dy / distancia) * velocidade * delta;
+      }
+
+      function atualizarCacada(delta) {
+        if (estado.vida <= 0) return;
+
+        if (estado.inimigos.length === 0) {
+          estado.tempoReforco += delta;
+          if (estado.tempoReforco >= 1.4) {
+            estado.tempoReforco = 0;
+            povoarFloresta();
+            definirMensagem("Mais inimigos apareceram na floresta.");
+            atualizarInterface();
+          }
+          return;
+        }
+
+        const { inimigo: alvo, distancia } = inimigoMaisProximo();
+        if (!alvo) return;
+
+        for (const inimigo of estado.inimigos) {
+          moverNaDirecao(inimigo, estado.jogador, inimigo.velocidade, delta);
+        }
+
+        if (distancia > 110) {
+          moverNaDirecao(estado.jogador, alvo, 58, delta);
+          estado.tempoAtaque = 0;
+          return;
+        }
+
+        estado.tempoAtaque += delta;
+        if (estado.tempoAtaque < 0.72) return;
+
+        estado.tempoAtaque = 0;
+        alvo.vida -= 1;
+        estado.alvoGolpeado = alvo;
+        estado.brilhoGolpe = 0.16;
+
+        const dano = 1 + Math.floor(Math.random() * 3);
+        estado.vida = Math.max(0, estado.vida - dano);
+
+        if (alvo.vida <= 0) {
+          estado.inimigos = estado.inimigos.filter(
+            (inimigo) => inimigo.id !== alvo.id,
+          );
+          const recompensa = 1 + Math.floor(Math.random() * 2);
+          estado.ouro += recompensa;
+          definirMensagem(`Inimigo derrotado. Você ganhou ${recompensa} de ouro.`);
+        } else {
+          definirMensagem(`Combate automático. Você perdeu ${dano} de vida.`);
+        }
+
+        if (estado.vida === 0) {
+          definirMensagem("Você está sem forças. Volte ao assentamento para descansar.");
+        }
+
+        atualizarInterface();
+      }
+
+      function desenharCirculo(x, y, raio, cor, contorno = null) {
+        contexto.beginPath();
+        contexto.arc(x, y, raio, 0, Math.PI * 2);
+        contexto.fillStyle = cor;
+        contexto.fill();
+        if (contorno) {
+          contexto.lineWidth = 3;
+          contexto.strokeStyle = contorno;
+          contexto.stroke();
+        }
+      }
+
+      function desenharAssentamento() {
+        contexto.fillStyle = "#c9b982";
+        contexto.fillRect(0, 0, larguraMundo, alturaMundo);
+
+        contexto.fillStyle = "#b7a773";
+        for (let i = 0; i < 34; i += 1) {
+          const x = (i * 149) % larguraMundo;
+          const y = (i * 83) % alturaMundo;
+          desenharCirculo(x, y, 3, "#9f9165");
+        }
+
+        contexto.fillStyle = "#7a512d";
+        contexto.fillRect(280, 165, 440, 22);
+        contexto.fillRect(280, 513, 440, 22);
+        contexto.fillRect(280, 165, 22, 370);
+        contexto.fillRect(698, 165, 22, 370);
+
+        contexto.fillStyle = "#c9b982";
+        contexto.fillRect(466, 509, 68, 30);
+
+        const casas = [
+          [345, 240],
+          [550, 240],
+          [355, 390],
+          [565, 390],
+        ];
+        for (const [x, y] of casas) {
+          contexto.fillStyle = "#9a6737";
+          contexto.fillRect(x, y, 90, 66);
+          contexto.fillStyle = "#5b3a23";
+          contexto.beginPath();
+          contexto.moveTo(x - 9, y);
+          contexto.lineTo(x + 45, y - 38);
+          contexto.lineTo(x + 99, y);
+          contexto.closePath();
+          contexto.fill();
+        }
+
+        contexto.fillStyle = "#817249";
+        contexto.fillRect(482, 430, 36, 79);
+      }
+
+      function desenharFloresta() {
+        contexto.fillStyle = "#405c35";
+        contexto.fillRect(0, 0, larguraMundo, alturaMundo);
+
+        contexto.fillStyle = "#536b3c";
+        contexto.beginPath();
+        contexto.moveTo(460, alturaMundo);
+        contexto.bezierCurveTo(430, 540, 530, 420, 500, 250);
+        contexto.bezierCurveTo(490, 165, 530, 80, 545, 0);
+        contexto.lineTo(625, 0);
+        contexto.bezierCurveTo(590, 145, 610, 230, 580, 335);
+        contexto.bezierCurveTo(550, 480, 545, 585, 560, alturaMundo);
+        contexto.closePath();
+        contexto.fill();
+
+        for (const [x, y, raio] of arvores) {
+          contexto.fillStyle = "#594226";
+          contexto.fillRect(x - 6, y + raio * 0.45, 12, raio * 1.45);
+          desenharCirculo(x, y, raio, "#203d27", "#172e1d");
+        }
+
+        for (const inimigo of estado.inimigos) {
+          desenharCirculo(inimigo.x, inimigo.y, 11, "#d9473f", "#6e1e1a");
+        }
+
+        if (estado.alvoGolpeado && estado.brilhoGolpe > 0) {
+          contexto.beginPath();
+          contexto.moveTo(estado.jogador.x, estado.jogador.y);
+          contexto.lineTo(estado.alvoGolpeado.x, estado.alvoGolpeado.y);
+          contexto.strokeStyle = "#f3df9c";
+          contexto.lineWidth = 4;
+          contexto.stroke();
+        }
+      }
+
+      function desenharJogador() {
+        desenharCirculo(
+          estado.jogador.x,
+          estado.jogador.y,
+          14,
+          estado.vida > 0 ? "#42d86b" : "#66706a",
+          "#123e20",
+        );
+      }
+
+      function desenhar() {
+        const retangulo = canvas.getBoundingClientRect();
+        contexto.setTransform(
+          canvas.width / larguraMundo,
+          0,
+          0,
+          canvas.height / alturaMundo,
+          0,
+          0,
+        );
+        contexto.clearRect(0, 0, larguraMundo, alturaMundo);
+
+        if (estado.local === "assentamento") {
+          desenharAssentamento();
+        } else {
+          desenharFloresta();
+        }
+
+        desenharJogador();
+        contexto.setTransform(1, 0, 0, 1, 0, 0);
+
+        if (retangulo.width === 0 || retangulo.height === 0) return;
+      }
+
+      function redimensionar() {
+        const retangulo = canvas.getBoundingClientRect();
+        const proporcao = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.max(1, Math.floor(retangulo.width * proporcao));
+        canvas.height = Math.max(1, Math.floor(retangulo.height * proporcao));
+        desenhar();
+      }
+
+      let tempoAnterior = performance.now();
+      function quadro(agora) {
+        const delta = Math.min((agora - tempoAnterior) / 1000, 0.05);
+        tempoAnterior = agora;
+
+        if (estado.local === "floresta") atualizarCacada(delta);
+        estado.brilhoGolpe = Math.max(0, estado.brilhoGolpe - delta);
+        desenhar();
+        requestAnimationFrame(quadro);
+      }
+
+      cacarBotao.addEventListener("click", iniciarCacada);
+      voltarBotao.addEventListener("click", voltarAoAssentamento);
+      descansarBotao.addEventListener("click", descansar);
+      window.addEventListener("resize", redimensionar);
+
+      atualizarInterface();
+      redimensionar();
+      requestAnimationFrame(quadro);
+    </script>
+  </body>
+</html>
