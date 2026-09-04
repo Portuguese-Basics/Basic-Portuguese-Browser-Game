@@ -946,6 +946,17 @@
             </ul>
           </section>
 
+          <section class="economia" aria-labelledby="titulo-registro-auditoria">
+            <h3 id="titulo-registro-auditoria">Auditoria de capacidade · 60 segundos</h3>
+            <ul class="lista-colonia">
+              <li>Pão · lavoura → moinho → padaria <span id="registro-auditoria-pao">0/5 → 0/5 → 0/5</span></li>
+              <li>Floresta · corte ↔ replantio <span id="registro-auditoria-floresta">0 madeira · 0 árvores</span></li>
+              <li>Metal · mina → ferramentas + armas <span id="registro-auditoria-metal">0 minério · 0 consumido</span></li>
+              <li>Saúde · ervas → medicamentos <span id="registro-auditoria-saude">0 ervas · 0 consumidas</span></li>
+              <li>Costa · pesca + comércio <span id="registro-auditoria-costa">0 peixes · 0 mercadorias</span></li>
+            </ul>
+          </section>
+
           <section class="economia" aria-labelledby="titulo-registro-armamentos">
             <h3 id="titulo-registro-armamentos">Armamentos e munição</h3>
             <ul class="lista-colonia">
@@ -982,6 +993,11 @@
               <li>Arcos só contam como abastecidos quando há uma aljava de 20 flechas disponível.</li>
               <li>Peixes valem 2 alimentos e são consumidos primeiro. O mercado costeiro guarda 160 peixes e vende apenas o excedente.</li>
               <li>Cada barco amplia a pesca; navios mercantes ampliam o comércio. O estaleiro precisa de madeira, ferramentas e trabalho acumulado.</li>
+              <li>Quando o trabalho de um casco está completo mas faltam materiais, os carpinteiros navais assumem outros serviços até a madeira e as ferramentas chegarem.</li>
+              <li>A cadeia do pão sempre escala em equipes iguais: um lavrador, um moleiro e um padeiro por nível, até 5 de cada.</li>
+              <li>Em capacidade máxima, 5 lavradores produzem 30 grãos; 5 moleiros usam 20 e produzem 15 farinhas; 5 padeiros usam as 15 farinhas e produzem 10 pães.</li>
+              <li>Em capacidade máxima, 5 mineiros produzem 25 minérios: 5 ferreiros usam 10 e 5 forjadores usam 15, sem déficit.</li>
+              <li>Seis lenhadores cortam 12 árvores e dois reflorestadores plantam 12, mantendo a floresta sustentável antes dos limites de estoque.</li>
               <li>Ervas são insumo da clínica: 2 ervas produzem 1 medicamento. Cada medicamento recupera 2 pontos de saúde colonial.</li>
               <li>Sem tratamento, a pressão sanitária aumenta com a população e com a fome. Saúde abaixo de 60 suspende a migração.</li>
               <li>Cada família elegível tem 0,1% de chance de ter um bebê por minuto, desde que existam saúde, alimentos e moradia livres.</li>
@@ -1002,17 +1018,17 @@
               <li>Pães — despensa 100; venda 5; valem 4 alimentos.</li>
               <li>Peixes — mercado costeiro 160; venda 3; valem 2 alimentos.</li>
               <li>Árvores — reserva florestal 200; não são vendidas em pé; renovam a madeira.</li>
-              <li>Madeira — depósito 180; venda 1; produz lanças, arcos e flechas.</li>
+              <li>Madeira — depósito 180; venda 1; produz lanças, arcos, flechas e navios.</li>
               <li>Ervas — ervário interno 100; venda 3; produzem medicamentos.</li>
               <li>Medicamentos — farmácia interna 80; venda 8; recuperam 2 de saúde cada.</li>
               <li>Minério — depósito 100; venda 2; produz ferramentas e armas.</li>
               <li>Pedra — depósito 120; venda 2; reserva para construções e muralhas de pedra.</li>
-              <li>Ferramentas — cofre interno 60; venda 8; equipam obras e ofícios.</li>
+              <li>Ferramentas — cofre interno 60; venda 8; equipam obras, ofícios e navios.</li>
               <li>Armas de metal — arsenal interno 40; venda 12; reserva de defesa.</li>
               <li>Lanças — arsenal interno 60; venda 8; armamento da milícia.</li>
               <li>Arcos — arsenal interno 40; venda 12; armamento de arqueiros.</li>
               <li>Flechas — depósito interno 600; venda 1; 20 formam uma aljava.</li>
-              <li>Mercadorias — armazém do cais 50; venda 5; receita comercial.</li>
+              <li>Mercadorias — armazém do cais 50, ou 100 com feitoria; venda 5; receita comercial.</li>
             </ul>
           </section>
         </div>
@@ -1388,6 +1404,11 @@
           "mercadores",
           "navios-mercantes",
           "producao-comercio",
+          "auditoria-pao",
+          "auditoria-floresta",
+          "auditoria-metal",
+          "auditoria-saude",
+          "auditoria-costa",
           "arvores",
           "madeira",
           "ervas",
@@ -2290,6 +2311,13 @@
           estado.populacaoColonia * consumoAlimentoPorColono +
           quantidadeBebesColonia() * consumoAlimentoPorBebe +
           quantidadeCriancasColonia() * consumoAlimentoPorCrianca
+        );
+      }
+
+      function pressaoSaudePrevistaColonia() {
+        return (
+          Math.max(1, Math.ceil(totalMoradoresColonia() / 25)) +
+          Math.ceil(estado.colonosComFome / 5)
         );
       }
 
@@ -3802,16 +3830,17 @@
         ocupar("migracao", estado.quantidadeAdministradoresMigracao);
         if (estado.celeiroConstruido) ocupar("celeiro", 2);
         if (estado.clinicaConstruida) {
+          const saudeAposPressao = Math.max(
+            0,
+            estado.saudeColonia - pressaoSaudePrevistaColonia(),
+          );
           ocupar(
             "clinica",
             Math.min(
               maximoTrabalhadoresClinica,
-              Math.max(
-                2,
-                Math.ceil(
-                  (saudeMaximaColonia - estado.saudeColonia) /
-                    saudePorMedicamento,
-                ),
+              Math.ceil(
+                (saudeMaximaColonia - saudeAposPressao) /
+                  saudePorMedicamento,
               ),
             ),
           );
@@ -3825,13 +3854,6 @@
           estado.padariaConstruida &&
           estado.armazemPaesConstruido;
         let producaoAlimentarPlanejada = 0;
-        if (cadeiaPaoCompleta && disponiveis >= 3) {
-          adicionar("lavoura", maximoTrabalhadoresLavoura);
-          adicionar("moinho", maximoTrabalhadoresMoinho);
-          adicionar("padaria", maximoTrabalhadoresPadaria);
-          producaoAlimentarPlanejada +=
-            paesProduzidosPorPadeiro * valorAlimentarPao;
-        }
 
         const trabalhosAlimentares = [
           {
@@ -3882,6 +3904,23 @@
           adicionouTrabalhoAlimentar
         ) {
           adicionouTrabalhoAlimentar = false;
+          const cadeiaPaoPodeCrescer =
+            cadeiaPaoCompleta &&
+            disponiveis >= 3 &&
+            empregos.lavoura < maximoTrabalhadoresLavoura &&
+            empregos.moinho < maximoTrabalhadoresMoinho &&
+            empregos.padaria < maximoTrabalhadoresPadaria;
+          if (
+            cadeiaPaoPodeCrescer &&
+            producaoAlimentarPlanejada < metaAlimentar
+          ) {
+            adicionar("lavoura", maximoTrabalhadoresLavoura);
+            adicionar("moinho", maximoTrabalhadoresMoinho);
+            adicionar("padaria", maximoTrabalhadoresPadaria);
+            producaoAlimentarPlanejada +=
+              paesProduzidosPorPadeiro * valorAlimentarPao;
+            adicionouTrabalhoAlimentar = true;
+          }
           for (const trabalho of trabalhosAlimentares) {
             if (
               !trabalho.ativo ||
@@ -3930,7 +3969,9 @@
           {
             chave: "estaleiro",
             maximo:
-              estado.estaleiroConstruido && tipoNavioPrioritarioColonia()
+              estado.estaleiroConstruido &&
+              tipoNavioPrioritarioColonia() &&
+              estado.progressoNavio < trabalhoPorNavio
                 ? maximoTrabalhadoresEstaleiro
                 : 0,
           },
@@ -4747,6 +4788,16 @@
           `${estado.naviosMercantes} / ${metaNaviosMercantesColonia()}`;
         registrosEls["producao-comercio"].textContent =
           `+${mercadoriasPorCiclo} mercadorias / 60 s`;
+        registrosEls["auditoria-pao"].textContent =
+          `${empregos.lavoura}/5 → ${empregos.moinho}/5 → ${empregos.padaria}/5 · +${empregos.lavoura * graosPorAgricultor} grãos → +${empregos.moinho * farinhaProduzidaPorMoleiro} farinhas → +${empregos.padaria * paesProduzidosPorPadeiro} pães`;
+        registrosEls["auditoria-floresta"].textContent =
+          `${empregos.lenhador}/6 · −${empregos.lenhador * arvoresCortadasPorLenhador} árvores/+${empregos.lenhador * madeiraPorLenhador} madeira ↔ ${empregos.reflorestador}/2 · +${empregos.reflorestador * arvoresPlantadasPorReflorestador} árvores`;
+        registrosEls["auditoria-metal"].textContent =
+          `${empregos.mina}/5 · +${empregos.mina * minerioPorMineiro} minério → demanda ${empregos.ferraria * minerioPorFerramenta + empregos.forja * minerioPorArma}`;
+        registrosEls["auditoria-saude"].textContent =
+          `${empregos.coletor}/6 · +${empregos.coletor * ervasPorColetor} ervas → ${empregos.clinica}/5 · demanda ${empregos.clinica * ervasPorMedicamento}`;
+        registrosEls["auditoria-costa"].textContent =
+          `${empregos.pesca}/${capacidadePesca} · +${peixesPorCiclo} peixes; ${empregos.comercio}/${capacidadeComercio} · +${mercadoriasPorCiclo} mercadorias`;
         registrosEls.arvores.textContent = estoqueArvoresEl.textContent;
         registrosEls.madeira.textContent = estoqueMadeiraEl.textContent;
         registrosEls.ervas.textContent = estoqueErvasEl.textContent;
@@ -6451,9 +6502,7 @@
           estado.estoqueErvas += novasErvas;
           ervasProduzidas += novasErvas;
 
-          const pressaoSaude =
-            Math.max(1, Math.ceil(totalMoradoresColonia() / 25)) +
-            Math.ceil(estado.colonosComFome / 5);
+          const pressaoSaude = pressaoSaudePrevistaColonia();
           pressaoSaudeAcumulada += pressaoSaude;
           estado.saudeColonia = Math.max(
             0,
@@ -10907,9 +10956,3 @@
       });
 
       carregarProgresso();
-      atualizarInterface();
-      redimensionar();
-      requestAnimationFrame(quadro);
-    </script>
-  </body>
-</html>
