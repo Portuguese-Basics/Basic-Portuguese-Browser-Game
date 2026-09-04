@@ -752,7 +752,7 @@
         canvas.setAttribute(
           "aria-label",
           noAssentamento
-            ? `Mapa do assentamento com ${estado.quantidadeFazendeiros} fazendeiros e ${estado.quantidadeFruticultores} fruticultores. O arqueiro é o ponto verde.`
+            ? `Mapa do assentamento com um rio e barcos ao norte, ${estado.quantidadeFazendeiros} fazendeiros e ${estado.quantidadeFruticultores} fruticultores. O arqueiro é o ponto verde.`
             : `Mapa da floresta com ${estado.inimigos.length} inimigos vermelhos. O arqueiro é o ponto verde.`,
         );
       }
@@ -1169,6 +1169,81 @@
         }
       }
 
+      function desenharRio() {
+        contexto.fillStyle = "#7d673d";
+        contexto.fillRect(0, 30, larguraMundo, 140);
+        contexto.fillStyle = "#3e7891";
+        contexto.fillRect(0, 40, larguraMundo, 120);
+
+        contexto.fillStyle = "#72aec0";
+        for (let indice = 0; indice < 9; indice += 1) {
+          const x =
+            (indice * 180 + (tempoRio * 18) % 180) % (larguraMundo + 100) -
+            50;
+          const y = 62 + (indice % 4) * 25;
+          contexto.fillRect(x, y, 68, 4);
+        }
+      }
+
+      function desenharBarco(x, y, direcao, corVela) {
+        contexto.fillStyle = "#5d3821";
+        contexto.beginPath();
+        contexto.moveTo(x - direcao * 34, y - 8);
+        contexto.lineTo(x + direcao * 34, y - 8);
+        contexto.lineTo(x + direcao * 24, y + 12);
+        contexto.lineTo(x - direcao * 25, y + 12);
+        contexto.closePath();
+        contexto.fill();
+
+        contexto.fillStyle = "#9c6b38";
+        contexto.fillRect(x - 11, y - 20, 22, 12);
+        contexto.fillStyle = "#49301e";
+        contexto.fillRect(x - 2, y - 43, 4, 24);
+
+        contexto.fillStyle = corVela;
+        contexto.beginPath();
+        contexto.moveTo(x, y - 43);
+        contexto.lineTo(x + direcao * 22, y - 27);
+        contexto.lineTo(x, y - 27);
+        contexto.closePath();
+        contexto.fill();
+      }
+
+      function desenharBarcosRio() {
+        const barcos = [
+          {
+            periodo: 22,
+            passagem: 14,
+            atraso: 3,
+            direcao: 1,
+            y: 103,
+            corVela: "#eee1bd",
+          },
+          {
+            periodo: 27,
+            passagem: 15,
+            atraso: 16,
+            direcao: -1,
+            y: 125,
+            corVela: "#d6a953",
+          },
+        ];
+
+        for (const barco of barcos) {
+          const momento = (tempoRio + barco.atraso) % barco.periodo;
+          if (momento >= barco.passagem) continue;
+
+          const progresso = momento / barco.passagem;
+          const inicio = -75;
+          const fim = larguraMundo + 75;
+          const x = barco.direcao === 1
+            ? inicio + (fim - inicio) * progresso
+            : fim - (fim - inicio) * progresso;
+          const y = barco.y + Math.sin(progresso * Math.PI * 4) * 5;
+          desenharBarco(x, y, barco.direcao, barco.corVela);
+        }
+      }
+
       function desenharPomar(x, y) {
         contexto.fillStyle = "#594126";
         contexto.fillRect(x, y, 220, 260);
@@ -1198,6 +1273,9 @@
           const y = (i * 83) % alturaMundo;
           desenharCirculo(x, y, 3, "#9f9165");
         }
+
+        desenharRio();
+        desenharBarcosRio();
 
         const plantacoes = [];
         if (estado.quantidadeFazendeiros > 0) {
@@ -1547,9 +1625,11 @@
 
       let tempoAnterior = performance.now();
       let tempoSalvamento = 0;
+      let tempoRio = 0;
       function quadro(agora) {
         const delta = Math.min((agora - tempoAnterior) / 1000, 0.05);
         tempoAnterior = agora;
+        tempoRio += delta;
 
         if (estado.local === "floresta") {
           atualizarCacada(delta);
