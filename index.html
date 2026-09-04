@@ -295,6 +295,7 @@
         <div class="indicador">Salvamento<span id="salvamento">Automático</span></div>
         <div class="indicador">Fazendeiro<span id="fazendeiro-status">Não contratado</span></div>
         <div class="indicador">Fruticultor<span id="fruticultor-status">Não contratado</span></div>
+        <div class="indicador">Pescador<span id="pescador-status">Não contratado</span></div>
         <div class="indicador">Combate<span id="combate-status">ATQ 1 · ARM 0</span></div>
       </section>
 
@@ -306,7 +307,10 @@
           Contratar fazendeiro · 100 ouro
         </button>
         <button id="contratar-fruticultor" type="button">
-          Contratar fruticultor · 150 ouro
+          Contratar fruticultor · 100 ouro
+        </button>
+        <button id="contratar-pescador" type="button">
+          Contratar pescador · 100 ouro
         </button>
         <button id="abrir-loja" type="button">Loja</button>
         <button id="novo-jogo" class="secundario" type="button">Novo jogo</button>
@@ -367,7 +371,8 @@
           <ul>
             <li>Inimigos rendem de 3 a 5 de ouro, conforme o perigo.</li>
             <li>Cada fazendeiro produz 1 de ouro a cada 10 segundos.</li>
-            <li>Cada fruticultor custa 150 de ouro e produz 1 de ouro a cada 10 segundos.</li>
+            <li>Cada fruticultor custa 100 de ouro e produz 2 de ouro a cada 20 segundos.</li>
+            <li>Cada pescador custa 100 de ouro e produz 3 de ouro a cada 30 segundos.</li>
             <li>Descansar custa 3 de ouro e recupera até 30 de vida.</li>
             <li>Ao ser derrotado, você volta com vida completa e perde 15 de ouro.</li>
             <li>Cada ponto de ataque causa 1 de dano.</li>
@@ -389,6 +394,7 @@
       const salvamentoEl = document.querySelector("#salvamento");
       const fazendeiroStatusEl = document.querySelector("#fazendeiro-status");
       const fruticultorStatusEl = document.querySelector("#fruticultor-status");
+      const pescadorStatusEl = document.querySelector("#pescador-status");
       const mensagemEl = document.querySelector("#mensagem");
       const cacarBotao = document.querySelector("#cacar");
       const voltarBotao = document.querySelector("#voltar");
@@ -410,6 +416,9 @@
       const contratarFruticultorBotao = document.querySelector(
         "#contratar-fruticultor",
       );
+      const contratarPescadorBotao = document.querySelector(
+        "#contratar-pescador",
+      );
       const novoJogoBotao = document.querySelector("#novo-jogo");
       const apagarBotao = document.querySelector("#apagar");
 
@@ -421,13 +430,18 @@
       const custoDescanso = 3;
       const custoDerrota = 15;
       const custoFazendeiro = 100;
-      const custoFruticultor = 150;
+      const custoFruticultor = 100;
+      const custoPescador = 100;
       const custoMelhoria = 100;
       const intervaloFazendeiro = 10;
-      const intervaloFruticultor = 10;
+      const intervaloFruticultor = 20;
+      const intervaloPescador = 30;
+      const ouroPorFruticultor = 2;
+      const ouroPorPescador = 3;
       const vidaMaxima = 100;
       const maximoFazendeiros = 10;
       const maximoFruticultores = 10;
+      const maximoPescadores = 10;
       const nivelMaximo = 5;
       const chaveSalvamento = "arqueiro-do-assentamento-v1";
       const versaoSalvamento = 1;
@@ -466,6 +480,8 @@
         tempoFazendeiro: 0,
         quantidadeFruticultores: 0,
         tempoFruticultor: 0,
+        quantidadePescadores: 0,
+        tempoPescador: 0,
       };
 
       const arvores = [
@@ -539,6 +555,10 @@
           fruticultor: {
             quantidade: estado.quantidadeFruticultores,
             tempo: estado.tempoFruticultor,
+          },
+          pescador: {
+            quantidade: estado.quantidadePescadores,
+            tempo: estado.tempoPescador,
           },
         };
       }
@@ -656,6 +676,22 @@
                 0,
               )
             : 0;
+          estado.quantidadePescadores = Math.round(
+            numeroValido(
+              salvo.pescador?.quantidade,
+              0,
+              maximoPescadores,
+              0,
+            ),
+          );
+          estado.tempoPescador = estado.quantidadePescadores > 0
+            ? numeroValido(
+                salvo.pescador?.tempo,
+                0,
+                intervaloPescador,
+                0,
+              )
+            : 0;
 
           const derrotadoAoCarregar = estado.vida === 0;
           if (derrotadoAoCarregar) {
@@ -714,6 +750,8 @@
         estado.tempoFazendeiro = 0;
         estado.quantidadeFruticultores = 0;
         estado.tempoFruticultor = 0;
+        estado.quantidadePescadores = 0;
+        estado.tempoPescador = 0;
       }
 
       function atualizarInterface() {
@@ -744,15 +782,26 @@
         contratarFruticultorBotao.textContent =
           estado.quantidadeFruticultores >= maximoFruticultores
             ? "Máximo de fruticultores"
-            : `Contratar fruticultor ${estado.quantidadeFruticultores + 1}/10 · 150 ouro`;
+            : `Contratar fruticultor ${estado.quantidadeFruticultores + 1}/10 · 100 ouro`;
         fruticultorStatusEl.textContent = estado.quantidadeFruticultores > 0
-          ? `${estado.quantidadeFruticultores} / 10 · +${estado.quantidadeFruticultores} ouro / 10 s`
+          ? `${estado.quantidadeFruticultores} / 10 · +${estado.quantidadeFruticultores * ouroPorFruticultor} ouro / 20 s`
+          : "Não contratado";
+        contratarPescadorBotao.disabled =
+          !noAssentamento ||
+          estado.quantidadePescadores >= maximoPescadores ||
+          estado.ouro < custoPescador;
+        contratarPescadorBotao.textContent =
+          estado.quantidadePescadores >= maximoPescadores
+            ? "Máximo de pescadores"
+            : `Contratar pescador ${estado.quantidadePescadores + 1}/10 · 100 ouro`;
+        pescadorStatusEl.textContent = estado.quantidadePescadores > 0
+          ? `${estado.quantidadePescadores} / 10 · +${estado.quantidadePescadores * ouroPorPescador} ouro / 30 s`
           : "Não contratado";
         atualizarLoja();
         canvas.setAttribute(
           "aria-label",
           noAssentamento
-            ? `Mapa do assentamento com um rio e barcos ao norte, ${estado.quantidadeFazendeiros} fazendeiros e ${estado.quantidadeFruticultores} fruticultores. O arqueiro é o ponto verde.`
+            ? `Mapa do assentamento com um rio, dois cais e barcos ao norte, ${estado.quantidadeFazendeiros} fazendeiros, ${estado.quantidadeFruticultores} fruticultores e ${estado.quantidadePescadores} pescadores. O arqueiro é o ponto verde.`
             : `Mapa da floresta com ${estado.inimigos.length} inimigos vermelhos. O arqueiro é o ponto verde.`,
         );
       }
@@ -891,7 +940,7 @@
         }
 
         if (estado.ouro < custoFruticultor) {
-          definirMensagem("Você precisa de 150 de ouro para contratar o fruticultor.");
+          definirMensagem("Você precisa de 100 de ouro para contratar o fruticultor.");
           return;
         }
 
@@ -899,7 +948,33 @@
         estado.quantidadeFruticultores += 1;
         estado.salvamentoAtivo = true;
         definirMensagem(
-          `Fruticultor ${estado.quantidadeFruticultores} contratado. Os pomares agora produzem ${estado.quantidadeFruticultores} de ouro a cada 10 segundos.`,
+          `Fruticultor ${estado.quantidadeFruticultores} contratado. Os pomares agora produzem ${estado.quantidadeFruticultores * ouroPorFruticultor} de ouro a cada 20 segundos.`,
+        );
+        atualizarInterface();
+        salvarProgresso();
+      }
+
+      function contratarPescador() {
+        if (estado.local !== "assentamento") {
+          definirMensagem("Volte ao assentamento para contratar um pescador.");
+          return;
+        }
+
+        if (estado.quantidadePescadores >= maximoPescadores) {
+          definirMensagem("Você já contratou o máximo de 10 pescadores.");
+          return;
+        }
+
+        if (estado.ouro < custoPescador) {
+          definirMensagem("Você precisa de 100 de ouro para contratar o pescador.");
+          return;
+        }
+
+        estado.ouro -= custoPescador;
+        estado.quantidadePescadores += 1;
+        estado.salvamentoAtivo = true;
+        definirMensagem(
+          `Pescador ${estado.quantidadePescadores} contratado. Os cais agora produzem ${estado.quantidadePescadores * ouroPorPescador} de ouro a cada 30 segundos.`,
         );
         atualizarInterface();
         salvarProgresso();
@@ -1017,7 +1092,8 @@
           estado.tempoFruticultor / intervaloFruticultor,
         );
         estado.tempoFruticultor %= intervaloFruticultor;
-        const ouroProduzido = pagamentos * estado.quantidadeFruticultores;
+        const ouroProduzido =
+          pagamentos * estado.quantidadeFruticultores * ouroPorFruticultor;
         estado.ouro += ouroProduzido;
         if (estado.local === "assentamento") {
           const trabalhadores =
@@ -1026,6 +1102,32 @@
               : "Os fruticultores voltaram";
           definirMensagem(
             `${trabalhadores} com ${ouroProduzido} de ouro da colheita.`,
+          );
+        }
+        atualizarInterface();
+        salvarProgresso();
+      }
+
+      function atualizarPescador(delta) {
+        if (estado.quantidadePescadores === 0) return;
+
+        estado.tempoPescador += delta;
+        if (estado.tempoPescador < intervaloPescador) return;
+
+        const pagamentos = Math.floor(
+          estado.tempoPescador / intervaloPescador,
+        );
+        estado.tempoPescador %= intervaloPescador;
+        const ouroProduzido =
+          pagamentos * estado.quantidadePescadores * ouroPorPescador;
+        estado.ouro += ouroProduzido;
+        if (estado.local === "assentamento") {
+          const trabalhadores =
+            estado.quantidadePescadores === 1
+              ? "O pescador voltou"
+              : "Os pescadores voltaram";
+          definirMensagem(
+            `${trabalhadores} com ${ouroProduzido} de ouro da pesca.`,
           );
         }
         atualizarInterface();
@@ -1244,6 +1346,22 @@
         }
       }
 
+      function desenharCais(x) {
+        contexto.fillStyle = "#6b4325";
+        contexto.fillRect(x - 18, 120, 36, 72);
+        contexto.fillRect(x - 52, 112, 104, 24);
+        contexto.fillStyle = "#9a6a38";
+        for (let y = 124; y < 190; y += 13) {
+          contexto.fillRect(x - 16, y, 32, 3);
+        }
+        for (let deslocamento = -45; deslocamento <= 45; deslocamento += 18) {
+          contexto.fillRect(x + deslocamento, 115, 3, 18);
+        }
+        contexto.fillStyle = "#49301e";
+        contexto.fillRect(x - 48, 134, 7, 28);
+        contexto.fillRect(x + 41, 134, 7, 28);
+      }
+
       function desenharPomar(x, y) {
         contexto.fillStyle = "#594126";
         contexto.fillRect(x, y, 220, 260);
@@ -1276,6 +1394,12 @@
 
         desenharRio();
         desenharBarcosRio();
+        if (estado.quantidadePescadores > 0) {
+          desenharCais(320);
+        }
+        if (estado.quantidadePescadores > 5) {
+          desenharCais(1080);
+        }
 
         const plantacoes = [];
         if (estado.quantidadeFazendeiros > 0) {
@@ -1538,6 +1662,98 @@
         }
       }
 
+      function posicaoPescador(indice) {
+        const progresso =
+          ((estado.tempoPescador + indice * 2.17) % intervaloPescador) /
+          intervaloPescador;
+        const segundoCais = indice >= 5;
+        const vaga = indice % 5;
+        const direcaoSaida = segundoCais ? -1 : 1;
+        const cais = {
+          x: segundoCais ? 1080 : 320,
+          y: 112,
+        };
+        const yPesca = 58 + vaga * 20;
+        const pontoProximo = {
+          x: segundoCais ? 985 - vaga * 10 : 415 + vaga * 10,
+          y: yPesca,
+        };
+        const pontoDistante = {
+          x: segundoCais ? 790 - vaga * 8 : 610 + vaga * 8,
+          y: yPesca,
+        };
+        const ida = [cais, { x: cais.x, y: 92 }, pontoProximo, pontoDistante];
+        const pesca = [
+          pontoDistante,
+          pontoProximo,
+          pontoDistante,
+          pontoProximo,
+        ];
+        const volta = [pontoProximo, { x: cais.x, y: 92 }, cais];
+
+        if (progresso < 0.22) {
+          return {
+            ...percorrerCaminho(ida, progresso / 0.22),
+            direcao: direcaoSaida,
+          };
+        }
+
+        if (progresso < 0.78) {
+          const progressoPesca = (progresso - 0.22) / 0.56;
+          const direcaoPesca = Math.floor(progressoPesca * 3) % 2 === 0
+            ? -direcaoSaida
+            : direcaoSaida;
+          return {
+            ...percorrerCaminho(pesca, progressoPesca),
+            direcao: direcaoPesca,
+          };
+        }
+
+        return {
+          ...percorrerCaminho(volta, (progresso - 0.78) / 0.22),
+          direcao: -direcaoSaida,
+        };
+      }
+
+      function desenharBarcoPesca(x, y, direcao, corPescador) {
+        contexto.fillStyle = "#684328";
+        contexto.beginPath();
+        contexto.moveTo(x - direcao * 17, y - 4);
+        contexto.lineTo(x + direcao * 18, y - 4);
+        contexto.lineTo(x + direcao * 12, y + 7);
+        contexto.lineTo(x - direcao * 13, y + 7);
+        contexto.closePath();
+        contexto.fill();
+        desenharCirculo(x, y - 8, 6, corPescador, "#184a4b");
+
+        contexto.beginPath();
+        contexto.moveTo(x + direcao * 3, y - 10);
+        contexto.lineTo(x + direcao * 19, y - 20);
+        contexto.lineTo(x + direcao * 25, y - 4);
+        contexto.strokeStyle = "#4b3825";
+        contexto.lineWidth = 2;
+        contexto.stroke();
+      }
+
+      function desenharPescador() {
+        if (
+          estado.quantidadePescadores === 0 ||
+          estado.local !== "assentamento"
+        ) {
+          return;
+        }
+
+        for (
+          let indice = 0;
+          indice < estado.quantidadePescadores;
+          indice += 1
+        ) {
+          const posicao = posicaoPescador(indice);
+          const cor = indice < 5 ? "#45b7b2" : "#75d0cb";
+          desenharBarcoPesca(posicao.x, posicao.y, posicao.direcao, cor);
+        }
+      }
+
       function desenharFloresta() {
         contexto.fillStyle = "#405c35";
         contexto.fillRect(0, 0, larguraMundo, alturaMundo);
@@ -1609,6 +1825,7 @@
 
         desenharFazendeiro();
         desenharFruticultor();
+        desenharPescador();
         desenharJogador();
         contexto.setTransform(1, 0, 0, 1, 0, 0);
 
@@ -1636,10 +1853,12 @@
         }
         atualizarFazendeiro(delta);
         atualizarFruticultor(delta);
+        atualizarPescador(delta);
         if (
           estado.local === "floresta" ||
           estado.quantidadeFazendeiros > 0 ||
-          estado.quantidadeFruticultores > 0
+          estado.quantidadeFruticultores > 0 ||
+          estado.quantidadePescadores > 0
         ) {
           tempoSalvamento += delta;
           if (tempoSalvamento >= 2) {
@@ -1661,6 +1880,7 @@
       melhorarArmaduraBotao.addEventListener("click", melhorarArmadura);
       contratarFazendeiroBotao.addEventListener("click", contratarFazendeiro);
       contratarFruticultorBotao.addEventListener("click", contratarFruticultor);
+      contratarPescadorBotao.addEventListener("click", contratarPescador);
       novoJogoBotao.addEventListener("click", iniciarNovoJogo);
       apagarBotao.addEventListener("click", apagarProgresso);
       window.addEventListener("resize", redimensionar);
