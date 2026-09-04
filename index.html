@@ -129,12 +129,66 @@
         position: relative;
         flex: 1;
         min-height: 0;
+        overflow: hidden;
+        overscroll-behavior: none;
       }
 
       canvas {
         display: block;
         width: 100%;
         height: 100%;
+      }
+
+      canvas[data-interativo="true"] {
+        cursor: grab;
+        touch-action: none;
+      }
+
+      canvas[data-arrastando="true"] {
+        cursor: grabbing;
+      }
+
+      .controles-mapa {
+        position: absolute;
+        top: 0.65rem;
+        right: 0.65rem;
+        z-index: 1;
+        display: grid;
+        grid-template-columns: auto auto auto;
+        gap: 0.3rem;
+        padding: 0.4rem;
+        border: 1px solid rgb(255 255 255 / 24%);
+        border-radius: 0.4rem;
+        background: rgb(25 24 18 / 90%);
+        box-shadow: 0 0.4rem 1.2rem rgb(0 0 0 / 28%);
+      }
+
+      .controles-mapa[hidden] {
+        display: none;
+      }
+
+      .controles-mapa button {
+        min-width: 2.2rem;
+      }
+
+      .nivel-zoom,
+      .ajuda-mapa {
+        grid-column: 1 / -1;
+        margin: 0;
+        text-align: center;
+      }
+
+      .nivel-zoom {
+        color: #fff9df;
+        font-size: 0.76rem;
+        font-weight: 750;
+      }
+
+      .ajuda-mapa {
+        max-width: 15rem;
+        color: #d4cbb4;
+        font-size: 0.7rem;
+        line-height: 1.3;
       }
 
       .mensagem {
@@ -351,6 +405,12 @@
           font-size: 0.78rem;
         }
 
+        .controles-mapa {
+          top: 0.45rem;
+          right: 0.45rem;
+          max-width: calc(100% - 0.9rem);
+        }
+
         .grade-loja {
           grid-template-columns: 1fr;
         }
@@ -424,8 +484,21 @@
       <canvas
         id="jogo"
         role="img"
+        tabindex="0"
         aria-label="Mapa do assentamento. O arqueiro é o ponto verde."
       ></canvas>
+      <section
+        id="controles-mapa"
+        class="controles-mapa"
+        aria-label="Controles do mapa da nova colônia"
+        hidden
+      >
+        <button id="diminuir-zoom" class="secundario" type="button" aria-label="Diminuir zoom">−</button>
+        <button id="centralizar-mapa" class="secundario" type="button">Centralizar</button>
+        <button id="aumentar-zoom" class="secundario" type="button" aria-label="Aumentar zoom">+</button>
+        <p id="nivel-zoom" class="nivel-zoom">Mapa 5× · Zoom 100%</p>
+        <p class="ajuda-mapa">Arraste para explorar. Use dois dedos para ampliar.</p>
+      </section>
       <p id="mensagem" class="mensagem" role="status" aria-live="polite">
         Você está seguro no assentamento.
       </p>
@@ -618,6 +691,11 @@
         "#contratar-escriturario",
       );
       const mapaExpansaoBotao = document.querySelector("#mapa-expansao");
+      const controlesMapaEl = document.querySelector("#controles-mapa");
+      const diminuirZoomBotao = document.querySelector("#diminuir-zoom");
+      const centralizarMapaBotao = document.querySelector("#centralizar-mapa");
+      const aumentarZoomBotao = document.querySelector("#aumentar-zoom");
+      const nivelZoomEl = document.querySelector("#nivel-zoom");
       const abrirTransferenciaBotao = document.querySelector(
         "#abrir-transferencia",
       );
@@ -639,10 +717,22 @@
 
       const larguraMundo = 1400;
       const alturaMundo = 900;
+      const fatorMapaExpansao = 5;
+      const larguraMundoExpansao = larguraMundo * fatorMapaExpansao;
+      const alturaMundoExpansao = alturaMundo * fatorMapaExpansao;
+      const zoomMinimoExpansao = 1 / fatorMapaExpansao;
+      const zoomMaximoExpansao = 3.5;
       const versaoMapa = 2;
       const posicaoAssentamento = { x: 700, y: 510 };
       const posicaoFloresta = { x: 700, y: 790 };
-      const posicaoNovaColonia = { x: 700, y: 520 };
+      const origemNovaColonia = {
+        x: (larguraMundoExpansao - larguraMundo) / 2,
+        y: (alturaMundoExpansao - alturaMundo) / 2,
+      };
+      const posicaoNovaColonia = {
+        x: origemNovaColonia.x + 700,
+        y: origemNovaColonia.y + 520,
+      };
       const custoDescanso = 3;
       const custoDerrota = 15;
       const custoFazendeiro = 100;
@@ -735,6 +825,11 @@
         fundoExpansao: 0,
         mapaExpansaoComprado: false,
         mapaAtual: "posto",
+        cameraExpansao: {
+          x: posicaoNovaColonia.x - larguraMundo / 2,
+          y: posicaoNovaColonia.y - alturaMundo / 2,
+          zoom: 1,
+        },
       };
 
       const arvores = [
@@ -851,6 +946,11 @@
           expansao: {
             mapaComprado: estado.mapaExpansaoComprado,
             mapaAtual: estado.mapaAtual,
+            camera: {
+              x: estado.cameraExpansao.x,
+              y: estado.cameraExpansao.y,
+              zoom: estado.cameraExpansao.zoom,
+            },
           },
         };
       }
@@ -1257,6 +1357,25 @@
             estado.mapaExpansaoComprado && salvo.expansao?.mapaAtual === "expansao"
               ? "expansao"
               : "posto";
+          estado.cameraExpansao.zoom = numeroValido(
+            salvo.expansao?.camera?.zoom,
+            zoomMinimoExpansao,
+            zoomMaximoExpansao,
+            1,
+          );
+          estado.cameraExpansao.x = numeroValido(
+            salvo.expansao?.camera?.x,
+            0,
+            larguraMundoExpansao,
+            posicaoNovaColonia.x - larguraMundo / 2,
+          );
+          estado.cameraExpansao.y = numeroValido(
+            salvo.expansao?.camera?.y,
+            0,
+            alturaMundoExpansao,
+            posicaoNovaColonia.y - alturaMundo / 2,
+          );
+          limitarCameraExpansao();
 
           const derrotadoAoCarregar = estado.vida === 0;
           if (derrotadoAoCarregar) {
@@ -1336,6 +1455,9 @@
         estado.fundoExpansao = 0;
         estado.mapaExpansaoComprado = false;
         estado.mapaAtual = "posto";
+        estado.cameraExpansao.x = posicaoNovaColonia.x - larguraMundo / 2;
+        estado.cameraExpansao.y = posicaoNovaColonia.y - alturaMundo / 2;
+        estado.cameraExpansao.zoom = 1;
       }
 
       function atualizarInterface() {
@@ -1460,11 +1582,17 @@
           mapaExpansaoBotao.textContent =
             "Comprar novo mapa · 10.000 no fundo";
         }
+        controlesMapaEl.hidden = !naNovaColonia;
+        atualizarControlesCamera();
+        canvas.setAttribute("data-interativo", String(naNovaColonia));
+        if (!naNovaColonia) {
+          canvas.setAttribute("data-arrastando", "false");
+        }
         atualizarLoja();
         canvas.setAttribute(
           "aria-label",
           naNovaColonia
-            ? "Mapa da nova colônia, um assentamento maior em construção. O administrador é o ponto verde."
+            ? "Mapa ampliado da nova colônia. Arraste para explorar e use dois dedos para ampliar. O administrador é o ponto verde."
             : noAssentamento
             ? `Mapa do assentamento com rio, cais, ferraria, banco, minas, ${estado.quantidadeFazendeiros} fazendeiros, ${estado.quantidadeFruticultores} fruticultores, ${estado.quantidadePescadores} pescadores, ${estado.quantidadeComerciantes} comerciantes, ${estado.quantidadeFerreiros} ferreiros, ${estado.quantidadeMineiros} mineiros e ${estado.quantidadeBanqueiros} banqueiros. O arqueiro é o ponto verde.`
             : `Mapa da floresta com ${estado.inimigos.length} inimigos vermelhos. O arqueiro é o ponto verde.`,
@@ -1808,6 +1936,245 @@
         salvarProgresso();
       }
 
+      function dimensoesVisaoExpansao() {
+        return {
+          largura: larguraMundo / estado.cameraExpansao.zoom,
+          altura: alturaMundo / estado.cameraExpansao.zoom,
+        };
+      }
+
+      function limitarCameraExpansao() {
+        const visao = dimensoesVisaoExpansao();
+        const maximoX = Math.max(0, larguraMundoExpansao - visao.largura);
+        const maximoY = Math.max(0, alturaMundoExpansao - visao.altura);
+        estado.cameraExpansao.x = Math.min(
+          maximoX,
+          Math.max(0, estado.cameraExpansao.x),
+        );
+        estado.cameraExpansao.y = Math.min(
+          maximoY,
+          Math.max(0, estado.cameraExpansao.y),
+        );
+      }
+
+      function atualizarControlesCamera() {
+        const naNovaColonia = estado.mapaAtual === "expansao";
+        nivelZoomEl.textContent = `Mapa 5× · Zoom ${Math.round(estado.cameraExpansao.zoom * 100)}%`;
+        diminuirZoomBotao.disabled =
+          !naNovaColonia ||
+          estado.cameraExpansao.zoom <= zoomMinimoExpansao + 0.001;
+        aumentarZoomBotao.disabled =
+          !naNovaColonia ||
+          estado.cameraExpansao.zoom >= zoomMaximoExpansao - 0.001;
+      }
+
+      function centralizarMapaExpansao(anunciar = true) {
+        estado.cameraExpansao.zoom = 1;
+        estado.cameraExpansao.x = posicaoNovaColonia.x - larguraMundo / 2;
+        estado.cameraExpansao.y = posicaoNovaColonia.y - alturaMundo / 2;
+        limitarCameraExpansao();
+        atualizarControlesCamera();
+        if (anunciar) {
+          definirMensagem("Mapa centralizado na nova colônia.");
+          salvarProgresso();
+        }
+      }
+
+      function ajustarZoomExpansao(novoZoom, pontoTela) {
+        if (estado.mapaAtual !== "expansao") return;
+        const retangulo = canvas.getBoundingClientRect();
+        const larguraTela = Math.max(1, retangulo.width);
+        const alturaTela = Math.max(1, retangulo.height);
+        const ponto = pontoTela || {
+          x: larguraTela / 2,
+          y: alturaTela / 2,
+        };
+        const proporcaoX = Math.min(1, Math.max(0, ponto.x / larguraTela));
+        const proporcaoY = Math.min(1, Math.max(0, ponto.y / alturaTela));
+        const visaoAnterior = dimensoesVisaoExpansao();
+        const ancoraMundoX =
+          estado.cameraExpansao.x + proporcaoX * visaoAnterior.largura;
+        const ancoraMundoY =
+          estado.cameraExpansao.y + proporcaoY * visaoAnterior.altura;
+
+        estado.cameraExpansao.zoom = numeroValido(
+          novoZoom,
+          zoomMinimoExpansao,
+          zoomMaximoExpansao,
+          estado.cameraExpansao.zoom,
+        );
+        const novaVisao = dimensoesVisaoExpansao();
+        estado.cameraExpansao.x = ancoraMundoX - proporcaoX * novaVisao.largura;
+        estado.cameraExpansao.y = ancoraMundoY - proporcaoY * novaVisao.altura;
+        limitarCameraExpansao();
+        atualizarControlesCamera();
+      }
+
+      function alterarZoomExpansao(fator) {
+        ajustarZoomExpansao(estado.cameraExpansao.zoom * fator);
+        estado.salvamentoAtivo = true;
+        salvarProgresso();
+      }
+
+      function moverCameraExpansao(deltaX, deltaY) {
+        const retangulo = canvas.getBoundingClientRect();
+        const visao = dimensoesVisaoExpansao();
+        estado.cameraExpansao.x -=
+          (deltaX / Math.max(1, retangulo.width)) * visao.largura;
+        estado.cameraExpansao.y -=
+          (deltaY / Math.max(1, retangulo.height)) * visao.altura;
+        limitarCameraExpansao();
+      }
+
+      const ponteirosMapa = new Map();
+      let ultimoPontoMapa = null;
+      let gestoPinchAnterior = null;
+
+      function pontoDoEvento(evento) {
+        const retangulo = canvas.getBoundingClientRect();
+        return {
+          x: evento.clientX - (retangulo.left || 0),
+          y: evento.clientY - (retangulo.top || 0),
+        };
+      }
+
+      function medidaPinch() {
+        const pontos = [...ponteirosMapa.values()].slice(0, 2);
+        if (pontos.length < 2) return null;
+        return {
+          centro: {
+            x: (pontos[0].x + pontos[1].x) / 2,
+            y: (pontos[0].y + pontos[1].y) / 2,
+          },
+          distancia: Math.max(
+            1,
+            Math.hypot(
+              pontos[1].x - pontos[0].x,
+              pontos[1].y - pontos[0].y,
+            ),
+          ),
+        };
+      }
+
+      function iniciarNavegacaoMapa(evento) {
+        if (estado.mapaAtual !== "expansao") return;
+        evento.preventDefault();
+        canvas.setPointerCapture?.(evento.pointerId);
+        ponteirosMapa.set(evento.pointerId, pontoDoEvento(evento));
+        canvas.setAttribute("data-arrastando", "true");
+        if (ponteirosMapa.size === 1) {
+          ultimoPontoMapa = ponteirosMapa.get(evento.pointerId);
+          gestoPinchAnterior = null;
+        } else {
+          gestoPinchAnterior = medidaPinch();
+        }
+      }
+
+      function continuarNavegacaoMapa(evento) {
+        if (
+          estado.mapaAtual !== "expansao" ||
+          !ponteirosMapa.has(evento.pointerId)
+        ) {
+          return;
+        }
+        evento.preventDefault();
+        const pontoAtual = pontoDoEvento(evento);
+        ponteirosMapa.set(evento.pointerId, pontoAtual);
+
+        if (ponteirosMapa.size === 1 && ultimoPontoMapa) {
+          moverCameraExpansao(
+            pontoAtual.x - ultimoPontoMapa.x,
+            pontoAtual.y - ultimoPontoMapa.y,
+          );
+          ultimoPontoMapa = pontoAtual;
+          return;
+        }
+
+        const gestoAtual = medidaPinch();
+        if (gestoAtual && gestoPinchAnterior) {
+          ajustarZoomExpansao(
+            estado.cameraExpansao.zoom *
+              (gestoAtual.distancia / gestoPinchAnterior.distancia),
+            gestoPinchAnterior.centro,
+          );
+          moverCameraExpansao(
+            gestoAtual.centro.x - gestoPinchAnterior.centro.x,
+            gestoAtual.centro.y - gestoPinchAnterior.centro.y,
+          );
+        }
+        gestoPinchAnterior = gestoAtual;
+      }
+
+      function terminarNavegacaoMapa(evento) {
+        if (!ponteirosMapa.has(evento.pointerId)) return;
+        ponteirosMapa.delete(evento.pointerId);
+        if (ponteirosMapa.size === 0) {
+          ultimoPontoMapa = null;
+          gestoPinchAnterior = null;
+          canvas.setAttribute("data-arrastando", "false");
+          estado.salvamentoAtivo = true;
+          salvarProgresso();
+        } else if (ponteirosMapa.size === 1) {
+          ultimoPontoMapa = [...ponteirosMapa.values()][0];
+          gestoPinchAnterior = null;
+        } else {
+          gestoPinchAnterior = medidaPinch();
+        }
+      }
+
+      function rolarMapa(evento) {
+        if (estado.mapaAtual !== "expansao") return;
+        evento.preventDefault();
+        const multiplicador =
+          evento.deltaMode === 1
+            ? 16
+            : evento.deltaMode === 2
+              ? Math.max(1, canvas.getBoundingClientRect().height)
+              : 1;
+        if (evento.ctrlKey || evento.metaKey) {
+          ajustarZoomExpansao(
+            estado.cameraExpansao.zoom *
+              Math.exp(-evento.deltaY * multiplicador * 0.0025),
+            pontoDoEvento(evento),
+          );
+        } else if (evento.shiftKey) {
+          moverCameraExpansao(-evento.deltaY * multiplicador, 0);
+        } else {
+          moverCameraExpansao(
+            -evento.deltaX * multiplicador,
+            -evento.deltaY * multiplicador,
+          );
+        }
+        estado.salvamentoAtivo = true;
+      }
+
+      function navegarMapaPorTeclado(evento) {
+        if (estado.mapaAtual !== "expansao") return;
+        const passo = evento.shiftKey ? 180 : 60;
+        const movimentos = {
+          ArrowLeft: [passo, 0],
+          ArrowRight: [-passo, 0],
+          ArrowUp: [0, passo],
+          ArrowDown: [0, -passo],
+        };
+        if (movimentos[evento.key]) {
+          evento.preventDefault();
+          moverCameraExpansao(...movimentos[evento.key]);
+        } else if (evento.key === "+" || evento.key === "=") {
+          evento.preventDefault();
+          alterarZoomExpansao(1.25);
+        } else if (evento.key === "-") {
+          evento.preventDefault();
+          alterarZoomExpansao(0.8);
+        } else if (evento.key === "Home") {
+          evento.preventDefault();
+          centralizarMapaExpansao();
+        } else {
+          return;
+        }
+        estado.salvamentoAtivo = true;
+      }
+
       function alternarMapaExpansao() {
         if (!estado.mapaExpansaoComprado) {
           if (
@@ -1835,6 +2202,7 @@
           estado.jogador.x = posicaoNovaColonia.x;
           estado.jogador.y = posicaoNovaColonia.y;
           estado.inimigos = [];
+          centralizarMapaExpansao(false);
           definirMensagem(
             "Novo mapa comprado. Você agora administra uma colônia maior e recebe 10% da produção do posto avançado.",
           );
@@ -2744,14 +3112,45 @@
 
       function desenharNovaColonia() {
         contexto.fillStyle = "#899e62";
-        contexto.fillRect(0, 0, larguraMundo, alturaMundo);
+        contexto.fillRect(0, 0, larguraMundoExpansao, alturaMundoExpansao);
 
         contexto.fillStyle = "#7f945b";
-        for (let indice = 0; indice < 42; indice += 1) {
-          const x = (indice * 173) % larguraMundo;
-          const y = (indice * 97) % alturaMundo;
-          desenharCirculo(x, y, 5, "#728753");
+        for (let indice = 0; indice < 180; indice += 1) {
+          const x = (indice * 997 + 260) % larguraMundoExpansao;
+          const y = (indice * 613 + 180) % alturaMundoExpansao;
+          if (
+            Math.abs(x - posicaoNovaColonia.x) < 850 &&
+            Math.abs(y - posicaoNovaColonia.y) < 650
+          ) {
+            continue;
+          }
+          desenharCirculo(x, y, 16 + (indice % 4) * 3, "#526f43", "#405a38");
         }
+
+        contexto.fillStyle = "#4c7890";
+        contexto.fillRect(0, 520, larguraMundoExpansao, 150);
+        contexto.fillStyle = "#6e99a8";
+        contexto.fillRect(0, 555, larguraMundoExpansao, 28);
+
+        contexto.fillStyle = "#b8a474";
+        contexto.fillRect(posicaoNovaColonia.x - 40, 0, 80, alturaMundoExpansao);
+        contexto.fillRect(0, posicaoNovaColonia.y - 41, larguraMundoExpansao, 82);
+        contexto.fillRect(posicaoNovaColonia.x - 50, 510, 100, 170);
+
+        const areasFuturas = [
+          [950, 1200, 420, 300],
+          [5350, 1150, 470, 320],
+          [1050, 3300, 500, 340],
+          [5250, 3260, 520, 350],
+        ];
+        contexto.strokeStyle = "#6f8154";
+        contexto.lineWidth = 14;
+        for (const [x, y, largura, altura] of areasFuturas) {
+          contexto.strokeRect(x, y, largura, altura);
+        }
+
+        contexto.save();
+        contexto.translate(origemNovaColonia.x, origemNovaColonia.y);
 
         contexto.fillStyle = "#b8a474";
         contexto.fillRect(660, 130, 80, 680);
@@ -2817,6 +3216,16 @@
         contexto.fillText("NOVA COLÔNIA", 700, 92);
         contexto.textAlign = "start";
         contexto.textBaseline = "alphabetic";
+        contexto.restore();
+
+        contexto.strokeStyle = "#526440";
+        contexto.lineWidth = 18;
+        contexto.strokeRect(
+          12,
+          12,
+          larguraMundoExpansao - 24,
+          alturaMundoExpansao - 24,
+        );
       }
 
       function interpolarPonto(inicio, fim, progresso) {
@@ -3396,32 +3805,49 @@
 
       function desenhar() {
         const retangulo = canvas.getBoundingClientRect();
-        contexto.setTransform(
-          canvas.width / larguraMundo,
-          0,
-          0,
-          canvas.height / alturaMundo,
-          0,
-          0,
-        );
-        contexto.clearRect(0, 0, larguraMundo, alturaMundo);
+        contexto.setTransform(1, 0, 0, 1, 0, 0);
+        contexto.clearRect(0, 0, canvas.width, canvas.height);
 
         if (estado.mapaAtual === "expansao") {
+          limitarCameraExpansao();
+          const visao = dimensoesVisaoExpansao();
+          const escalaX = canvas.width / visao.largura;
+          const escalaY = canvas.height / visao.altura;
+          contexto.setTransform(
+            escalaX,
+            0,
+            0,
+            escalaY,
+            -estado.cameraExpansao.x * escalaX,
+            -estado.cameraExpansao.y * escalaY,
+          );
           desenharNovaColonia();
-        } else if (estado.local === "assentamento") {
-          desenharAssentamento();
         } else {
-          desenharFloresta();
+          contexto.setTransform(
+            canvas.width / larguraMundo,
+            0,
+            0,
+            canvas.height / alturaMundo,
+            0,
+            0,
+          );
+          if (estado.local === "assentamento") {
+            desenharAssentamento();
+          } else {
+            desenharFloresta();
+          }
         }
 
-        desenharFazendeiro();
-        desenharFruticultor();
-        desenharPescador();
-        desenharComerciante();
-        desenharFerreiro();
-        desenharMineiro();
-        desenharBanqueiro();
-        desenharEscriturario();
+        if (estado.mapaAtual === "posto") {
+          desenharFazendeiro();
+          desenharFruticultor();
+          desenharPescador();
+          desenharComerciante();
+          desenharFerreiro();
+          desenharMineiro();
+          desenharBanqueiro();
+          desenharEscriturario();
+        }
         desenharJogador();
         contexto.setTransform(1, 0, 0, 1, 0, 0);
 
@@ -3503,6 +3929,21 @@
       contratarBanqueiroBotao.addEventListener("click", contratarBanqueiro);
       contratarEscriturarioBotao.addEventListener("click", contratarEscriturario);
       mapaExpansaoBotao.addEventListener("click", alternarMapaExpansao);
+      diminuirZoomBotao.addEventListener("click", () =>
+        alterarZoomExpansao(0.8),
+      );
+      aumentarZoomBotao.addEventListener("click", () =>
+        alterarZoomExpansao(1.25),
+      );
+      centralizarMapaBotao.addEventListener("click", () =>
+        centralizarMapaExpansao(),
+      );
+      canvas.addEventListener("pointerdown", iniciarNavegacaoMapa);
+      canvas.addEventListener("pointermove", continuarNavegacaoMapa);
+      canvas.addEventListener("pointerup", terminarNavegacaoMapa);
+      canvas.addEventListener("pointercancel", terminarNavegacaoMapa);
+      canvas.addEventListener("wheel", rolarMapa, { passive: false });
+      canvas.addEventListener("keydown", navegarMapaPorTeclado);
       novoJogoBotao.addEventListener("click", iniciarNovoJogo);
       apagarBotao.addEventListener("click", apagarProgresso);
       window.addEventListener("resize", redimensionar);
