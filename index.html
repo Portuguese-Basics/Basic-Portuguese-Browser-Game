@@ -199,12 +199,16 @@
         <div class="indicador">Vida<span id="vida">100 / 100</span></div>
         <div class="indicador">Ouro<span id="ouro">5</span></div>
         <div class="indicador">Salvamento<span id="salvamento">Automático</span></div>
+        <div class="indicador">Fazendeiro<span id="fazendeiro-status">Não contratado</span></div>
       </section>
 
       <nav class="acoes" aria-label="Ações">
         <button id="cacar" type="button">Caçar</button>
         <button id="voltar" type="button" disabled>Voltar</button>
         <button id="descansar" type="button">Descansar · 3 ouro</button>
+        <button id="contratar-fazendeiro" type="button">
+          Contratar fazendeiro · 100 ouro
+        </button>
         <button id="novo-jogo" class="secundario" type="button">Novo jogo</button>
         <button id="apagar" class="perigo" type="button">Apagar progresso</button>
       </nav>
@@ -230,16 +234,22 @@
       const vidaEl = document.querySelector("#vida");
       const ouroEl = document.querySelector("#ouro");
       const salvamentoEl = document.querySelector("#salvamento");
+      const fazendeiroStatusEl = document.querySelector("#fazendeiro-status");
       const mensagemEl = document.querySelector("#mensagem");
       const cacarBotao = document.querySelector("#cacar");
       const voltarBotao = document.querySelector("#voltar");
       const descansarBotao = document.querySelector("#descansar");
+      const contratarFazendeiroBotao = document.querySelector(
+        "#contratar-fazendeiro",
+      );
       const novoJogoBotao = document.querySelector("#novo-jogo");
       const apagarBotao = document.querySelector("#apagar");
 
       const larguraMundo = 1000;
       const alturaMundo = 700;
       const custoDescanso = 3;
+      const custoFazendeiro = 100;
+      const intervaloFazendeiro = 10;
       const vidaMaxima = 100;
       const chaveSalvamento = "arqueiro-do-assentamento-v1";
       const versaoSalvamento = 1;
@@ -256,6 +266,8 @@
         brilhoGolpe: 0,
         salvamentoDisponivel: true,
         salvamentoAtivo: true,
+        fazendeiroContratado: false,
+        tempoFazendeiro: 0,
       };
 
       const arvores = [
@@ -305,6 +317,10 @@
             vida: inimigo.vida,
             velocidade: inimigo.velocidade,
           })),
+          fazendeiro: {
+            contratado: estado.fazendeiroContratado,
+            tempo: estado.tempoFazendeiro,
+          },
         };
       }
 
@@ -358,6 +374,17 @@
                 velocidade: numeroValido(inimigo.velocidade, 16, 50, 26),
               }))
             : [];
+          estado.fazendeiroContratado = Boolean(
+            salvo.fazendeiro?.contratado,
+          );
+          estado.tempoFazendeiro = estado.fazendeiroContratado
+            ? numeroValido(
+                salvo.fazendeiro?.tempo,
+                0,
+                intervaloFazendeiro,
+                0,
+              )
+            : 0;
 
           if (estado.local === "assentamento") {
             estado.jogador.x = 500;
@@ -393,6 +420,8 @@
         estado.tempoReforco = 0;
         estado.alvoGolpeado = null;
         estado.brilhoGolpe = 0;
+        estado.fazendeiroContratado = false;
+        estado.tempoFazendeiro = 0;
       }
 
       function atualizarInterface() {
@@ -403,6 +432,16 @@
         cacarBotao.disabled = !noAssentamento || estado.vida <= 0;
         voltarBotao.disabled = noAssentamento;
         descansarBotao.disabled = !noAssentamento;
+        contratarFazendeiroBotao.disabled =
+          !noAssentamento ||
+          estado.fazendeiroContratado ||
+          estado.ouro < custoFazendeiro;
+        contratarFazendeiroBotao.textContent = estado.fazendeiroContratado
+          ? "Fazendeiro contratado"
+          : "Contratar fazendeiro · 100 ouro";
+        fazendeiroStatusEl.textContent = estado.fazendeiroContratado
+          ? "Trabalhando · 1 ouro / 10 s"
+          : "Não contratado";
         canvas.setAttribute(
           "aria-label",
           noAssentamento
@@ -478,6 +517,53 @@
         estado.vida = Math.min(vidaMaxima, estado.vida + 30);
         const recuperada = estado.vida - vidaAnterior;
         definirMensagem(`Descanso concluído. Você recuperou ${recuperada} de vida.`);
+        atualizarInterface();
+        salvarProgresso();
+      }
+
+      function contratarFazendeiro() {
+        if (estado.local !== "assentamento") {
+          definirMensagem("Volte ao assentamento para contratar um fazendeiro.");
+          return;
+        }
+
+        if (estado.fazendeiroContratado) {
+          definirMensagem("Você já contratou um fazendeiro.");
+          return;
+        }
+
+        if (estado.ouro < custoFazendeiro) {
+          definirMensagem("Você precisa de 100 de ouro para contratar o fazendeiro.");
+          return;
+        }
+
+        estado.ouro -= custoFazendeiro;
+        estado.fazendeiroContratado = true;
+        estado.tempoFazendeiro = 0;
+        estado.salvamentoAtivo = true;
+        definirMensagem(
+          "Fazendeiro contratado. Ele produzirá 1 de ouro a cada 10 segundos.",
+        );
+        atualizarInterface();
+        salvarProgresso();
+      }
+
+      function atualizarFazendeiro(delta) {
+        if (!estado.fazendeiroContratado) return;
+
+        estado.tempoFazendeiro += delta;
+        if (estado.tempoFazendeiro < intervaloFazendeiro) return;
+
+        const pagamentos = Math.floor(
+          estado.tempoFazendeiro / intervaloFazendeiro,
+        );
+        estado.tempoFazendeiro %= intervaloFazendeiro;
+        estado.ouro += pagamentos;
+        if (estado.local === "assentamento") {
+          definirMensagem(
+            `O fazendeiro voltou com ${pagamentos} de ouro da colheita.`,
+          );
+        }
         atualizarInterface();
         salvarProgresso();
       }
@@ -624,6 +710,20 @@
           desenharCirculo(x, y, 3, "#9f9165");
         }
 
+        if (estado.fazendeiroContratado) {
+          contexto.fillStyle = "#76502f";
+          contexto.fillRect(390, 575, 220, 92);
+          contexto.strokeStyle = "#9c7b43";
+          contexto.lineWidth = 5;
+          for (let linha = 0; linha < 4; linha += 1) {
+            const y = 590 + linha * 20;
+            contexto.beginPath();
+            contexto.moveTo(405, y);
+            contexto.lineTo(595, y);
+            contexto.stroke();
+          }
+        }
+
         contexto.fillStyle = "#7a512d";
         contexto.fillRect(280, 165, 440, 22);
         contexto.fillRect(280, 513, 440, 22);
@@ -653,6 +753,67 @@
 
         contexto.fillStyle = "#817249";
         contexto.fillRect(482, 430, 36, 79);
+      }
+
+      function interpolarPonto(inicio, fim, progresso) {
+        return {
+          x: inicio.x + (fim.x - inicio.x) * progresso,
+          y: inicio.y + (fim.y - inicio.y) * progresso,
+        };
+      }
+
+      function percorrerCaminho(pontos, progresso) {
+        const limitado = Math.min(0.999999, Math.max(0, progresso));
+        const trecho = limitado * (pontos.length - 1);
+        const indice = Math.floor(trecho);
+        return interpolarPonto(
+          pontos[indice],
+          pontos[indice + 1],
+          trecho - indice,
+        );
+      }
+
+      function posicaoFazendeiro() {
+        const progresso = estado.tempoFazendeiro / intervaloFazendeiro;
+        const casa = { x: 610, y: 425 };
+        const portao = { x: 500, y: 548 };
+        const entradaPlantacao = { x: 420, y: 590 };
+        const fimPlantacao = { x: 420, y: 650 };
+        const ida = [
+          casa,
+          { x: 575, y: 485 },
+          portao,
+          entradaPlantacao,
+        ];
+        const trabalho = [
+          entradaPlantacao,
+          { x: 580, y: 590 },
+          { x: 580, y: 610 },
+          { x: 420, y: 610 },
+          { x: 420, y: 630 },
+          { x: 580, y: 630 },
+          { x: 580, y: 650 },
+          fimPlantacao,
+        ];
+        const volta = [fimPlantacao, portao, { x: 575, y: 485 }, casa];
+
+        if (progresso < 0.22) {
+          return percorrerCaminho(ida, progresso / 0.22);
+        }
+
+        if (progresso < 0.72) {
+          return percorrerCaminho(trabalho, (progresso - 0.22) / 0.5);
+        }
+
+        return percorrerCaminho(volta, (progresso - 0.72) / 0.28);
+      }
+
+      function desenharFazendeiro() {
+        if (!estado.fazendeiroContratado || estado.local !== "assentamento") {
+          return;
+        }
+        const posicao = posicaoFazendeiro();
+        desenharCirculo(posicao.x, posicao.y, 10, "#4da3ff", "#183b67");
       }
 
       function desenharFloresta() {
@@ -718,6 +879,7 @@
           desenharFloresta();
         }
 
+        desenharFazendeiro();
         desenharJogador();
         contexto.setTransform(1, 0, 0, 1, 0, 0);
 
@@ -740,6 +902,9 @@
 
         if (estado.local === "floresta") {
           atualizarCacada(delta);
+        }
+        atualizarFazendeiro(delta);
+        if (estado.local === "floresta" || estado.fazendeiroContratado) {
           tempoSalvamento += delta;
           if (tempoSalvamento >= 2) {
             tempoSalvamento = 0;
@@ -754,6 +919,7 @@
       cacarBotao.addEventListener("click", iniciarCacada);
       voltarBotao.addEventListener("click", voltarAoAssentamento);
       descansarBotao.addEventListener("click", descansar);
+      contratarFazendeiroBotao.addEventListener("click", contratarFazendeiro);
       novoJogoBotao.addEventListener("click", iniciarNovoJogo);
       apagarBotao.addEventListener("click", apagarProgresso);
       window.addEventListener("resize", redimensionar);
