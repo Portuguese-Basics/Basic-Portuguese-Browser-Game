@@ -626,11 +626,11 @@
             <li>Cada escriturário custa 100 de ouro e transfere 0,5% do ouro atual para o fundo de expansão a cada 60 segundos.</li>
             <li>Com 10.000 de ouro no fundo, o escritório pode comprar o mapa de uma nova colônia.</li>
             <li>A nova colônia começa com 2.500 de ouro pessoal e uma transferência municipal inicial de 3.000.</li>
-            <li>A administração custa 500 e as moradias custam 750, já debitados da transferência inicial; o cofre começa com 1.750.</li>
+            <li>Os colonos gastam a transferência inicial automaticamente: 500 na administração, 750 nas moradias, 400 na lavoura, 500 na pastagem e 300 no celeiro.</li>
             <li>O posto original continua financiando a colônia com 300 de ouro a cada 60 segundos: 270 para a cidade e 30 para o administrador.</li>
-            <li>Os colonos escolhem suas prioridades automaticamente, começando pela lavoura de 400 e pela pastagem de 500.</li>
+            <li>Os colonos executam sozinhos toda a fundação: administração, moradias, lavoura, pastagem e celeiro.</li>
             <li>A torre administrativa, as moradias de prestígio e o celeiro ficam protegidos no recinto interno; moradias comuns e casas dos agricultores ficam no recinto externo.</li>
-            <li>A lavoura e a pastagem ficam fora da muralha externa, junto ao portão do campo e separadas por uma reserva para estrada.</li>
+            <li>A lavoura, a pastagem e a futura zona de recursos ficam no extremo oeste; a costa permanece livre para portos, pesca e navegação.</li>
             <li>Os 20 colonos consomem 20 alimentos por minuto. A lavoura produz 40 e a pastagem produz 20.</li>
             <li>Alimentos acima da reserva de 80 são vendidos automaticamente; 90% da renda vai para a cidade e 10% para o administrador.</li>
             <li>Descansar custa 3 de ouro e recupera até 30 de vida.</li>
@@ -832,57 +832,57 @@
       const limiteCosta = 13100;
       const posicaoNovaColonia = { x: 12740, y: 4500 };
       const areaAdministracao = {
-        x: 10370,
+        x: 8370,
         y: 4300,
         largura: 260,
         altura: 170,
       };
-      const posicaoAdministrador = { x: 10500, y: 4500 };
+      const posicaoAdministrador = { x: 8500, y: 4500 };
       const recintoExterno = {
-        x: 8200,
-        y: 2900,
-        largura: 4600,
-        altura: 3400,
+        x: 5000,
+        y: 1500,
+        largura: 6200,
+        altura: 6000,
       };
       const recintoInterno = {
-        x: 9600,
-        y: 3650,
-        largura: 1800,
-        altura: 1650,
+        x: 6800,
+        y: 2700,
+        largura: 3500,
+        altura: 3600,
       };
       const areaMoradias = {
-        x: 8800,
-        y: 5150,
+        x: 5500,
+        y: 5700,
         largura: 700,
         altura: 500,
       };
       const areaCeleiro = {
-        x: 9710,
-        y: 4590,
-        largura: 330,
-        altura: 220,
+        x: 7000,
+        y: 4550,
+        largura: 420,
+        altura: 260,
       };
       const casasAgricultores = [
-        { x: 8400, y: 3500 },
-        { x: 8700, y: 3500 },
-        { x: 8400, y: 3980 },
-        { x: 8700, y: 3980 },
-        { x: 8550, y: 4460 },
+        { x: 5200, y: 2600 },
+        { x: 5500, y: 2600 },
+        { x: 5200, y: 3080 },
+        { x: 5500, y: 3080 },
+        { x: 5350, y: 3560 },
       ];
       const areaLavoura = {
-        x: 5000,
-        y: 3900,
-        largura: 1200,
-        altura: 750,
-      };
-      const areaPastagem = {
-        x: 6380,
+        x: 500,
         y: 3900,
         largura: 1400,
-        altura: 750,
+        altura: 850,
+      };
+      const areaPastagem = {
+        x: 2100,
+        y: 3900,
+        largura: 1700,
+        altura: 850,
       };
       const quantidadeColonosExpansao = 20;
-      const versaoColonia = 4;
+      const versaoColonia = 5;
       const ouroInicialAdministrador = 2500;
       const transferenciaInicialCidade = 3000;
       const custoAdministracaoColonia = 500;
@@ -894,6 +894,8 @@
       const taxaAdministrador = 0.1;
       const custoLavouraColonia = 400;
       const custoPastagemColonia = 500;
+      const custoCeleiroColonia = 300;
+      const capacidadeCeleiroColonia = 200;
       const estoqueInicialAlimentos = 40;
       const producaoLavouraColonia = 40;
       const producaoPastagemColonia = 20;
@@ -1001,6 +1003,7 @@
         tempoLavouraColonia: 0,
         pastagemConstruida: false,
         tempoPastagemColonia: 0,
+        celeiroConstruido: false,
         obraAutomaticaColonia: null,
         tempoObraAutomaticaColonia: 0,
         estoqueAlimentos: 0,
@@ -1070,28 +1073,25 @@
         estado.coloniaIniciada = true;
         estado.revisaoColonia = versaoColonia;
         estado.ouro = ouroInicialAdministrador;
-        estado.tesouroColonia = arredondarOuro(
-          transferenciaInicialCidade -
-            custoAdministracaoColonia -
-            custoMoradiasColonia,
-        );
+        estado.tesouroColonia = transferenciaInicialCidade;
         estado.tempoTransferenciaPosto = 0;
         estado.lavouraConstruida = false;
         estado.tempoLavouraColonia = 0;
         estado.pastagemConstruida = false;
         estado.tempoPastagemColonia = 0;
+        estado.celeiroConstruido = false;
         estado.obraAutomaticaColonia = null;
         estado.tempoObraAutomaticaColonia = 0;
         estado.estoqueAlimentos = estoqueInicialAlimentos;
         estado.tempoNecessidadesColonia = 0;
         estado.colonosComFome = 0;
-        estado.etapaConstrucaoColonia = 4;
+        estado.etapaConstrucaoColonia = 0;
         estado.tempoConstrucaoColonia = 0;
         estado.mapaAtual = "expansao";
         estado.local = "assentamento";
         estado.inimigos = [];
-        estado.jogador.x = posicaoAdministrador.x;
-        estado.jogador.y = posicaoAdministrador.y;
+        estado.jogador.x = posicaoNovaColonia.x;
+        estado.jogador.y = posicaoNovaColonia.y;
         estado.cameraExpansao.x = posicaoAdministrador.x - larguraMundo / 2;
         estado.cameraExpansao.y = posicaoAdministrador.y - alturaMundo / 2;
         estado.cameraExpansao.zoom = 1;
@@ -1169,6 +1169,7 @@
               tempoLavoura: estado.tempoLavouraColonia,
               pastagemConstruida: estado.pastagemConstruida,
               tempoPastagem: estado.tempoPastagemColonia,
+              celeiroConstruido: estado.celeiroConstruido,
               obraAutomatica: estado.obraAutomaticaColonia,
               tempoObraAutomatica: estado.tempoObraAutomaticaColonia,
               estoqueAlimentos: estado.estoqueAlimentos,
@@ -1637,9 +1638,12 @@
                 0,
               )
             : 0;
+          estado.celeiroConstruido =
+            salvo.expansao?.economia?.celeiroConstruido === true;
           estado.obraAutomaticaColonia =
             salvo.expansao?.economia?.obraAutomatica === "lavoura" ||
-            salvo.expansao?.economia?.obraAutomatica === "pastagem"
+            salvo.expansao?.economia?.obraAutomatica === "pastagem" ||
+            salvo.expansao?.economia?.obraAutomatica === "celeiro"
               ? salvo.expansao.economia.obraAutomatica
               : null;
           estado.tempoObraAutomaticaColonia =
@@ -1754,7 +1758,7 @@
             salvarProgresso();
           } else if (coloniaReiniciadaAoCarregar) {
             definirMensagem(
-              "A colônia recomeçou no mapa 10×: cidade costeira e agricultura no interior distante.",
+              "A colônia recomeçou: os colonos fundarão a cidade no interior, com agricultura no extremo oeste e a costa livre.",
             );
             salvarProgresso();
           } else if (mapaAntigo) {
@@ -1816,6 +1820,7 @@
         estado.tempoLavouraColonia = 0;
         estado.pastagemConstruida = false;
         estado.tempoPastagemColonia = 0;
+        estado.celeiroConstruido = false;
         estado.obraAutomaticaColonia = null;
         estado.tempoObraAutomaticaColonia = 0;
         estado.estoqueAlimentos = 0;
@@ -1844,15 +1849,24 @@
       }
 
       function nomeObraAutomaticaColonia(tipo) {
-        return tipo === "lavoura" ? "lavoura" : "pastagem";
+        if (tipo === "lavoura") return "lavoura";
+        if (tipo === "pastagem") return "pastagem";
+        return "celeiro";
       }
 
       function prioridadeAtualColonia() {
+        if (estado.etapaConstrucaoColonia <= 1) {
+          return "Construir administração";
+        }
+        if (estado.etapaConstrucaoColonia <= 3) {
+          return "Construir moradias";
+        }
         if (estado.obraAutomaticaColonia) {
           return `Construir ${nomeObraAutomaticaColonia(estado.obraAutomaticaColonia)}`;
         }
         if (!estado.lavouraConstruida) return "Construir lavoura";
         if (!estado.pastagemConstruida) return "Construir pastagem";
+        if (!estado.celeiroConstruido) return "Construir celeiro";
         if (estado.colonosComFome > 0) return "Repor alimentos";
         return "Manter alimento e moradia";
       }
@@ -1867,7 +1881,16 @@
           return;
         }
 
-        if (estado.obraAutomaticaColonia) {
+        if (
+          estado.etapaConstrucaoColonia === 1 ||
+          estado.etapaConstrucaoColonia === 3
+        ) {
+          const nome = estado.etapaConstrucaoColonia === 1
+            ? "administração"
+            : "moradias";
+          coloniaStatusEl.textContent =
+            `${nome} · ${percentualConstrucaoColonia()}%`;
+        } else if (estado.obraAutomaticaColonia) {
           const percentual = Math.min(
             100,
             Math.round(
@@ -1879,8 +1902,11 @@
           coloniaStatusEl.textContent =
             `${nomeObraAutomaticaColonia(estado.obraAutomaticaColonia)} · ${percentual}%`;
         } else {
-          coloniaStatusEl.textContent =
-            "20 colonos · administração e moradias prontas";
+          coloniaStatusEl.textContent = estado.etapaConstrucaoColonia < 4
+            ? "20 colonos · fundação automática"
+            : estado.celeiroConstruido
+              ? "20 colonos · fundação concluída"
+              : "20 colonos · prioridades automáticas";
         }
       }
 
@@ -1918,13 +1944,16 @@
           quantidadeColonosExpansao,
           capacidadeMoradia,
         );
-        alimentosStatusEl.textContent =
-          `${Math.floor(estado.estoqueAlimentos)} em estoque · consumo 20 / 60 s`;
+        alimentosStatusEl.textContent = estado.celeiroConstruido
+          ? `${Math.floor(estado.estoqueAlimentos)} / ${capacidadeCeleiroColonia} no celeiro · consumo 20 / 60 s`
+          : `${Math.floor(estado.estoqueAlimentos)} provisórios · consumo 20 / 60 s`;
         moradiaStatusEl.textContent =
           `${colonosAbrigados} / ${quantidadeColonosExpansao} abrigados`;
         prioridadeColoniaStatusEl.textContent = prioridadeAtualColonia();
         producaoColoniaStatusEl.textContent =
-          estado.lavouraConstruida && estado.pastagemConstruida
+          estado.lavouraConstruida &&
+            estado.pastagemConstruida &&
+            estado.celeiroConstruido
             ? "Automática acima da reserva de 80"
             : "Aguardando produção de alimentos";
         combateStatusEl.textContent = `ATQ ${estado.ataque} · ARM ${estado.armadura}`;
@@ -2557,6 +2586,15 @@
       }
 
       function atualizarConstrucaoColonia(delta) {
+        if (!estado.coloniaIniciada) return;
+
+        if (
+          estado.etapaConstrucaoColonia === 0 ||
+          estado.etapaConstrucaoColonia === 2
+        ) {
+          iniciarConstrucaoColonia();
+        }
+
         if (
           estado.etapaConstrucaoColonia !== 1 &&
           estado.etapaConstrucaoColonia !== 3
@@ -2582,8 +2620,8 @@
             estado.jogador.y = posicaoColonia.y;
             definirMensagem(
               administracaoConcluida
-                ? "Administração concluída. Agora a colônia precisa de moradias."
-                : "Bairro residencial concluído. A colônia possui suas primeiras fundações.",
+                ? "Administração concluída. Os colonos seguirão automaticamente para as moradias."
+                : "Moradias concluídas. Os colonos seguirão para a zona agrícola no extremo oeste.",
             );
           }
           atualizarInterface();
@@ -2858,7 +2896,7 @@
           reiniciarNovaColonia();
           centralizarMapaExpansao(false);
           definirMensagem(
-            "A nova colônia começou com 2.500 de ouro pessoal e 1.750 no cofre, após administração e moradias. Os colonos escolherão as próximas prioridades.",
+            "A nova colônia começou com 2.500 de ouro pessoal e 3.000 no cofre. Os colonos executarão toda a fundação automaticamente.",
           );
         } else if (estado.mapaAtual === "expansao") {
           definirMensagem(
@@ -2873,7 +2911,7 @@
           reiniciarNovaColonia();
           centralizarMapaExpansao(false);
           definirMensagem(
-            "A nova colônia começou com administração, moradias e prioridades automáticas.",
+            "A nova colônia recomeçou com 20 colonos e sua fundação totalmente automática.",
           );
         }
         estado.salvamentoAtivo = true;
@@ -3013,7 +3051,9 @@
       function iniciarObraAutomaticaColonia(tipo) {
         const custo = tipo === "lavoura"
           ? custoLavouraColonia
-          : custoPastagemColonia;
+          : tipo === "pastagem"
+            ? custoPastagemColonia
+            : custoCeleiroColonia;
         if (estado.tesouroColonia < custo) return false;
 
         estado.tesouroColonia = arredondarOuro(
@@ -3021,17 +3061,20 @@
         );
         estado.obraAutomaticaColonia = tipo;
         estado.tempoObraAutomaticaColonia = 0;
-        focarCameraExpansao(
-          {
-            x:
-              (areaLavoura.x +
-                areaLavoura.largura +
-                areaPastagem.x) /
-              2,
-            y: areaLavoura.y + areaLavoura.altura / 2,
-          },
-          0.55,
-        );
+        const alvo = tipo === "celeiro"
+          ? {
+              x: areaCeleiro.x + areaCeleiro.largura / 2,
+              y: areaCeleiro.y + areaCeleiro.altura / 2,
+            }
+          : {
+              x:
+                (areaLavoura.x +
+                  areaLavoura.largura +
+                  areaPastagem.x) /
+                2,
+              y: areaLavoura.y + areaLavoura.altura / 2,
+            };
+        focarCameraExpansao(alvo, tipo === "celeiro" ? 0.75 : 0.55);
         definirMensagem(
           `Os colonos priorizaram a ${nomeObraAutomaticaColonia(tipo)} e reservaram ${custo} do cofre municipal.`,
         );
@@ -3041,14 +3084,19 @@
       }
 
       function atualizarPrioridadesColonia(delta) {
-        if (!estado.coloniaIniciada) return;
+        if (
+          !estado.coloniaIniciada ||
+          estado.etapaConstrucaoColonia < 4
+        ) return;
 
         if (!estado.obraAutomaticaColonia) {
           const proximaObra = !estado.lavouraConstruida
             ? "lavoura"
             : !estado.pastagemConstruida
               ? "pastagem"
-              : null;
+              : !estado.celeiroConstruido
+                ? "celeiro"
+                : null;
           if (!proximaObra || !iniciarObraAutomaticaColonia(proximaObra)) {
             return;
           }
@@ -3066,13 +3114,20 @@
         const obraConcluida = estado.obraAutomaticaColonia;
         if (obraConcluida === "lavoura") {
           estado.lavouraConstruida = true;
-        } else {
+        } else if (obraConcluida === "pastagem") {
           estado.pastagemConstruida = true;
+        } else {
+          estado.celeiroConstruido = true;
         }
         estado.obraAutomaticaColonia = null;
         estado.tempoObraAutomaticaColonia = 0;
+        const mensagemObra = obraConcluida === "lavoura"
+          ? "Lavoura concluída"
+          : obraConcluida === "pastagem"
+            ? "Pastagem concluída"
+            : "Celeiro concluído";
         definirMensagem(
-          `${obraConcluida === "lavoura" ? "Lavoura" : "Pastagem"} concluída. Os colonos reavaliaram as necessidades da cidade.`,
+          `${mensagemObra}. Os colonos reavaliaram as necessidades da cidade.`,
         );
         atualizarInterface();
         salvarProgresso();
@@ -3109,10 +3164,12 @@
           alimentosConsumidos += consumo;
           estado.colonosComFome = necessidade - consumo;
 
-          const excedente = Math.max(
-            0,
-            estado.estoqueAlimentos - reservaAlimentosColonia,
-          );
+          const excedente = estado.celeiroConstruido
+            ? Math.max(
+                0,
+                estado.estoqueAlimentos - reservaAlimentosColonia,
+              )
+            : 0;
           estado.estoqueAlimentos -= excedente;
           alimentosVendidos += excedente;
           if (excedente > 0) {
@@ -3122,10 +3179,12 @@
 
         definirMensagem(
           alimentosVendidos > 0
-            ? `Os colonos consumiram ${alimentosConsumidos}, preservaram 80 alimentos e venderam ${alimentosVendidos}. A renda foi dividida entre cidade e administrador.`
+            ? `Os colonos consumiram ${alimentosConsumidos}, guardaram 80 no celeiro e venderam ${alimentosVendidos}. A cidade recebeu 90% e você recebeu 10%.`
             : estado.colonosComFome > 0
               ? `${estado.colonosComFome} colonos ficaram sem alimento neste ciclo.`
-              : `A cidade produziu ${alimentosProduzidos} e consumiu ${alimentosConsumidos} alimentos. O excedente será vendido acima da reserva de 80.`,
+              : estado.celeiroConstruido
+                ? `A cidade produziu ${alimentosProduzidos} e consumiu ${alimentosConsumidos} alimentos. O celeiro mantém uma reserva de 80 para a população.`
+                : `A cidade produziu ${alimentosProduzidos} e consumiu ${alimentosConsumidos} alimentos. Os colonos precisam concluir o celeiro para armazenar e vender excedentes.`,
         );
         atualizarInterface();
         salvarProgresso();
@@ -4047,6 +4106,26 @@
           posicao = interpolarPonto(administracao, moradias, progresso);
         } else if (estado.etapaConstrucaoColonia >= 4) {
           if (
+            estado.obraAutomaticaColonia === "celeiro" &&
+            indice < 6
+          ) {
+            const progresso = limitarProgresso(
+              estado.tempoObraAutomaticaColonia /
+                (duracaoObraAutomaticaColonia * 0.45),
+            );
+            const trabalhoCeleiro = posicaoFormacaoColonos(
+              {
+                x: areaCeleiro.x + areaCeleiro.largura / 2,
+                y: areaCeleiro.y + areaCeleiro.altura / 2,
+              },
+              indice,
+            );
+            posicao = interpolarPonto(
+              administracao,
+              trabalhoCeleiro,
+              progresso,
+            );
+          } else if (
             (estado.lavouraConstruida ||
               estado.obraAutomaticaColonia === "lavoura") &&
             indice >= 6 &&
@@ -4301,8 +4380,8 @@
         if (estado.etapaConstrucaoColonia < 4) return;
 
         const casas = [
-          [10770, 3920],
-          [10770, 4730],
+          [9600, 3400],
+          [9600, 5250],
         ];
         casas.forEach(([x, y]) => {
           contexto.strokeStyle = "#5a4028";
@@ -4323,7 +4402,7 @@
         contexto.font = "bold 18px sans-serif";
         contexto.textAlign = "center";
         contexto.textBaseline = "middle";
-        contexto.fillText("MORADIAS DE PRESTÍGIO", 10860, 4550);
+        contexto.fillText("MORADIAS DE PRESTÍGIO", 9690, 4470);
         contexto.textAlign = "start";
         contexto.textBaseline = "alphabetic";
       }
@@ -4332,33 +4411,76 @@
         if (estado.etapaConstrucaoColonia < 4) return;
 
         const { x, y, largura, altura } = areaCeleiro;
+        const progresso = estado.celeiroConstruido
+          ? 1
+          : estado.obraAutomaticaColonia === "celeiro"
+            ? Math.min(
+                1,
+                estado.tempoObraAutomaticaColonia /
+                  duracaoObraAutomaticaColonia,
+              )
+            : 0;
+
+        if (progresso <= 0) {
+          contexto.strokeStyle = "#76684a";
+          contexto.lineWidth = 10;
+          contexto.strokeRect(x, y, largura, altura);
+          contexto.fillStyle = "#554a34";
+          contexto.font = "bold 24px sans-serif";
+          contexto.textAlign = "center";
+          contexto.textBaseline = "middle";
+          contexto.fillText(
+            "LOCAL PARA CELEIRO",
+            x + largura / 2,
+            y + altura / 2,
+          );
+          contexto.textAlign = "start";
+          contexto.textBaseline = "alphabetic";
+          return;
+        }
+
         contexto.strokeStyle = "#5b4028";
         contexto.lineWidth = 12;
         contexto.strokeRect(x, y, largura, altura);
         contexto.fillStyle = "#a8753f";
-        contexto.fillRect(x + 12, y + 12, largura - 24, altura - 24);
+        contexto.fillRect(
+          x + 12,
+          y + altura - 12 - (altura - 24) * progresso,
+          largura - 24,
+          (altura - 24) * progresso,
+        );
         contexto.strokeStyle = "#d3a85e";
         contexto.lineWidth = 10;
-        for (let linha = x + 55; linha < x + largura - 35; linha += 55) {
-          contexto.beginPath();
-          contexto.moveTo(linha, y + 20);
-          contexto.lineTo(linha, y + altura - 20);
-          contexto.stroke();
+        if (progresso > 0.45) {
+          for (let linha = x + 55; linha < x + largura - 35; linha += 55) {
+            contexto.beginPath();
+            contexto.moveTo(linha, y + 20);
+            contexto.lineTo(linha, y + altura - 20);
+            contexto.stroke();
+          }
         }
-        contexto.fillStyle = "#4a2f1d";
-        contexto.beginPath();
-        contexto.moveTo(x - 20, y + 20);
-        contexto.lineTo(x + largura / 2, y - 80);
-        contexto.lineTo(x + largura + 20, y + 20);
-        contexto.closePath();
-        contexto.fill();
+        if (progresso > 0.72) {
+          contexto.fillStyle = "#4a2f1d";
+          contexto.beginPath();
+          contexto.moveTo(x - 20, y + 20);
+          contexto.lineTo(x + largura / 2, y - 80);
+          contexto.lineTo(x + largura + 20, y + 20);
+          contexto.closePath();
+          contexto.fill();
+        }
         contexto.fillStyle = "#f1dfad";
-        contexto.fillRect(x + 85, y + 78, largura - 170, 46);
+        contexto.fillRect(x + 95, y + 92, largura - 190, 46);
         contexto.fillStyle = "#3b291b";
         contexto.font = "bold 21px sans-serif";
         contexto.textAlign = "center";
         contexto.textBaseline = "middle";
-        contexto.fillText("CELEIRO", x + largura / 2, y + 101);
+        contexto.fillText(
+          progresso >= 1
+            ? "CELEIRO"
+            : `CELEIRO · ${Math.round(progresso * 100)}%`,
+          x + largura / 2,
+          y + 115,
+        );
         contexto.textAlign = "start";
         contexto.textBaseline = "alphabetic";
       }
@@ -4385,7 +4507,7 @@
         contexto.font = "bold 18px sans-serif";
         contexto.textAlign = "center";
         contexto.textBaseline = "middle";
-        contexto.fillText("CASAS DOS AGRICULTORES", 8625, 3380);
+        contexto.fillText("CASAS DOS AGRICULTORES", 5575, 2480);
         contexto.textAlign = "start";
         contexto.textBaseline = "alphabetic";
       }
@@ -4581,6 +4703,23 @@
           contexto.fillRect(limiteCosta + 70 + movimento, y, 170, 9);
           contexto.fillRect(limiteCosta + 430 - movimento, y + 55, 130, 7);
         }
+
+        contexto.fillStyle = "#3f4a2e";
+        contexto.font = "bold 30px sans-serif";
+        contexto.textAlign = "center";
+        contexto.textBaseline = "middle";
+        contexto.fillText(
+          "ZONA OESTE · AGRICULTURA E RECURSOS",
+          2150,
+          3700,
+        );
+        contexto.fillText(
+          "COSTA RESERVADA PARA PORTOS, PESCA E NAVEGAÇÃO",
+          12050,
+          1050,
+        );
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
 
         desenharAreasProdutivasColonia();
         desenharDefesasColonia();
