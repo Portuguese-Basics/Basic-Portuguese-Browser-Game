@@ -299,6 +299,7 @@
         <div class="indicador">Comerciante<span id="comerciante-status">Não contratado</span></div>
         <div class="indicador">Ferreiro<span id="ferreiro-status">Não contratado</span></div>
         <div class="indicador">Mineiro<span id="mineiro-status">Não contratado</span></div>
+        <div class="indicador">Banqueiro<span id="banqueiro-status">Não contratado</span></div>
         <div class="indicador">Combate<span id="combate-status">ATQ 1 · ARM 0</span></div>
       </section>
 
@@ -323,6 +324,9 @@
         </button>
         <button id="contratar-mineiro" type="button">
           Contratar mineiro · 100 ouro
+        </button>
+        <button id="contratar-banqueiro" type="button">
+          Contratar banqueiro · 100 ouro
         </button>
         <button id="abrir-loja" type="button">Loja</button>
         <button id="novo-jogo" class="secundario" type="button">Novo jogo</button>
@@ -388,6 +392,7 @@
             <li>Cada comerciante custa 100 de ouro e produz 1 de ouro a cada 10 segundos.</li>
             <li>Cada ferreiro custa 100 de ouro e produz 1 de ouro a cada 10 segundos.</li>
             <li>Cada mineiro custa 100 de ouro e produz 1 de ouro a cada 10 segundos.</li>
+            <li>Cada banqueiro custa 100 de ouro e rende 1% sobre o ouro atual a cada 60 segundos.</li>
             <li>Descansar custa 3 de ouro e recupera até 30 de vida.</li>
             <li>Ao ser derrotado, você volta com vida completa e perde 15 de ouro.</li>
             <li>Cada ponto de ataque causa 1 de dano.</li>
@@ -413,6 +418,7 @@
       const comercianteStatusEl = document.querySelector("#comerciante-status");
       const ferreiroStatusEl = document.querySelector("#ferreiro-status");
       const mineiroStatusEl = document.querySelector("#mineiro-status");
+      const banqueiroStatusEl = document.querySelector("#banqueiro-status");
       const mensagemEl = document.querySelector("#mensagem");
       const cacarBotao = document.querySelector("#cacar");
       const voltarBotao = document.querySelector("#voltar");
@@ -446,6 +452,9 @@
       const contratarMineiroBotao = document.querySelector(
         "#contratar-mineiro",
       );
+      const contratarBanqueiroBotao = document.querySelector(
+        "#contratar-banqueiro",
+      );
       const novoJogoBotao = document.querySelector("#novo-jogo");
       const apagarBotao = document.querySelector("#apagar");
 
@@ -462,6 +471,7 @@
       const custoComerciante = 100;
       const custoFerreiro = 100;
       const custoMineiro = 100;
+      const custoBanqueiro = 100;
       const custoMelhoria = 100;
       const intervaloFazendeiro = 10;
       const intervaloFruticultor = 20;
@@ -469,11 +479,13 @@
       const intervaloComerciante = 10;
       const intervaloFerreiro = 10;
       const intervaloMineiro = 10;
+      const intervaloBanqueiro = 60;
       const ouroPorFruticultor = 2;
       const ouroPorPescador = 3;
       const ouroPorComerciante = 1;
       const ouroPorFerreiro = 1;
       const ouroPorMineiro = 1;
+      const taxaJurosPorBanqueiro = 0.01;
       const vidaMaxima = 100;
       const maximoFazendeiros = 10;
       const maximoFruticultores = 10;
@@ -481,6 +493,7 @@
       const maximoComerciantes = 10;
       const maximoFerreiros = 10;
       const maximoMineiros = 10;
+      const maximoBanqueiros = 10;
       const nivelMaximo = 5;
       const chaveSalvamento = "arqueiro-do-assentamento-v1";
       const versaoSalvamento = 1;
@@ -527,6 +540,8 @@
         tempoFerreiro: 0,
         quantidadeMineiros: 0,
         tempoMineiro: 0,
+        quantidadeBanqueiros: 0,
+        tempoBanqueiro: 0,
       };
 
       const arvores = [
@@ -564,6 +579,16 @@
         return Number.isFinite(valor)
           ? Math.min(maximo, Math.max(minimo, valor))
           : padrao;
+      }
+
+      function arredondarOuro(valor) {
+        return Math.round((valor + Number.EPSILON) * 100) / 100;
+      }
+
+      function formatarOuro(valor) {
+        return Number.isInteger(valor)
+          ? String(valor)
+          : valor.toFixed(2).replace(".", ",");
       }
 
       function dadosParaSalvar() {
@@ -617,6 +642,10 @@
             quantidade: estado.quantidadeMineiros,
             tempo: estado.tempoMineiro,
           },
+          banqueiro: {
+            quantidade: estado.quantidadeBanqueiros,
+            tempo: estado.tempoBanqueiro,
+          },
         };
       }
 
@@ -652,7 +681,7 @@
           estado.vida = Math.round(
             numeroValido(salvo.vida, 0, vidaMaxima, vidaMaxima),
           );
-          estado.ouro = Math.floor(
+          estado.ouro = arredondarOuro(
             numeroValido(salvo.ouro, -999999, 999999, 5),
           );
           estado.ataque = Math.round(
@@ -797,6 +826,22 @@
                 0,
               )
             : 0;
+          estado.quantidadeBanqueiros = Math.round(
+            numeroValido(
+              salvo.banqueiro?.quantidade,
+              0,
+              maximoBanqueiros,
+              0,
+            ),
+          );
+          estado.tempoBanqueiro = estado.quantidadeBanqueiros > 0
+            ? numeroValido(
+                salvo.banqueiro?.tempo,
+                0,
+                intervaloBanqueiro,
+                0,
+              )
+            : 0;
 
           const derrotadoAoCarregar = estado.vida === 0;
           if (derrotadoAoCarregar) {
@@ -863,13 +908,15 @@
         estado.tempoFerreiro = 0;
         estado.quantidadeMineiros = 0;
         estado.tempoMineiro = 0;
+        estado.quantidadeBanqueiros = 0;
+        estado.tempoBanqueiro = 0;
       }
 
       function atualizarInterface() {
         const noAssentamento = estado.local === "assentamento";
         localEl.textContent = noAssentamento ? "Assentamento" : "Floresta";
         vidaEl.textContent = `${estado.vida} / ${vidaMaxima}`;
-        ouroEl.textContent = String(estado.ouro);
+        ouroEl.textContent = formatarOuro(estado.ouro);
         combateStatusEl.textContent = `ATQ ${estado.ataque} · ARM ${estado.armadura}`;
         cacarBotao.disabled = !noAssentamento || estado.vida <= 0;
         voltarBotao.disabled = noAssentamento;
@@ -941,11 +988,22 @@
         mineiroStatusEl.textContent = estado.quantidadeMineiros > 0
           ? `${estado.quantidadeMineiros} / 10 · +${estado.quantidadeMineiros * ouroPorMineiro} ouro / 10 s`
           : "Não contratado";
+        contratarBanqueiroBotao.disabled =
+          !noAssentamento ||
+          estado.quantidadeBanqueiros >= maximoBanqueiros ||
+          estado.ouro < custoBanqueiro;
+        contratarBanqueiroBotao.textContent =
+          estado.quantidadeBanqueiros >= maximoBanqueiros
+            ? "Máximo de banqueiros"
+            : `Contratar banqueiro ${estado.quantidadeBanqueiros + 1}/10 · 100 ouro`;
+        banqueiroStatusEl.textContent = estado.quantidadeBanqueiros > 0
+          ? `${estado.quantidadeBanqueiros} / 10 · ${estado.quantidadeBanqueiros}% / 60 s`
+          : "Não contratado";
         atualizarLoja();
         canvas.setAttribute(
           "aria-label",
           noAssentamento
-            ? `Mapa do assentamento com rio, cais, ferraria, minas, ${estado.quantidadeFazendeiros} fazendeiros, ${estado.quantidadeFruticultores} fruticultores, ${estado.quantidadePescadores} pescadores, ${estado.quantidadeComerciantes} comerciantes, ${estado.quantidadeFerreiros} ferreiros e ${estado.quantidadeMineiros} mineiros. O arqueiro é o ponto verde.`
+            ? `Mapa do assentamento com rio, cais, ferraria, banco, minas, ${estado.quantidadeFazendeiros} fazendeiros, ${estado.quantidadeFruticultores} fruticultores, ${estado.quantidadePescadores} pescadores, ${estado.quantidadeComerciantes} comerciantes, ${estado.quantidadeFerreiros} ferreiros, ${estado.quantidadeMineiros} mineiros e ${estado.quantidadeBanqueiros} banqueiros. O arqueiro é o ponto verde.`
             : `Mapa da floresta com ${estado.inimigos.length} inimigos vermelhos. O arqueiro é o ponto verde.`,
         );
       }
@@ -1217,6 +1275,35 @@
         salvarProgresso();
       }
 
+      function contratarBanqueiro() {
+        if (estado.local !== "assentamento") {
+          definirMensagem("Volte ao assentamento para contratar um banqueiro.");
+          return;
+        }
+
+        if (estado.quantidadeBanqueiros >= maximoBanqueiros) {
+          definirMensagem("Você já contratou o máximo de 10 banqueiros.");
+          return;
+        }
+
+        if (estado.ouro < custoBanqueiro) {
+          definirMensagem("Você precisa de 100 de ouro para contratar o banqueiro.");
+          return;
+        }
+
+        const primeiroBanqueiro = estado.quantidadeBanqueiros === 0;
+        estado.ouro = arredondarOuro(estado.ouro - custoBanqueiro);
+        estado.quantidadeBanqueiros += 1;
+        estado.salvamentoAtivo = true;
+        definirMensagem(
+          primeiroBanqueiro
+            ? "Primeiro banqueiro contratado. O banco do assentamento está funcionando."
+            : `Banqueiro ${estado.quantidadeBanqueiros} contratado. O banco agora rende ${estado.quantidadeBanqueiros}% sobre o ouro atual a cada 60 segundos.`,
+        );
+        atualizarInterface();
+        salvarProgresso();
+      }
+
       function atualizarLoja() {
         const ataqueMaximo = estado.ataque >= nivelMaximo;
         const armaduraMaxima = estado.armadura >= nivelMaximo;
@@ -1431,6 +1518,37 @@
         if (estado.local === "assentamento") {
           definirMensagem(
             `As minas produziram minério no valor de ${ouroProduzido} de ouro.`,
+          );
+        }
+        atualizarInterface();
+        salvarProgresso();
+      }
+
+      function atualizarBanqueiro(delta) {
+        if (estado.quantidadeBanqueiros === 0) return;
+
+        estado.tempoBanqueiro += delta;
+        if (estado.tempoBanqueiro < intervaloBanqueiro) return;
+
+        const pagamentos = Math.floor(
+          estado.tempoBanqueiro / intervaloBanqueiro,
+        );
+        estado.tempoBanqueiro %= intervaloBanqueiro;
+        let ouroProduzido = 0;
+        for (let pagamento = 0; pagamento < pagamentos; pagamento += 1) {
+          const juros = arredondarOuro(
+            Math.max(0, estado.ouro) *
+              taxaJurosPorBanqueiro *
+              estado.quantidadeBanqueiros,
+          );
+          estado.ouro = arredondarOuro(estado.ouro + juros);
+          ouroProduzido = arredondarOuro(ouroProduzido + juros);
+        }
+        if (estado.local === "assentamento") {
+          definirMensagem(
+            ouroProduzido > 0
+              ? `O banco rendeu ${formatarOuro(ouroProduzido)} de ouro em juros.`
+              : "O banco não rendeu juros porque não há ouro positivo guardado.",
           );
         }
         atualizarInterface();
@@ -1938,6 +2056,22 @@
         contexto.textAlign = "start";
         contexto.textBaseline = "alphabetic";
 
+        contexto.fillStyle = "#e7d6a6";
+        contexto.fillRect(833, 522, 74, 24);
+        contexto.fillStyle = "#3d2a1b";
+        contexto.font = "bold 13px sans-serif";
+        contexto.textAlign = "center";
+        contexto.textBaseline = "middle";
+        contexto.fillText("BANCO", 870, 534);
+        contexto.fillStyle = "#596263";
+        contexto.fillRect(850, 542, 40, 24);
+        contexto.strokeStyle = "#30383a";
+        contexto.lineWidth = 3;
+        contexto.strokeRect(854, 546, 32, 20);
+        desenharCirculo(870, 556, 5, "#caa64b", "#59471d");
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
+
         contexto.fillStyle = "#817249";
         contexto.fillRect(682, 590, 36, 84);
       }
@@ -2372,6 +2506,47 @@
         }
       }
 
+      function posicaoBanqueiro(indice) {
+        const postos = [
+          { x: 805, y: 585 },
+          { x: 825, y: 600 },
+          { x: 845, y: 585 },
+          { x: 865, y: 605 },
+          { x: 885, y: 590 },
+          { x: 905, y: 605 },
+          { x: 925, y: 585 },
+          { x: 815, y: 620 },
+          { x: 870, y: 625 },
+          { x: 920, y: 620 },
+        ];
+        const posto = postos[indice];
+        const porta = { x: 870, y: 570 };
+        const mesa = {
+          x: 840 + (indice % 4) * 20,
+          y: 540 + (indice % 2) * 12,
+        };
+        const progresso = (tempoRio / 8 + indice * 0.13) % 1;
+        return percorrerCaminho([posto, porta, mesa, porta, posto], progresso);
+      }
+
+      function desenharBanqueiro() {
+        if (
+          estado.quantidadeBanqueiros === 0 ||
+          estado.local !== "assentamento"
+        ) {
+          return;
+        }
+
+        for (
+          let indice = 0;
+          indice < estado.quantidadeBanqueiros;
+          indice += 1
+        ) {
+          const posicao = posicaoBanqueiro(indice);
+          desenharCirculo(posicao.x, posicao.y, 7, "#e0bd54", "#5a451c");
+        }
+      }
+
       function desenharFloresta() {
         contexto.fillStyle = "#405c35";
         contexto.fillRect(0, 0, larguraMundo, alturaMundo);
@@ -2447,6 +2622,7 @@
         desenharComerciante();
         desenharFerreiro();
         desenharMineiro();
+        desenharBanqueiro();
         desenharJogador();
         contexto.setTransform(1, 0, 0, 1, 0, 0);
 
@@ -2478,6 +2654,7 @@
         atualizarComerciante(delta);
         atualizarFerreiro(delta);
         atualizarMineiro(delta);
+        atualizarBanqueiro(delta);
         if (
           estado.local === "floresta" ||
           estado.quantidadeFazendeiros > 0 ||
@@ -2485,7 +2662,8 @@
           estado.quantidadePescadores > 0 ||
           estado.quantidadeComerciantes > 0 ||
           estado.quantidadeFerreiros > 0 ||
-          estado.quantidadeMineiros > 0
+          estado.quantidadeMineiros > 0 ||
+          estado.quantidadeBanqueiros > 0
         ) {
           tempoSalvamento += delta;
           if (tempoSalvamento >= 2) {
@@ -2511,6 +2689,7 @@
       contratarComercianteBotao.addEventListener("click", contratarComerciante);
       contratarFerreiroBotao.addEventListener("click", contratarFerreiro);
       contratarMineiroBotao.addEventListener("click", contratarMineiro);
+      contratarBanqueiroBotao.addEventListener("click", contratarBanqueiro);
       novoJogoBotao.addEventListener("click", iniciarNovoJogo);
       apagarBotao.addEventListener("click", apagarProgresso);
       window.addEventListener("resize", redimensionar);
