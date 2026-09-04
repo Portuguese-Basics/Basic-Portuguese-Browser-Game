@@ -353,8 +353,9 @@
           <h3 id="titulo-economia">Economia e combate</h3>
           <ul>
             <li>Inimigos rendem de 3 a 5 de ouro, conforme o perigo.</li>
-            <li>O fazendeiro produz 1 de ouro a cada 10 segundos.</li>
+            <li>Cada fazendeiro produz 1 de ouro a cada 10 segundos.</li>
             <li>Descansar custa 3 de ouro e recupera até 30 de vida.</li>
+            <li>Ao ser derrotado, você volta com vida completa e perde 15 de ouro.</li>
             <li>Cada ponto de ataque causa 1 de dano.</li>
             <li>Cada ponto de armadura reduz em 1 o dano recebido.</li>
           </ul>
@@ -397,10 +398,12 @@
       const larguraMundo = 1000;
       const alturaMundo = 700;
       const custoDescanso = 3;
+      const custoDerrota = 15;
       const custoFazendeiro = 100;
       const custoMelhoria = 100;
       const intervaloFazendeiro = 10;
       const vidaMaxima = 100;
+      const maximoFazendeiros = 10;
       const nivelMaximo = 5;
       const chaveSalvamento = "arqueiro-do-assentamento-v1";
       const versaoSalvamento = 1;
@@ -435,7 +438,7 @@
         brilhoGolpe: 0,
         salvamentoDisponivel: true,
         salvamentoAtivo: true,
-        fazendeiroContratado: false,
+        quantidadeFazendeiros: 0,
         tempoFazendeiro: 0,
       };
 
@@ -495,7 +498,7 @@
             velocidade: inimigo.velocidade,
           })),
           fazendeiro: {
-            contratado: estado.fazendeiroContratado,
+            quantidade: estado.quantidadeFazendeiros,
             tempo: estado.tempoFazendeiro,
           },
         };
@@ -528,7 +531,9 @@
           estado.vida = Math.round(
             numeroValido(salvo.vida, 0, vidaMaxima, vidaMaxima),
           );
-          estado.ouro = Math.floor(numeroValido(salvo.ouro, 0, 999999, 5));
+          estado.ouro = Math.floor(
+            numeroValido(salvo.ouro, -999999, 999999, 5),
+          );
           estado.ataque = Math.round(
             numeroValido(salvo.combate?.ataque, 1, nivelMaximo, 1),
           );
@@ -569,10 +574,15 @@
                 };
               })
             : [];
-          estado.fazendeiroContratado = Boolean(
-            salvo.fazendeiro?.contratado,
+          estado.quantidadeFazendeiros = Math.round(
+            numeroValido(
+              salvo.fazendeiro?.quantidade,
+              0,
+              maximoFazendeiros,
+              salvo.fazendeiro?.contratado ? 1 : 0,
+            ),
           );
-          estado.tempoFazendeiro = estado.fazendeiroContratado
+          estado.tempoFazendeiro = estado.quantidadeFazendeiros > 0
             ? numeroValido(
                 salvo.fazendeiro?.tempo,
                 0,
@@ -580,6 +590,13 @@
                 0,
               )
             : 0;
+
+          const derrotadoAoCarregar = estado.vida === 0;
+          if (derrotadoAoCarregar) {
+            estado.local = "assentamento";
+            estado.vida = vidaMaxima;
+            estado.ouro -= custoDerrota;
+          }
 
           if (estado.local === "assentamento") {
             estado.jogador.x = 500;
@@ -590,7 +607,14 @@
           }
 
           salvamentoEl.textContent = "Carregado";
-          definirMensagem("Progresso carregado automaticamente.");
+          if (derrotadoAoCarregar) {
+            definirMensagem(
+              "Você foi derrotado, voltou com vida completa e perdeu 15 de ouro.",
+            );
+            salvarProgresso();
+          } else {
+            definirMensagem("Progresso carregado automaticamente.");
+          }
           return true;
         } catch (erro) {
           try {
@@ -617,7 +641,7 @@
         estado.tempoReforco = 0;
         estado.alvoGolpeado = null;
         estado.brilhoGolpe = 0;
-        estado.fazendeiroContratado = false;
+        estado.quantidadeFazendeiros = 0;
         estado.tempoFazendeiro = 0;
       }
 
@@ -633,19 +657,20 @@
         abrirLojaBotao.disabled = !noAssentamento;
         contratarFazendeiroBotao.disabled =
           !noAssentamento ||
-          estado.fazendeiroContratado ||
+          estado.quantidadeFazendeiros >= maximoFazendeiros ||
           estado.ouro < custoFazendeiro;
-        contratarFazendeiroBotao.textContent = estado.fazendeiroContratado
-          ? "Fazendeiro contratado"
-          : "Contratar fazendeiro · 100 ouro";
-        fazendeiroStatusEl.textContent = estado.fazendeiroContratado
-          ? "Trabalhando · 1 ouro / 10 s"
+        contratarFazendeiroBotao.textContent =
+          estado.quantidadeFazendeiros >= maximoFazendeiros
+            ? "Máximo de fazendeiros"
+            : `Contratar fazendeiro ${estado.quantidadeFazendeiros + 1}/10 · 100 ouro`;
+        fazendeiroStatusEl.textContent = estado.quantidadeFazendeiros > 0
+          ? `${estado.quantidadeFazendeiros} / 10 · +${estado.quantidadeFazendeiros} ouro / 10 s`
           : "Não contratado";
         atualizarLoja();
         canvas.setAttribute(
           "aria-label",
           noAssentamento
-            ? "Mapa do assentamento. O arqueiro é o ponto verde."
+            ? `Mapa do assentamento com ${estado.quantidadeFazendeiros} fazendeiros. O arqueiro é o ponto verde.`
             : `Mapa da floresta com ${estado.inimigos.length} inimigos vermelhos. O arqueiro é o ponto verde.`,
         );
       }
@@ -727,14 +752,33 @@
         salvarProgresso();
       }
 
+      function sofrerDerrota() {
+        estado.local = "assentamento";
+        estado.vida = vidaMaxima;
+        estado.ouro -= custoDerrota;
+        estado.jogador.x = 500;
+        estado.jogador.y = 390;
+        estado.inimigos = [];
+        estado.tempoAtaque = 0;
+        estado.tempoReforco = 0;
+        estado.alvoGolpeado = null;
+        estado.brilhoGolpe = 0;
+        estado.salvamentoAtivo = true;
+        definirMensagem(
+          "Você foi derrotado, voltou com vida completa e perdeu 15 de ouro.",
+        );
+        atualizarInterface();
+        salvarProgresso();
+      }
+
       function contratarFazendeiro() {
         if (estado.local !== "assentamento") {
           definirMensagem("Volte ao assentamento para contratar um fazendeiro.");
           return;
         }
 
-        if (estado.fazendeiroContratado) {
-          definirMensagem("Você já contratou um fazendeiro.");
+        if (estado.quantidadeFazendeiros >= maximoFazendeiros) {
+          definirMensagem("Você já contratou o máximo de 10 fazendeiros.");
           return;
         }
 
@@ -744,11 +788,10 @@
         }
 
         estado.ouro -= custoFazendeiro;
-        estado.fazendeiroContratado = true;
-        estado.tempoFazendeiro = 0;
+        estado.quantidadeFazendeiros += 1;
         estado.salvamentoAtivo = true;
         definirMensagem(
-          "Fazendeiro contratado. Ele produzirá 1 de ouro a cada 10 segundos.",
+          `Fazendeiro ${estado.quantidadeFazendeiros} contratado. A produção agora é de ${estado.quantidadeFazendeiros} de ouro a cada 10 segundos.`,
         );
         atualizarInterface();
         salvarProgresso();
@@ -832,7 +875,7 @@
       }
 
       function atualizarFazendeiro(delta) {
-        if (!estado.fazendeiroContratado) return;
+        if (estado.quantidadeFazendeiros === 0) return;
 
         estado.tempoFazendeiro += delta;
         if (estado.tempoFazendeiro < intervaloFazendeiro) return;
@@ -841,10 +884,15 @@
           estado.tempoFazendeiro / intervaloFazendeiro,
         );
         estado.tempoFazendeiro %= intervaloFazendeiro;
-        estado.ouro += pagamentos;
+        const ouroProduzido = pagamentos * estado.quantidadeFazendeiros;
+        estado.ouro += ouroProduzido;
         if (estado.local === "assentamento") {
+          const trabalhadores =
+            estado.quantidadeFazendeiros === 1
+              ? "O fazendeiro voltou"
+              : "Os fazendeiros voltaram";
           definirMensagem(
-            `O fazendeiro voltou com ${pagamentos} de ouro da colheita.`,
+            `${trabalhadores} com ${ouroProduzido} de ouro da colheita.`,
           );
         }
         atualizarInterface();
@@ -968,7 +1016,8 @@
         }
 
         if (estado.vida === 0) {
-          definirMensagem("Você está sem forças. Volte ao assentamento para descansar.");
+          sofrerDerrota();
+          return;
         }
 
         atualizarInterface();
@@ -998,16 +1047,29 @@
           desenharCirculo(x, y, 3, "#9f9165");
         }
 
-        if (estado.fazendeiroContratado) {
+        const plantacoes = [];
+        if (estado.quantidadeFazendeiros > 0) {
+          plantacoes.push({ x: 210, y: 575, largura: 220, altura: 92 });
+        }
+        if (estado.quantidadeFazendeiros > 5) {
+          plantacoes.push({ x: 570, y: 575, largura: 220, altura: 92 });
+        }
+
+        for (const plantacao of plantacoes) {
           contexto.fillStyle = "#76502f";
-          contexto.fillRect(390, 575, 220, 92);
+          contexto.fillRect(
+            plantacao.x,
+            plantacao.y,
+            plantacao.largura,
+            plantacao.altura,
+          );
           contexto.strokeStyle = "#9c7b43";
-          contexto.lineWidth = 5;
-          for (let linha = 0; linha < 4; linha += 1) {
-            const y = 590 + linha * 20;
+          contexto.lineWidth = 4;
+          for (let linha = 0; linha < 5; linha += 1) {
+            const y = plantacao.y + 14 + linha * 16;
             contexto.beginPath();
-            contexto.moveTo(405, y);
-            contexto.lineTo(595, y);
+            contexto.moveTo(plantacao.x + 14, y);
+            contexto.lineTo(plantacao.x + plantacao.largura - 14, y);
             contexto.stroke();
           }
         }
@@ -1071,29 +1133,58 @@
         );
       }
 
-      function posicaoFazendeiro() {
-        const progresso = estado.tempoFazendeiro / intervaloFazendeiro;
-        const casa = { x: 610, y: 425 };
+      function posicaoFazendeiro(indice) {
+        const progresso =
+          ((estado.tempoFazendeiro + indice * 1.37) % intervaloFazendeiro) /
+          intervaloFazendeiro;
+        const segundoCampo = indice >= 5;
+        const vaga = indice % 5;
+        const casas = [
+          { x: 390, y: 275 },
+          { x: 595, y: 275 },
+          { x: 400, y: 425 },
+          { x: 610, y: 425 },
+          { x: 500, y: 350 },
+        ];
+        const casaBase = casas[vaga];
+        const casa = {
+          x: casaBase.x + (segundoCampo ? 8 : -8),
+          y: casaBase.y + (segundoCampo ? 8 : -8),
+        };
         const portao = { x: 500, y: 548 };
-        const entradaPlantacao = { x: 420, y: 590 };
-        const fimPlantacao = { x: 420, y: 650 };
+        const yPlantacao = 589 + vaga * 16;
+        const entradaPlantacao = {
+          x: segundoCampo ? 585 : 415,
+          y: yPlantacao,
+        };
+        const fimPlantacao = {
+          x: segundoCampo ? 775 : 225,
+          y: yPlantacao,
+        };
+        const bifurcacao = {
+          x: segundoCampo ? 555 : 445,
+          y: 562,
+        };
         const ida = [
           casa,
-          { x: 575, y: 485 },
+          { x: 500, y: 480 },
           portao,
+          bifurcacao,
           entradaPlantacao,
         ];
         const trabalho = [
           entradaPlantacao,
-          { x: 580, y: 590 },
-          { x: 580, y: 610 },
-          { x: 420, y: 610 },
-          { x: 420, y: 630 },
-          { x: 580, y: 630 },
-          { x: 580, y: 650 },
+          fimPlantacao,
+          entradaPlantacao,
           fimPlantacao,
         ];
-        const volta = [fimPlantacao, portao, { x: 575, y: 485 }, casa];
+        const volta = [
+          fimPlantacao,
+          bifurcacao,
+          portao,
+          { x: 500, y: 480 },
+          casa,
+        ];
 
         if (progresso < 0.22) {
           return percorrerCaminho(ida, progresso / 0.22);
@@ -1107,11 +1198,22 @@
       }
 
       function desenharFazendeiro() {
-        if (!estado.fazendeiroContratado || estado.local !== "assentamento") {
+        if (
+          estado.quantidadeFazendeiros === 0 ||
+          estado.local !== "assentamento"
+        ) {
           return;
         }
-        const posicao = posicaoFazendeiro();
-        desenharCirculo(posicao.x, posicao.y, 10, "#4da3ff", "#183b67");
+
+        for (
+          let indice = 0;
+          indice < estado.quantidadeFazendeiros;
+          indice += 1
+        ) {
+          const posicao = posicaoFazendeiro(indice);
+          const cor = indice < 5 ? "#4da3ff" : "#79b8ff";
+          desenharCirculo(posicao.x, posicao.y, 8, cor, "#183b67");
+        }
       }
 
       function desenharFloresta() {
@@ -1208,7 +1310,10 @@
           atualizarCacada(delta);
         }
         atualizarFazendeiro(delta);
-        if (estado.local === "floresta" || estado.fazendeiroContratado) {
+        if (
+          estado.local === "floresta" ||
+          estado.quantidadeFazendeiros > 0
+        ) {
           tempoSalvamento += delta;
           if (tempoSalvamento >= 2) {
             tempoSalvamento = 0;
