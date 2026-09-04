@@ -717,6 +717,8 @@
             <li>A cidade protege uma reserva de pelo menos 2.500 de ouro ou cinco ciclos de despesas essenciais. Obras não urgentes esperam até que custo e reserva estejam cobertos.</li>
             <li>A colônia começa sem estradas. O movimento dos moradores marca trilhas; os trechos mais usados entram primeiro na fila automática de obras.</li>
             <li>Cada um dos 8 trechos pode virar estrada básica de terra por 120, receber reforço de madeira por 220 + 12 madeiras e, depois, reforço de pedra por 360 + 18 pedras.</li>
+            <li>Todos os eixos e ramais são ortogonais, contornam as áreas edificáveis e deixam lotes retangulares livres para construções futuras.</li>
+            <li>Moradores, estudantes, construtores e guardas calculam o trajeto mais rápido pela rede; só usam acessos curtos entre a rua e a porta ou área de trabalho.</li>
             <li>As estradas aceleram o deslocamento, a produção e as construções. As melhorias só avançam quando o orçamento permanece positivo, a reserva está protegida e os materiais existem.</li>
             <li>Melhorias públicas automáticas: poço e cisterna por 600; saneamento por 1.200; quatro postos da guarda por 300 cada. Todas acrescentam manutenção recorrente.</li>
             <li>Poço e saneamento reduzem a pressão sobre a saúde; os postos acrescentam segurança civil. Moradia, comida, escola e clínica continuam sendo prioridades de emergência.</li>
@@ -950,6 +952,8 @@
               <li>Reforço de madeira <span id="registro-estradas-madeira">0 / 8</span></li>
               <li>Reforço de pedra <span id="registro-estradas-pedra">0 / 8</span></li>
               <li>Próximo trecho pela demanda <span id="registro-estradas-proxima">Aguardando movimento</span></li>
+              <li>Geometria da rede <span id="registro-estradas-geometria">100% ortogonal</span></li>
+              <li>Escolha de trajeto <span id="registro-estradas-rotas">Menor tempo calculado</span></li>
               <li>Eficiência produtiva <span id="registro-estradas-producao">+0%</span></li>
               <li>Velocidade de deslocamento <span id="registro-estradas-movimento">+0%</span></li>
               <li>Velocidade de construção <span id="registro-estradas-construcao">+0%</span></li>
@@ -1526,6 +1530,8 @@
           "estradas-madeira",
           "estradas-pedra",
           "estradas-proxima",
+          "estradas-geometria",
+          "estradas-rotas",
           "estradas-producao",
           "estradas-movimento",
           "estradas-construcao",
@@ -1898,83 +1904,178 @@
       };
       const areaCisternaColonia = {
         x: 9540,
-        y: 4040,
+        y: 3600,
         largura: 360,
         altura: 300,
       };
       const trechosEstradaColonia = [
         {
           id: "centro",
-          nome: "eixo central",
+          nome: "eixo central e ronda interna",
           pontos: [
+            { x: 4000, y: yEstradaCampoColonia },
             { x: 5000, y: yEstradaCampoColonia },
+            { x: 6700, y: yEstradaCampoColonia },
             { x: 6800, y: yEstradaCampoColonia },
+            { x: 8500, y: yEstradaCampoColonia },
             { x: 10300, y: yEstradaCampoColonia },
+            { x: 11200, y: yEstradaCampoColonia },
+            { x: 12400, y: yEstradaCampoColonia },
+          ],
+          ramais: [
+            [
+              { x: 6900, y: 2800 },
+              { x: 10200, y: 2800 },
+              { x: 10200, y: 4150 },
+              { x: 10200, y: 6200 },
+              { x: 6900, y: 6200 },
+              { x: 6900, y: 4150 },
+              { x: 6900, y: 2800 },
+            ],
           ],
         },
         {
           id: "moradias",
-          nome: "acesso às moradias",
+          nome: "rua das moradias",
           pontos: [
-            { x: 6050, y: yEstradaCampoColonia },
-            { x: 6050, y: 5350 },
-            { x: 6050, y: 6550 },
+            { x: 6700, y: 2050 },
+            { x: 6700, y: 2700 },
+            { x: 6700, y: yEstradaCampoColonia },
+            { x: 6700, y: 5400 },
+            { x: 6700, y: 6700 },
+            { x: 6700, y: 7000 },
+          ],
+          ramais: [
+            [
+              { x: 5100, y: 5400 },
+              { x: 6700, y: 5400 },
+            ],
+            [
+              { x: 5100, y: 6700 },
+              { x: 6700, y: 6700 },
+            ],
+          ],
+          acessos: [
+            [{ x: 5350, y: 5850 }, { x: 6700, y: 5850 }],
+            [{ x: 5350, y: 6015 }, { x: 6700, y: 6015 }],
+            [{ x: 5350, y: 6180 }, { x: 6700, y: 6180 }],
+            [{ x: 5350, y: 6345 }, { x: 6700, y: 6345 }],
+            [{ x: 5350, y: 6515 }, { x: 6700, y: 6515 }],
           ],
         },
         {
           id: "campos",
-          nome: "rota dos campos",
+          nome: "estradas agrícolas",
           pontos: [
-            { x: 3900, y: yEstradaCampoColonia },
-            { x: 5000, y: yEstradaCampoColonia },
+            { x: 4000, y: 2200 },
+            { x: 4000, y: 2700 },
+            { x: 4000, y: 3900 },
+            { x: 4000, y: yEstradaCampoColonia },
+            { x: 4000, y: 4400 },
+            { x: 4000, y: 5600 },
+          ],
+          ramais: [
+            [
+              { x: 400, y: 2700 },
+              { x: 1600, y: 2700 },
+              { x: 2800, y: 2700 },
+              { x: 4000, y: 2700 },
+            ],
+            [
+              { x: 400, y: 5600 },
+              { x: 2200, y: 5600 },
+              { x: 4000, y: 5600 },
+            ],
           ],
         },
         {
           id: "floresta",
-          nome: "rota da floresta",
+          nome: "estradas florestais",
           pontos: [
             { x: 5000, y: yEstradaCampoColonia },
             { x: 4300, y: yEstradaCampoColonia },
             { x: 4300, y: 2200 },
-            { x: 3000, y: 1800 },
+            { x: 4000, y: 2200 },
+            { x: 3000, y: 2200 },
+            { x: 1500, y: 2200 },
+            { x: 350, y: 2200 },
+          ],
+          ramais: [
+            [
+              { x: 350, y: 1150 },
+              { x: 2000, y: 1150 },
+              { x: 3950, y: 1150 },
+              { x: 3950, y: 2200 },
+            ],
           ],
         },
         {
           id: "recursos",
-          nome: "rota das minas",
+          nome: "estrada das minas e da pedreira",
           pontos: [
             { x: 5000, y: yEstradaCampoColonia },
-            { x: 4500, y: 5600 },
-            { x: 4200, y: 6800 },
+            { x: 4400, y: yEstradaCampoColonia },
+            { x: 4400, y: 5600 },
+            { x: 4400, y: 6200 },
+            { x: 4400, y: 7200 },
+            { x: 350, y: 7200 },
+          ],
+          ramais: [
+            [
+              { x: 4400, y: 6200 },
+              { x: 5000, y: 6200 },
+            ],
           ],
         },
         {
           id: "costa",
-          nome: "eixo costeiro",
+          nome: "avenida costeira",
           pontos: [
-            { x: 10300, y: yEstradaCampoColonia },
-            { x: 12400, y: yEstradaCampoColonia },
+            { x: 11300, y: 2500 },
+            { x: 11300, y: 3400 },
+            { x: 11300, y: yEstradaCampoColonia },
+            { x: 11300, y: 4650 },
+            { x: 11300, y: 6200 },
+            { x: 11300, y: 7200 },
           ],
         },
         {
           id: "caisNorte",
-          nome: "acesso aos cais de pesca",
+          nome: "acesso ortogonal aos cais de pesca",
           pontos: [
-            { x: 12400, y: yEstradaCampoColonia },
-            { x: 12400, y: 3150 },
+            { x: 11300, y: yEstradaCampoColonia },
+            { x: 11300, y: 3400 },
+            { x: 12400, y: 3400 },
+            { x: 12720, y: 3400 },
             { x: 12720, y: 2500 },
+          ],
+          ramais: [
+            [
+              { x: 11300, y: 2500 },
+              { x: 12400, y: 2500 },
+              { x: 12720, y: 2500 },
+            ],
           ],
         },
         {
           id: "caisSul",
-          nome: "acesso ao cais comercial",
+          nome: "acesso ortogonal ao porto sul",
           pontos: [
-            { x: 12400, y: yEstradaCampoColonia },
-            { x: 12400, y: 5600 },
+            { x: 11300, y: yEstradaCampoColonia },
+            { x: 11300, y: 6200 },
+            { x: 12400, y: 6200 },
             { x: 12400, y: 6900 },
+          ],
+          ramais: [
+            [
+              { x: 11300, y: 4650 },
+              { x: 12400, y: 4650 },
+              { x: 12400, y: 6200 },
+            ],
           ],
         },
       ];
+      const cacheRotasEstradaColonia = new Map();
       const quantidadeColonosExpansao = 20;
       const versaoColonia = 5;
       const ouroInicialAdministrador = 2500;
@@ -6271,6 +6372,10 @@
         registrosEls["estradas-proxima"].textContent = proximoTrechoEstrada
           ? `${proximoTrechoEstrada.trecho.nome} · ${nomeNivelEstradaColonia(proximoTrechoEstrada.nivelAlvo)} · tráfego ${proximoTrechoEstrada.trafego}`
           : "Aguardando tráfego ou materiais";
+        registrosEls["estradas-geometria"].textContent =
+          "100% ortogonal · lotes preservados";
+        registrosEls["estradas-rotas"].textContent =
+          "Menor tempo · acesso curto à porta";
         registrosEls["estradas-producao"].textContent =
           `+${bonusProducaoEstradas}%`;
         registrosEls["estradas-movimento"].textContent =
@@ -9275,7 +9380,341 @@
         };
       }
 
-      function posicaoRotinaRuralColonia(vaga, tipo) {
+      function caminhosTrechoEstradaColonia(trecho) {
+        return [
+          trecho.pontos,
+          ...(trecho.ramais || []),
+          ...(trecho.acessos || []),
+        ];
+      }
+
+      function chavePontoEstradaColonia(ponto) {
+        return `${Math.round(ponto.x * 100) / 100},${Math.round(ponto.y * 100) / 100}`;
+      }
+
+      function distanciaManhattanColonia(inicio, fim) {
+        return Math.abs(fim.x - inicio.x) + Math.abs(fim.y - inicio.y);
+      }
+
+      function simplificarCaminhoOrtogonalColonia(pontos) {
+        const unicos = pontos.filter((ponto, indice) => {
+          if (indice === 0) return true;
+          return chavePontoEstradaColonia(ponto) !==
+            chavePontoEstradaColonia(pontos[indice - 1]);
+        });
+        const resultado = [];
+        unicos.forEach((ponto) => {
+          const penultimo = resultado[resultado.length - 2];
+          const ultimo = resultado[resultado.length - 1];
+          if (
+            penultimo &&
+            ultimo &&
+            ((penultimo.x === ultimo.x && ultimo.x === ponto.x) ||
+              (penultimo.y === ultimo.y && ultimo.y === ponto.y))
+          ) {
+            resultado[resultado.length - 1] = ponto;
+          } else {
+            resultado.push(ponto);
+          }
+        });
+        return resultado;
+      }
+
+      function pontoProjetadoNaArestaColonia(ponto, aresta) {
+        if (aresta.inicio.x === aresta.fim.x) {
+          return {
+            x: aresta.inicio.x,
+            y: Math.max(
+              Math.min(aresta.inicio.y, aresta.fim.y),
+              Math.min(Math.max(aresta.inicio.y, aresta.fim.y), ponto.y),
+            ),
+          };
+        }
+        return {
+          x: Math.max(
+            Math.min(aresta.inicio.x, aresta.fim.x),
+            Math.min(Math.max(aresta.inicio.x, aresta.fim.x), ponto.x),
+          ),
+          y: aresta.inicio.y,
+        };
+      }
+
+      function intersecoesArestasEstradaColonia(primeira, segunda) {
+        const verticalA = primeira.inicio.x === primeira.fim.x;
+        const verticalB = segunda.inicio.x === segunda.fim.x;
+        const entre = (valor, inicio, fim) =>
+          valor >= Math.min(inicio, fim) && valor <= Math.max(inicio, fim);
+        if (verticalA !== verticalB) {
+          const vertical = verticalA ? primeira : segunda;
+          const horizontal = verticalA ? segunda : primeira;
+          if (
+            entre(vertical.inicio.x, horizontal.inicio.x, horizontal.fim.x) &&
+            entre(horizontal.inicio.y, vertical.inicio.y, vertical.fim.y)
+          ) {
+            return [{ x: vertical.inicio.x, y: horizontal.inicio.y }];
+          }
+          return [];
+        }
+        if (
+          (verticalA && primeira.inicio.x !== segunda.inicio.x) ||
+          (!verticalA && primeira.inicio.y !== segunda.inicio.y)
+        ) {
+          return [];
+        }
+        const candidatos = [
+          primeira.inicio,
+          primeira.fim,
+          segunda.inicio,
+          segunda.fim,
+        ];
+        return candidatos.filter((ponto) =>
+          verticalA
+            ? entre(ponto.y, primeira.inicio.y, primeira.fim.y) &&
+              entre(ponto.y, segunda.inicio.y, segunda.fim.y)
+            : entre(ponto.x, primeira.inicio.x, primeira.fim.x) &&
+              entre(ponto.x, segunda.inicio.x, segunda.fim.x),
+        );
+      }
+
+      function arestasRedeViariaColonia() {
+        const arestas = [];
+        trechosEstradaColonia.forEach((trecho, indiceTrecho) => {
+          caminhosTrechoEstradaColonia(trecho).forEach((caminho) => {
+            for (let indice = 0; indice < caminho.length - 1; indice += 1) {
+              const inicio = caminho[indice];
+              const fim = caminho[indice + 1];
+              if (inicio.x !== fim.x && inicio.y !== fim.y) continue;
+              arestas.push({ inicio, fim, indiceTrecho });
+            }
+          });
+        });
+        return arestas;
+      }
+
+      function velocidadeTrechoEstradaColonia(indiceTrecho) {
+        const nivel = estado.niveisEstradasColonia[indiceTrecho] || 0;
+        return [1, 1.22, 1.46, 1.72][nivel];
+      }
+
+      function rotaMaisRapidaColonia(origem, destino) {
+        if (chavePontoEstradaColonia(origem) === chavePontoEstradaColonia(destino)) {
+          return {
+            pontos: [{ ...origem }, { ...destino }],
+            trechos: [],
+            distanciaForaRede: 0,
+          };
+        }
+        const chaveCache = [
+          estado.niveisEstradasColonia.join(""),
+          chavePontoEstradaColonia(origem),
+          chavePontoEstradaColonia(destino),
+        ].join("|");
+        const rotaEmCache = cacheRotasEstradaColonia.get(chaveCache);
+        if (rotaEmCache) return rotaEmCache;
+
+        const arestas = arestasRedeViariaColonia();
+        const divisores = arestas.map((aresta) => [aresta.inicio, aresta.fim]);
+        for (let a = 0; a < arestas.length; a += 1) {
+          for (let b = a + 1; b < arestas.length; b += 1) {
+            intersecoesArestasEstradaColonia(arestas[a], arestas[b]).forEach(
+              (ponto) => {
+                divisores[a].push(ponto);
+                divisores[b].push(ponto);
+              },
+            );
+          }
+        }
+
+        const acessosOrigem = [];
+        const acessosDestino = [];
+        arestas.forEach((aresta, indice) => {
+          const acessoOrigem = pontoProjetadoNaArestaColonia(origem, aresta);
+          const acessoDestino = pontoProjetadoNaArestaColonia(destino, aresta);
+          divisores[indice].push(acessoOrigem, acessoDestino);
+          acessosOrigem.push(acessoOrigem);
+          acessosDestino.push(acessoDestino);
+        });
+
+        const pontosPorChave = new Map();
+        const vizinhos = new Map();
+        const adicionarPonto = (ponto) => {
+          const chave = chavePontoEstradaColonia(ponto);
+          if (!pontosPorChave.has(chave)) pontosPorChave.set(chave, { ...ponto });
+          if (!vizinhos.has(chave)) vizinhos.set(chave, []);
+          return chave;
+        };
+        const adicionarLigacao = (inicio, fim, indiceTrecho) => {
+          const chaveInicio = adicionarPonto(inicio);
+          const chaveFim = adicionarPonto(fim);
+          if (chaveInicio === chaveFim) return;
+          const distancia = distanciaManhattanColonia(inicio, fim);
+          const custo = distancia / velocidadeTrechoEstradaColonia(indiceTrecho);
+          vizinhos.get(chaveInicio).push({ chave: chaveFim, custo, indiceTrecho });
+          vizinhos.get(chaveFim).push({ chave: chaveInicio, custo, indiceTrecho });
+        };
+
+        arestas.forEach((aresta, indiceAresta) => {
+          const vertical = aresta.inicio.x === aresta.fim.x;
+          const unicos = Array.from(
+            new Map(
+              divisores[indiceAresta].map((ponto) => [
+                chavePontoEstradaColonia(ponto),
+                ponto,
+              ]),
+            ).values(),
+          ).sort((a, b) => (vertical ? a.y - b.y : a.x - b.x));
+          for (let indice = 0; indice < unicos.length - 1; indice += 1) {
+            adicionarLigacao(
+              unicos[indice],
+              unicos[indice + 1],
+              aresta.indiceTrecho,
+            );
+          }
+        });
+
+        const velocidadeForaRede = 0.38;
+        const distancias = new Map();
+        const anteriores = new Map();
+        const abertos = new Set();
+        const chavesOrigem = new Set(
+          acessosOrigem.map((ponto) => chavePontoEstradaColonia(ponto)),
+        );
+        chavesOrigem.forEach((chave) => {
+          const ponto = pontosPorChave.get(chave);
+          const distancia = distanciaManhattanColonia(origem, ponto);
+          const atual = distancias.get(chave);
+          const custo = distancia / velocidadeForaRede;
+          if (atual === undefined || custo < atual) {
+            distancias.set(chave, custo);
+            anteriores.set(chave, null);
+          }
+          abertos.add(chave);
+        });
+
+        while (abertos.size > 0) {
+          let atual = null;
+          let menor = Infinity;
+          abertos.forEach((chave) => {
+            const distancia = distancias.get(chave) ?? Infinity;
+            if (distancia < menor) {
+              menor = distancia;
+              atual = chave;
+            }
+          });
+          abertos.delete(atual);
+          (vizinhos.get(atual) || []).forEach((vizinho) => {
+            const alternativa = menor + vizinho.custo;
+            if (alternativa < (distancias.get(vizinho.chave) ?? Infinity)) {
+              distancias.set(vizinho.chave, alternativa);
+              anteriores.set(vizinho.chave, {
+                chave: atual,
+                indiceTrecho: vizinho.indiceTrecho,
+              });
+              abertos.add(vizinho.chave);
+            }
+          });
+        }
+
+        let melhorDestino = null;
+        let melhorCusto = Infinity;
+        Array.from(
+          new Set(acessosDestino.map((ponto) => chavePontoEstradaColonia(ponto))),
+        ).forEach((chave) => {
+          const ponto = pontosPorChave.get(chave);
+          const custo =
+            (distancias.get(chave) ?? Infinity) +
+            distanciaManhattanColonia(ponto, destino) / velocidadeForaRede;
+          if (custo < melhorCusto) {
+            melhorCusto = custo;
+            melhorDestino = chave;
+          }
+        });
+
+        if (!melhorDestino || !Number.isFinite(melhorCusto)) {
+          const rotaAlternativa = {
+            pontos: simplificarCaminhoOrtogonalColonia([
+              origem,
+              { x: destino.x, y: origem.y },
+              destino,
+            ]),
+            trechos: [],
+            distanciaForaRede: distanciaManhattanColonia(origem, destino),
+          };
+          cacheRotasEstradaColonia.set(chaveCache, rotaAlternativa);
+          return rotaAlternativa;
+        }
+
+        const chavesCaminho = [];
+        const trechos = [];
+        let chaveAtual = melhorDestino;
+        while (chaveAtual) {
+          chavesCaminho.push(chaveAtual);
+          const anterior = anteriores.get(chaveAtual);
+          if (anterior) trechos.push(anterior.indiceTrecho);
+          chaveAtual = anterior?.chave || null;
+        }
+        chavesCaminho.reverse();
+        trechos.reverse();
+        const pontosRede = chavesCaminho.map((chave) => pontosPorChave.get(chave));
+        const primeiroAcesso = pontosRede[0];
+        const ultimoAcesso = pontosRede[pontosRede.length - 1];
+        const pontos = [origem];
+        if (origem.x !== primeiroAcesso.x && origem.y !== primeiroAcesso.y) {
+          pontos.push({ x: primeiroAcesso.x, y: origem.y });
+        }
+        pontos.push(...pontosRede);
+        if (destino.x !== ultimoAcesso.x && destino.y !== ultimoAcesso.y) {
+          pontos.push({ x: ultimoAcesso.x, y: destino.y });
+        }
+        pontos.push(destino);
+        const rotaCalculada = {
+          pontos: simplificarCaminhoOrtogonalColonia(pontos),
+          trechos: Array.from(new Set(trechos)),
+          distanciaForaRede:
+            distanciaManhattanColonia(origem, primeiroAcesso) +
+            distanciaManhattanColonia(ultimoAcesso, destino),
+          custo: melhorCusto,
+        };
+        if (cacheRotasEstradaColonia.size > 600) {
+          cacheRotasEstradaColonia.clear();
+        }
+        cacheRotasEstradaColonia.set(chaveCache, rotaCalculada);
+        return rotaCalculada;
+      }
+
+      function acessoCasaColonia(indiceMorador) {
+        const casa = posicaoCasaColonia(
+          Math.floor(indiceMorador / capacidadeCasaColonia),
+        );
+        return { x: casa.x + 65, y: casa.y + 105 };
+      }
+
+      function posicaoRotinaComTrajetoColonia(
+        origem,
+        destino,
+        progresso,
+        atividade = [],
+      ) {
+        const rota = rotaMaisRapidaColonia(origem, destino).pontos;
+        if (progresso < 0.36) {
+          return percorrerCaminhoPorDistancia(rota, progresso / 0.36);
+        }
+        if (progresso < 0.64) {
+          const caminhoTrabalho = atividade.length > 1
+            ? atividade
+            : [destino, destino];
+          return percorrerCaminhoPorDistancia(
+            caminhoTrabalho,
+            (progresso - 0.36) / 0.28,
+          );
+        }
+        return percorrerCaminhoPorDistancia(
+          [...rota].reverse(),
+          (progresso - 0.64) / 0.36,
+        );
+      }
+
+      function posicaoRotinaRuralColonia(vaga, tipo, indiceMorador = vaga) {
         const areas = {
           lavoura: areaLavoura,
           horta: areaHorta,
@@ -9283,16 +9722,9 @@
           pastagem: areaPastagem,
         };
         const area = areas[tipo];
-        const casa = posicaoCasaColonia(vaga);
-        const centroCasa = { x: casa.x + 65, y: casa.y + 55 };
-        const yEstrada = yEstradaCampoColonia;
-        const portao = { x: recintoExterno.x, y: yEstrada };
-        const estradaExterior = {
-          x: areaPastagem.x + areaPastagem.largura + 80,
-          y: yEstrada,
-        };
+        const centroCasa = acessoCasaColonia(indiceMorador);
         const entrada = {
-          x: area.x + area.largura - 90,
+          x: area.x + area.largura,
           y: area.y + 110 + (vaga % 5) * 160,
         };
         const trabalho = {
@@ -9312,26 +9744,21 @@
           tempoRio * multiplicadorMovimentoEstradasColonia();
         const progresso =
           ((tempoLogistico + vaga * 2.4 + deslocamentos[tipo]) % 32) / 32;
-        return percorrerCaminho(
-          [
-            centroCasa,
-            { x: recintoExterno.x + 190, y: yEstrada },
-            portao,
-            estradaExterior,
-            entrada,
-            trabalho,
-            entrada,
-            trabalho,
-            entrada,
-            estradaExterior,
-            portao,
-            centroCasa,
-          ],
+        return posicaoRotinaComTrajetoColonia(
+          centroCasa,
+          entrada,
           progresso,
+          [
+            entrada,
+            { x: trabalho.x, y: entrada.y },
+            trabalho,
+            { x: entrada.x, y: trabalho.y },
+            entrada,
+          ],
         );
       }
 
-      function posicaoRotinaFlorestalColonia(vaga, tipo) {
+      function posicaoRotinaFlorestalColonia(vaga, tipo, indiceMorador = vaga) {
         let area;
         if (tipo === "lenhador") {
           area = areasCabanasLenhadores[
@@ -9344,13 +9771,10 @@
         } else {
           area = areaCabanaReflorestamento;
         }
-        const casa = posicaoCasaColonia(vaga);
-        const centroCasa = { x: casa.x + 65, y: casa.y + 55 };
-        const portao = { x: recintoExterno.x, y: yEstradaCampoColonia };
-        const trilhaNorte = { x: 4300, y: 2200 };
+        const centroCasa = acessoCasaColonia(indiceMorador);
         const cabana = {
           x: area.x + area.largura / 2,
-          y: area.y + area.altura / 2,
+          y: area.y + area.altura,
         };
         const trabalho = {
           x: Math.max(
@@ -9371,22 +9795,143 @@
           tempoRio * multiplicadorMovimentoEstradasColonia();
         const progresso =
           ((tempoLogistico + vaga * 2.1 + deslocamento) % 36) / 36;
-        return percorrerCaminho(
-          [
-            centroCasa,
-            portao,
-            { x: 4300, y: yEstradaCampoColonia },
-            trilhaNorte,
-            cabana,
-            trabalho,
-            cabana,
-            trabalho,
-            cabana,
-            trilhaNorte,
-            portao,
-            centroCasa,
-          ],
+        return posicaoRotinaComTrajetoColonia(
+          centroCasa,
+          cabana,
           progresso,
+          [
+            cabana,
+            { x: trabalho.x, y: cabana.y },
+            trabalho,
+            { x: cabana.x, y: trabalho.y },
+            cabana,
+          ],
+        );
+      }
+
+      function destinoEmpregoColonia(tipo, vaga) {
+        const destinos = {
+          administracao: {
+            x: areaAdministracao.x + areaAdministracao.largura / 2,
+            y: areaAdministracao.y,
+          },
+          migracao: {
+            x: areaAdministracao.x + areaAdministracao.largura,
+            y: areaAdministracao.y + areaAdministracao.altura / 2,
+          },
+          professor: {
+            x: areaEscolaColonia.x + areaEscolaColonia.largura,
+            y: areaEscolaColonia.y + areaEscolaColonia.altura / 2,
+          },
+          celeiro: {
+            x: areaCeleiro.x + areaCeleiro.largura / 2,
+            y: areaCeleiro.y,
+          },
+          moinho: {
+            x: areaMoinhoColonia.x + areaMoinhoColonia.largura / 2,
+            y: areaMoinhoColonia.y + areaMoinhoColonia.altura,
+          },
+          padaria: {
+            x: areaPadariaColonia.x + areaPadariaColonia.largura / 2,
+            y: areaPadariaColonia.y,
+          },
+          clinica: {
+            x: areaClinicaColonia.x,
+            y: areaClinicaColonia.y,
+          },
+          armeiroMadeira: {
+            x:
+              areaOficinaArmasMadeira.x +
+              areaOficinaArmasMadeira.largura / 2,
+            y:
+              areaOficinaArmasMadeira.y +
+              areaOficinaArmasMadeira.altura,
+          },
+          flecheiro: {
+            x: areaFlecharia.x + areaFlecharia.largura / 2,
+            y: areaFlecharia.y + areaFlecharia.altura,
+          },
+          mina: {
+            x: areaMinaColonia.x + areaMinaColonia.largura / 2,
+            y: areaMinaColonia.y + areaMinaColonia.altura,
+          },
+          pedreira: {
+            x: areaPedreiraColonia.x + areaPedreiraColonia.largura / 2,
+            y: areaPedreiraColonia.y + areaPedreiraColonia.altura,
+          },
+          comercio: {
+            x: areaCaisComercialColonia.x,
+            y: areaCaisComercialColonia.y + areaCaisComercialColonia.altura / 2,
+          },
+          estaleiro: {
+            x: 12400,
+            y: areaEstaleiroColonia.y,
+          },
+          ferraria: {
+            x: areaFerrariaColonia.x + areaFerrariaColonia.largura / 2,
+            y: areaFerrariaColonia.y + areaFerrariaColonia.altura,
+          },
+          forja: {
+            x: areaForjaColonia.x + areaForjaColonia.largura / 2,
+            y: areaForjaColonia.y,
+          },
+        };
+        if (tipo === "pesca") {
+          const segundoCais = vaga >= trabalhadoresPorCaisPesca;
+          const area = segundoCais
+            ? areaSegundoCaisPescaColonia
+            : areaCaisPescaColonia;
+          return {
+            x: area.x,
+            y: area.y + area.altura / 2,
+          };
+        }
+        if (tipo === "geral" && estado.obraAutomaticaColonia) {
+          return centroObraColonia(estado.obraAutomaticaColonia);
+        }
+        return destinos[tipo] || null;
+      }
+
+      function posicaoRotinaUrbanaColonia(indiceMorador, tipo, vaga) {
+        const origem = acessoCasaColonia(indiceMorador);
+        const destino = destinoEmpregoColonia(tipo, vaga);
+        if (!destino) return origem;
+        const deslocamento =
+          [
+            "administracao",
+            "professor",
+            "migracao",
+            "celeiro",
+            "pesca",
+            "estaleiro",
+            "moinho",
+            "padaria",
+            "clinica",
+            "armeiroMadeira",
+            "flecheiro",
+            "mina",
+            "pedreira",
+            "comercio",
+            "ferraria",
+            "forja",
+            "geral",
+          ].indexOf(tipo) * 1.7;
+        const tempoLogistico =
+          tempoRio * multiplicadorMovimentoEstradasColonia();
+        const progresso =
+          ((tempoLogistico + indiceMorador * 1.13 + deslocamento) % 44) / 44;
+        const amplitude = tipo === "geral" ? 36 : 22;
+        return posicaoRotinaComTrajetoColonia(
+          origem,
+          destino,
+          progresso,
+          [
+            destino,
+            { x: destino.x + amplitude, y: destino.y },
+            { x: destino.x + amplitude, y: destino.y + amplitude },
+            { x: destino.x, y: destino.y + amplitude },
+            destino,
+          ],
         );
       }
 
@@ -9652,73 +10197,27 @@
           const progresso = limitarProgresso(
             progressoEtapaColonia(1) * 1.35 - indice * 0.018,
           );
-          posicao = interpolarPonto(desembarque, administracao, progresso);
+          posicao = percorrerCaminhoPorDistancia(
+            rotaMaisRapidaColonia(desembarque, administracao).pontos,
+            progresso,
+          );
         } else if (estado.etapaConstrucaoColonia === 2) {
           posicao = administracao;
         } else if (estado.etapaConstrucaoColonia === 3) {
           const progresso = limitarProgresso(
             progressoEtapaColonia(3) * 1.35 - indice * 0.018,
           );
-          posicao = interpolarPonto(administracao, moradias, progresso);
+          posicao = percorrerCaminhoPorDistancia(
+            rotaMaisRapidaColonia(administracao, moradias).pontos,
+            progresso,
+          );
         } else if (estado.etapaConstrucaoColonia >= 4) {
           const emprego = empregoDoColono(indice);
-          if (emprego.tipo === "lavoura") {
-            posicao = posicaoRotinaRuralColonia(emprego.vaga, "lavoura");
-          } else if (emprego.tipo === "horta") {
-            posicao = posicaoRotinaRuralColonia(emprego.vaga, "horta");
-          } else if (emprego.tipo === "feijao") {
-            posicao = posicaoRotinaRuralColonia(emprego.vaga, "feijao");
-          } else if (emprego.tipo === "pastagem") {
-            posicao = posicaoRotinaRuralColonia(emprego.vaga, "pastagem");
-          } else if (emprego.tipo === "administracao") {
-            posicao = posicaoFormacaoColonos(posicaoAdministrador, emprego.vaga);
-          } else if (emprego.tipo === "professor") {
-            posicao = posicaoFormacaoColonos(
-              {
-                x: areaEscolaColonia.x + areaEscolaColonia.largura / 2,
-                y: areaEscolaColonia.y + areaEscolaColonia.altura + 60,
-              },
+          if (["lavoura", "horta", "feijao", "pastagem"].includes(emprego.tipo)) {
+            posicao = posicaoRotinaRuralColonia(
               emprego.vaga,
-            );
-          } else if (emprego.tipo === "migracao") {
-            posicao = posicaoFormacaoColonos(
-              { x: posicaoAdministrador.x + 230, y: posicaoAdministrador.y },
-              emprego.vaga,
-            );
-          } else if (emprego.tipo === "celeiro") {
-            posicao = posicaoFormacaoColonos(
-              { x: areaCeleiro.x + areaCeleiro.largura / 2, y: areaCeleiro.y + areaCeleiro.altura + 75 },
-              emprego.vaga,
-            );
-          } else if (emprego.tipo === "pesca") {
-            const segundoCais = emprego.vaga >= trabalhadoresPorCaisPesca;
-            posicao = posicaoFormacaoColonos(
-              {
-                x: limiteCosta - 60,
-                y:
-                  (segundoCais
-                    ? areaSegundoCaisPescaColonia.y
-                    : areaCaisPescaColonia.y) + 180,
-              },
-              emprego.vaga % trabalhadoresPorCaisPesca,
-            );
-          } else if (emprego.tipo === "estaleiro") {
-            posicao = posicaoFormacaoColonos(
-              {
-                x: areaEstaleiroColonia.x + areaEstaleiroColonia.largura / 2,
-                y: areaEstaleiroColonia.y + areaEstaleiroColonia.altura / 2,
-              },
-              emprego.vaga,
-            );
-          } else if (emprego.tipo === "moinho") {
-            posicao = posicaoFormacaoColonos(
-              { x: areaMoinhoColonia.x + areaMoinhoColonia.largura / 2, y: areaMoinhoColonia.y + areaMoinhoColonia.altura + 60 },
-              emprego.vaga,
-            );
-          } else if (emprego.tipo === "padaria") {
-            posicao = posicaoFormacaoColonos(
-              { x: areaPadariaColonia.x + areaPadariaColonia.largura / 2, y: areaPadariaColonia.y + areaPadariaColonia.altura + 60 },
-              emprego.vaga,
+              emprego.tipo,
+              indice,
             );
           } else if (
             emprego.tipo === "lenhador" ||
@@ -9728,78 +10227,18 @@
             posicao = posicaoRotinaFlorestalColonia(
               emprego.vaga,
               emprego.tipo,
-            );
-          } else if (emprego.tipo === "clinica") {
-            posicao = posicaoFormacaoColonos(
-              {
-                x: areaClinicaColonia.x + areaClinicaColonia.largura / 2,
-                y: areaClinicaColonia.y + areaClinicaColonia.altura + 60,
-              },
-              emprego.vaga,
-            );
-          } else if (emprego.tipo === "armeiroMadeira") {
-            posicao = posicaoFormacaoColonos(
-              {
-                x:
-                  areaOficinaArmasMadeira.x +
-                  areaOficinaArmasMadeira.largura / 2,
-                y:
-                  areaOficinaArmasMadeira.y +
-                  areaOficinaArmasMadeira.altura +
-                  60,
-              },
-              emprego.vaga,
-            );
-          } else if (emprego.tipo === "flecheiro") {
-            posicao = posicaoFormacaoColonos(
-              {
-                x: areaFlecharia.x + areaFlecharia.largura / 2,
-                y: areaFlecharia.y + areaFlecharia.altura + 60,
-              },
-              emprego.vaga,
-            );
-          } else if (emprego.tipo === "mina") {
-            posicao = posicaoFormacaoColonos(
-              { x: areaMinaColonia.x + areaMinaColonia.largura / 2, y: areaMinaColonia.y + areaMinaColonia.altura / 2 },
-              emprego.vaga,
-            );
-          } else if (emprego.tipo === "pedreira") {
-            posicao = posicaoFormacaoColonos(
-              {
-                x: areaPedreiraColonia.x + areaPedreiraColonia.largura / 2,
-                y: areaPedreiraColonia.y + areaPedreiraColonia.altura / 2,
-              },
-              emprego.vaga,
-            );
-          } else if (emprego.tipo === "comercio") {
-            posicao = posicaoFormacaoColonos(
-              { x: limiteCosta - 90, y: areaCaisComercialColonia.y + 300 },
-              emprego.vaga,
-            );
-          } else if (emprego.tipo === "ferraria") {
-            posicao = posicaoFormacaoColonos(
-              { x: areaFerrariaColonia.x + areaFerrariaColonia.largura / 2, y: areaFerrariaColonia.y + areaFerrariaColonia.altura + 60 },
-              emprego.vaga,
-            );
-          } else if (emprego.tipo === "forja") {
-            posicao = posicaoFormacaoColonos(
-              { x: areaForjaColonia.x + areaForjaColonia.largura / 2, y: areaForjaColonia.y + areaForjaColonia.altura + 60 },
-              emprego.vaga,
-            );
-          } else if (estado.obraAutomaticaColonia) {
-            posicao = posicaoFormacaoColonos(
-              centroObraColonia(estado.obraAutomaticaColonia),
-              emprego.vaga,
+              indice,
             );
           } else {
-            posicao = moradias;
+            posicao = posicaoRotinaUrbanaColonia(
+              indice,
+              emprego.tipo,
+              emprego.vaga,
+            );
           }
         }
 
-        return {
-          x: posicao.x + Math.sin(tempoRio * 2.2 + indice) * 3,
-          y: posicao.y + Math.cos(tempoRio * 1.8 + indice) * 3,
-        };
+        return posicao;
       }
 
       function desenharAdministracaoColonia() {
@@ -11517,9 +11956,9 @@
         }
       }
 
-      function desenharCaminhoTrechoEstradaColonia(trecho) {
+      function desenharCaminhoTrechoEstradaColonia(pontos) {
         contexto.beginPath();
-        trecho.pontos.forEach((ponto, indice) => {
+        pontos.forEach((ponto, indice) => {
           if (indice === 0) contexto.moveTo(ponto.x, ponto.y);
           else contexto.lineTo(ponto.x, ponto.y);
         });
@@ -11537,16 +11976,34 @@
         contexto.globalAlpha = opacidade;
         contexto.lineCap = "round";
         contexto.lineJoin = "round";
+        const caminhosPrincipais = [trecho.pontos, ...(trecho.ramais || [])];
+        const acessos = trecho.acessos || [];
         contexto.strokeStyle = estilo.borda;
         contexto.lineWidth = estilo.largura;
-        desenharCaminhoTrechoEstradaColonia(trecho);
+        caminhosPrincipais.forEach((pontos) =>
+          desenharCaminhoTrechoEstradaColonia(pontos),
+        );
         contexto.strokeStyle = estilo.miolo;
         contexto.lineWidth = estilo.interna;
-        desenharCaminhoTrechoEstradaColonia(trecho);
+        caminhosPrincipais.forEach((pontos) =>
+          desenharCaminhoTrechoEstradaColonia(pontos),
+        );
+        contexto.strokeStyle = estilo.borda;
+        contexto.lineWidth = Math.max(7, estilo.largura * 0.45);
+        acessos.forEach((pontos) =>
+          desenharCaminhoTrechoEstradaColonia(pontos),
+        );
+        contexto.strokeStyle = estilo.miolo;
+        contexto.lineWidth = Math.max(4, estilo.interna * 0.42);
+        acessos.forEach((pontos) =>
+          desenharCaminhoTrechoEstradaColonia(pontos),
+        );
         if (nivel >= 2) {
           contexto.fillStyle = nivel === 2 ? "#d1aa69" : "#c8ccc2";
-          trecho.pontos.forEach((ponto) => {
-            contexto.fillRect(ponto.x - 12, ponto.y - 12, 24, 24);
+          caminhosTrechoEstradaColonia(trecho).forEach((pontos) => {
+            pontos.forEach((ponto) => {
+              contexto.fillRect(ponto.x - 12, ponto.y - 12, 24, 24);
+            });
           });
         }
         contexto.globalAlpha = 1;
@@ -11888,6 +12345,7 @@
           x: casa.x + 35 + (indice % 3) * 28,
           y: casa.y + 128 + (indice % 2) * 24,
         };
+        const acessoCasa = { x: casa.x + 65, y: casa.y + 118 };
         if (crianca.idade < duracaoBebeColonia) return origem;
         if (
           !estado.escolaConstruida ||
@@ -11899,15 +12357,18 @@
           };
         }
         const destino = {
-          x:
-            areaEscolaColonia.x +
-            areaEscolaColonia.largura / 2 +
-            (indice % 5 - 2) * 28,
-          y: areaEscolaColonia.y + areaEscolaColonia.altura + 70,
+          x: areaEscolaColonia.x + areaEscolaColonia.largura,
+          y:
+            areaEscolaColonia.y +
+            areaEscolaColonia.altura / 2 +
+            (indice % 5 - 2) * 18,
         };
         const idaEVolta =
           (Math.sin(tempoLogistico * 0.35 + indice * 0.8) + 1) / 2;
-        return interpolarPonto(origem, destino, idaEVolta);
+        return percorrerCaminhoPorDistancia(
+          rotaMaisRapidaColonia(acessoCasa, destino).pontos,
+          idaEVolta,
+        );
       }
 
       function desenharJovensColonia() {
@@ -12097,11 +12558,11 @@
         }
 
         const rotaGuarda = [
-          { x: recintoInterno.x - 90, y: recintoInterno.y - 90 },
-          { x: recintoInterno.x + recintoInterno.largura + 90, y: recintoInterno.y - 90 },
-          { x: recintoInterno.x + recintoInterno.largura + 90, y: recintoInterno.y + recintoInterno.altura + 90 },
-          { x: recintoInterno.x - 90, y: recintoInterno.y + recintoInterno.altura + 90 },
-          { x: recintoInterno.x - 90, y: recintoInterno.y - 90 },
+          { x: 6900, y: 2800 },
+          { x: 10200, y: 2800 },
+          { x: 10200, y: 6200 },
+          { x: 6900, y: 6200 },
+          { x: 6900, y: 2800 },
         ];
         for (let indice = 0; indice < estado.quantidadeGuardas; indice += 1) {
           const progresso =
@@ -12109,7 +12570,7 @@
               multiplicadorMovimentoEstradasColonia() *
               0.018 +
               indice / Math.max(1, estado.quantidadeGuardas)) % 1;
-          const posicao = percorrerCaminho(rotaGuarda, progresso);
+          const posicao = percorrerCaminhoPorDistancia(rotaGuarda, progresso);
           desenharEfetivoDefesaColonia(
             posicao.x,
             posicao.y,
@@ -12206,6 +12667,33 @@
           pontos[indice + 1],
           trecho - indice,
         );
+      }
+
+      function percorrerCaminhoPorDistancia(pontos, progresso) {
+        if (!pontos || pontos.length < 2) return pontos?.[0] || { x: 0, y: 0 };
+        const distancias = [];
+        let distanciaTotal = 0;
+        for (let indice = 0; indice < pontos.length - 1; indice += 1) {
+          const distancia = Math.hypot(
+            pontos[indice + 1].x - pontos[indice].x,
+            pontos[indice + 1].y - pontos[indice].y,
+          );
+          distancias.push(distancia);
+          distanciaTotal += distancia;
+        }
+        if (distanciaTotal <= 0) return { ...pontos[0] };
+        let restante = limitarProgresso(progresso) * distanciaTotal;
+        for (let indice = 0; indice < distancias.length; indice += 1) {
+          if (restante <= distancias[indice] || indice === distancias.length - 1) {
+            return interpolarPonto(
+              pontos[indice],
+              pontos[indice + 1],
+              distancias[indice] > 0 ? restante / distancias[indice] : 0,
+            );
+          }
+          restante -= distancias[indice];
+        }
+        return { ...pontos[pontos.length - 1] };
       }
 
       function posicaoFazendeiro(indice) {
