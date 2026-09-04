@@ -567,7 +567,7 @@
         <button id="diminuir-zoom" class="secundario" type="button" aria-label="Diminuir zoom">−</button>
         <button id="centralizar-mapa" class="secundario" type="button">Centralizar</button>
         <button id="aumentar-zoom" class="secundario" type="button" aria-label="Aumentar zoom">+</button>
-        <p id="nivel-zoom" class="nivel-zoom">Mapa 5× · Zoom 100%</p>
+        <p id="nivel-zoom" class="nivel-zoom">Mapa 10× · Zoom 100%</p>
         <p class="ajuda-mapa">Arraste para explorar. Use dois dedos para ampliar.</p>
       </section>
       <p id="mensagem" class="mensagem" role="status" aria-live="polite">
@@ -820,7 +820,7 @@
 
       const larguraMundo = 1400;
       const alturaMundo = 900;
-      const fatorMapaExpansao = 5;
+      const fatorMapaExpansao = 10;
       const larguraMundoExpansao = larguraMundo * fatorMapaExpansao;
       const alturaMundoExpansao = alturaMundo * fatorMapaExpansao;
       const zoomMinimoExpansao = 1 / fatorMapaExpansao;
@@ -828,35 +828,35 @@
       const versaoMapa = 2;
       const posicaoAssentamento = { x: 700, y: 510 };
       const posicaoFloresta = { x: 700, y: 790 };
-      const limiteCosta = 6100;
-      const posicaoNovaColonia = { x: 5740, y: 2250 };
+      const limiteCosta = 13100;
+      const posicaoNovaColonia = { x: 12740, y: 4500 };
       const areaAdministracao = {
-        x: 3370,
-        y: 2050,
+        x: 10370,
+        y: 4300,
         largura: 260,
         altura: 170,
       };
-      const posicaoAdministrador = { x: 3500, y: 2250 };
+      const posicaoAdministrador = { x: 10500, y: 4500 };
       const areaMoradias = {
-        x: 1950,
-        y: 2850,
+        x: 8950,
+        y: 5100,
         largura: 700,
         altura: 500,
       };
       const areaLavoura = {
-        x: 240,
-        y: 1650,
-        largura: 900,
-        altura: 650,
+        x: 500,
+        y: 3900,
+        largura: 1200,
+        altura: 750,
       };
       const areaPastagem = {
-        x: 1280,
-        y: 1650,
-        largura: 1100,
-        altura: 650,
+        x: 1880,
+        y: 3900,
+        largura: 1400,
+        altura: 750,
       };
       const quantidadeColonosExpansao = 20;
-      const versaoColonia = 3;
+      const versaoColonia = 4;
       const ouroInicialAdministrador = 2500;
       const transferenciaInicialCidade = 3000;
       const custoAdministracaoColonia = 500;
@@ -1728,7 +1728,7 @@
             salvarProgresso();
           } else if (coloniaReiniciadaAoCarregar) {
             definirMensagem(
-              "A colônia recomeçou: 2.500 de ouro pessoal e 1.750 no cofre após administração e moradias.",
+              "A colônia recomeçou no mapa 10×: cidade costeira e agricultura no interior distante.",
             );
             salvarProgresso();
           } else if (mapaAntigo) {
@@ -2590,7 +2590,7 @@
 
       function atualizarControlesCamera() {
         const naNovaColonia = estado.mapaAtual === "expansao";
-        nivelZoomEl.textContent = `Mapa 5× · Zoom ${Math.round(estado.cameraExpansao.zoom * 100)}%`;
+        nivelZoomEl.textContent = `Mapa 10× · Zoom ${Math.round(estado.cameraExpansao.zoom * 100)}%`;
         diminuirZoomBotao.disabled =
           !naNovaColonia ||
           estado.cameraExpansao.zoom <= zoomMinimoExpansao + 0.001;
@@ -3991,7 +3991,7 @@
               x:
                 areaLavoura.x +
                 120 +
-                vaga * 155 +
+                vaga * ((areaLavoura.largura - 240) / 4) +
                 Math.sin(tempoRio * 0.75 + indice) * 55,
               y:
                 areaLavoura.y +
@@ -4010,7 +4010,7 @@
               x:
                 areaPastagem.x +
                 150 +
-                vaga * 190 +
+                vaga * ((areaPastagem.largura - 300) / 4) +
                 Math.sin(tempoRio * 0.7 + indice) * 65,
               y:
                 areaPastagem.y +
@@ -4175,7 +4175,11 @@
           );
           contexto.strokeStyle = "#d4b15d";
           contexto.lineWidth = 14;
-          for (let y = areaLavoura.y + 95; y < areaLavoura.y + 570; y += 95) {
+          for (
+            let y = areaLavoura.y + 95;
+            y < areaLavoura.y + areaLavoura.altura - 80;
+            y += 95
+          ) {
             contexto.beginPath();
             contexto.moveTo(areaLavoura.x + 55, y);
             contexto.lineTo(
