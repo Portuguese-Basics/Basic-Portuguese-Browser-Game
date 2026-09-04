@@ -111,7 +111,8 @@
 
       body[data-mapa="expansao"] .indicador-posto,
       body[data-mapa="expansao"] .acao-posto,
-      body:not([data-mapa="expansao"]) .indicador-colonia {
+      body:not([data-mapa="expansao"]) .indicador-colonia,
+      body:not([data-mapa="expansao"]) .acao-colonia {
         display: none;
       }
 
@@ -329,6 +330,42 @@
         line-height: 1.5;
       }
 
+      .painel-colonia-grade {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+      }
+
+      .painel-colonia-grade .economia {
+        margin-top: 0;
+      }
+
+      .lista-colonia {
+        margin: 0.55rem 0 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .lista-colonia li {
+        display: flex;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.32rem 0;
+        border-bottom: 1px solid rgb(255 255 255 / 10%);
+        color: #d4cbb4;
+        line-height: 1.35;
+      }
+
+      .lista-colonia li:last-child {
+        border-bottom: 0;
+      }
+
+      .lista-colonia span {
+        color: #fff9df;
+        text-align: right;
+        font-weight: 700;
+      }
+
       .transferencia-conteudo {
         padding: 1rem;
       }
@@ -469,6 +506,10 @@
         .transferencia-grade {
           grid-template-columns: 1fr;
         }
+
+        .painel-colonia-grade {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
@@ -491,8 +532,12 @@
         <div class="indicador indicador-colonia">Nova colônia<span id="colonia-status">Não fundada</span></div>
         <div class="indicador indicador-colonia">Cofre municipal<span id="tesouro-colonia">0</span></div>
         <div class="indicador indicador-colonia">Próximo repasse<span id="transferencia-status">60 s · 300 ouro</span></div>
+        <div class="indicador indicador-colonia">População<span id="populacao-colonia-status">20 moradores</span></div>
         <div class="indicador indicador-colonia">Alimentos<span id="alimentos-status">0 em estoque</span></div>
         <div class="indicador indicador-colonia">Moradia<span id="moradia-status">0 / 20 abrigados</span></div>
+        <div class="indicador indicador-colonia">Empregos<span id="empregos-colonia-status">Aguardando</span></div>
+        <div class="indicador indicador-colonia">Armazéns<span id="estoques-colonia-status">Aguardando</span></div>
+        <div class="indicador indicador-colonia">Migração<span id="migracao-status">Sem administradores</span></div>
         <div class="indicador indicador-colonia">Prioridade dos colonos<span id="prioridade-colonia-status">Aguardando</span></div>
         <div class="indicador indicador-colonia">Venda de alimentos<span id="producao-colonia-status">Nenhuma</span></div>
         <div class="indicador indicador-posto">Combate<span id="combate-status">ATQ 1 · ARM 0</span></div>
@@ -537,6 +582,15 @@
         </button>
         <button id="construir-pastagem" type="button" hidden>
           Preparar pastagem · 500 do cofre
+        </button>
+        <button id="abrir-painel-colonia" class="acao-colonia secundario" type="button">
+          Painel colonial
+        </button>
+        <button id="contratar-administrador-migracao" class="acao-colonia" type="button">
+          Contratar adm. de migração · 100 ouro
+        </button>
+        <button id="incentivar-migracao" class="acao-colonia" type="button">
+          Incentivar migração · 100 ouro
         </button>
         <button id="abrir-loja" class="acao-posto" type="button">Loja</button>
         <button id="abrir-transferencia" class="secundario" type="button">
@@ -628,17 +682,90 @@
             <li>A nova colônia começa com 2.500 de ouro pessoal e uma transferência municipal inicial de 3.000.</li>
             <li>Os colonos gastam a transferência inicial automaticamente: 500 na administração, 750 nas moradias, 400 na lavoura, 500 na pastagem e 300 no celeiro.</li>
             <li>O posto original continua financiando a colônia com 300 de ouro a cada 60 segundos: 270 para a cidade e 30 para o administrador.</li>
-            <li>Os colonos executam sozinhos toda a fundação: administração, moradias, lavoura, pastagem e celeiro.</li>
-            <li>A torre administrativa, as moradias de prestígio e o celeiro ficam protegidos no recinto interno; moradias comuns e casas dos agricultores ficam no recinto externo.</li>
-            <li>A lavoura, a pastagem e a futura zona de recursos ficam no extremo oeste; a costa permanece livre para portos, pesca e navegação.</li>
-            <li>Os 20 colonos consomem 20 alimentos por minuto. A lavoura produz 40 e a pastagem produz 20.</li>
-            <li>Alimentos acima da reserva de 80 são vendidos automaticamente; 90% da renda vai para a cidade e 10% para o administrador.</li>
+            <li>Os colonos escolhem sozinhos as obras e os empregos prioritários da cidade.</li>
+            <li>Cada morador consome 1 alimento por minuto e precisa de moradia. Cada casa abriga 5 pessoas; uma casa de 250 de ouro municipal é construída por vez quando faltar espaço.</li>
+            <li>A torre administrativa, as moradias de prestígio e o celeiro ficam protegidos no recinto interno; os blocos de moradia ficam no recinto externo.</li>
+            <li>A lavoura, a pastagem, a mina e seus depósitos ficam no extremo oeste. A costa é reservada para pesca, comércio e chegada de migrantes.</li>
+            <li>A lavoura aceita 5 agricultores e produz 8 alimentos por trabalhador a cada 60 segundos. A pastagem aceita 5 pastores e produz 4 por trabalhador.</li>
+            <li>O cais de pesca aceita 5 pescadores e produz 5 alimentos por trabalhador a cada 60 segundos.</li>
+            <li>O celeiro armazena até 200 alimentos. O excedente acima da reserva de 80 é vendido automaticamente.</li>
+            <li>A mina produz minério; a ferraria transforma 2 minérios em 1 ferramenta; a forja transforma 3 minérios em 1 arma. Cada atividade aceita até 5 trabalhadores.</li>
+            <li>Minério, ferramentas, armas e mercadorias possuem depósitos próprios. Quando um depósito enche, somente o excedente é vendido.</li>
+            <li>Toda venda colonial é dividida: 90% para o tesouro da cidade e 10% para o patrimônio pessoal do administrador.</li>
+            <li>Um administrador de migração custa 100 de ouro pessoal, consome alimento, ocupa moradia e libera um incentivo a cada 60 segundos.</li>
+            <li>Cada incentivo custa 100 de ouro pessoal e traz 1 novo colono de barco. Podem trabalhar até 10 administradores de migração.</li>
             <li>Descansar custa 3 de ouro e recupera até 30 de vida.</li>
             <li>Ao ser derrotado, você volta com vida completa e perde 15 de ouro.</li>
             <li>Cada ponto de ataque causa 1 de dano.</li>
             <li>Cada ponto de armadura reduz em 1 o dano recebido.</li>
           </ul>
         </section>
+      </section>
+    </dialog>
+
+    <dialog id="painel-colonia" aria-labelledby="titulo-painel-colonia">
+      <section class="loja-conteudo">
+        <header class="loja-cabecalho">
+          <div>
+            <h2 id="titulo-painel-colonia">Administração colonial</h2>
+            <p>Moradia, trabalho, produção e estoques da cidade.</p>
+          </div>
+          <button id="fechar-painel-colonia" class="secundario fechar-loja" type="button" aria-label="Fechar painel colonial">×</button>
+        </header>
+
+        <div class="painel-colonia-grade">
+          <section class="economia" aria-labelledby="titulo-moradores-colonia">
+            <h3 id="titulo-moradores-colonia">Moradores e casas</h3>
+            <ul class="lista-colonia">
+              <li>População total <span id="painel-populacao">20</span></li>
+              <li>Casas construídas <span id="painel-casas">0</span></li>
+              <li>Capacidade habitacional <span id="painel-capacidade-casas">0</span></li>
+              <li>Sem moradia <span id="painel-sem-moradia">20</span></li>
+              <li>Em construção <span id="painel-construcao">Nenhuma</span></li>
+            </ul>
+          </section>
+
+          <section class="economia" aria-labelledby="titulo-empregos-colonia">
+            <h3 id="titulo-empregos-colonia">Trabalho automático</h3>
+            <ul class="lista-colonia">
+              <li>Administração municipal <span id="trabalho-administracao">0</span></li>
+              <li>Administração de migração <span id="trabalho-migracao">0 / 10</span></li>
+              <li>Agricultores <span id="trabalho-lavoura">0 / 5 · +8 alimento cada</span></li>
+              <li>Pastores <span id="trabalho-pastagem">0 / 5 · +4 alimento cada</span></li>
+              <li>Celeireiros <span id="trabalho-celeiro">0 / 2</span></li>
+              <li>Pescadores <span id="trabalho-pesca">0 / 5 · +5 alimento cada</span></li>
+              <li>Mineiros <span id="trabalho-mina">0 / 5 · +5 minério cada</span></li>
+              <li>Mercadores <span id="trabalho-comercio">0 / 5 · +1 mercadoria cada</span></li>
+              <li>Ferreiros <span id="trabalho-ferraria">0 / 5 · minério → ferramentas</span></li>
+              <li>Forjadores <span id="trabalho-forja">0 / 5 · minério → armas</span></li>
+              <li>Construtores e serviços <span id="trabalho-geral">0</span></li>
+            </ul>
+          </section>
+
+          <section class="economia" aria-labelledby="titulo-estoques-colonia">
+            <h3 id="titulo-estoques-colonia">Armazéns</h3>
+            <ul class="lista-colonia">
+              <li>Celeiro — alimentos <span id="estoque-alimentos-detalhe">0 / 200</span></li>
+              <li>Depósito de minério <span id="estoque-minerio">0 / 100</span></li>
+              <li>Armazém de ferramentas <span id="estoque-ferramentas">0 / 60</span></li>
+              <li>Arsenal — armas <span id="estoque-armas">0 / 40</span></li>
+              <li>Armazém comercial <span id="estoque-mercadorias">0 / 50</span></li>
+            </ul>
+          </section>
+
+          <section class="economia" aria-labelledby="titulo-edificios-colonia">
+            <h3 id="titulo-edificios-colonia">Edificações produtivas</h3>
+            <ul class="lista-colonia">
+              <li>Campo e pastagem <span id="edificio-agricultura">Planejados</span></li>
+              <li>Celeiro <span id="edificio-celeiro">Planejado</span></li>
+              <li>Mina + depósito <span id="edificio-mina">Planejados</span></li>
+              <li>Cais de pesca <span id="edificio-pesca">Planejado</span></li>
+              <li>Cais comercial + armazém <span id="edificio-comercio">Planejados</span></li>
+              <li>Ferraria + ferramentas <span id="edificio-ferraria">Planejados</span></li>
+              <li>Forja + arsenal <span id="edificio-forja">Planejados</span></li>
+            </ul>
+          </section>
+        </div>
       </section>
     </dialog>
 
@@ -738,8 +865,18 @@
       const transferenciaStatusEl = document.querySelector(
         "#transferencia-status",
       );
+      const populacaoColoniaStatusEl = document.querySelector(
+        "#populacao-colonia-status",
+      );
       const alimentosStatusEl = document.querySelector("#alimentos-status");
       const moradiaStatusEl = document.querySelector("#moradia-status");
+      const empregosColoniaStatusEl = document.querySelector(
+        "#empregos-colonia-status",
+      );
+      const estoquesColoniaStatusEl = document.querySelector(
+        "#estoques-colonia-status",
+      );
+      const migracaoStatusEl = document.querySelector("#migracao-status");
       const prioridadeColoniaStatusEl = document.querySelector(
         "#prioridade-colonia-status",
       );
@@ -795,6 +932,59 @@
       const construirPastagemBotao = document.querySelector(
         "#construir-pastagem",
       );
+      const abrirPainelColoniaBotao = document.querySelector(
+        "#abrir-painel-colonia",
+      );
+      const contratarAdministradorMigracaoBotao = document.querySelector(
+        "#contratar-administrador-migracao",
+      );
+      const incentivarMigracaoBotao = document.querySelector(
+        "#incentivar-migracao",
+      );
+      const painelColonia = document.querySelector("#painel-colonia");
+      const fecharPainelColoniaBotao = document.querySelector(
+        "#fechar-painel-colonia",
+      );
+      const painelPopulacaoEl = document.querySelector("#painel-populacao");
+      const painelCasasEl = document.querySelector("#painel-casas");
+      const painelCapacidadeCasasEl = document.querySelector(
+        "#painel-capacidade-casas",
+      );
+      const painelSemMoradiaEl = document.querySelector("#painel-sem-moradia");
+      const painelConstrucaoEl = document.querySelector("#painel-construcao");
+      const trabalhoAdministracaoEl = document.querySelector(
+        "#trabalho-administracao",
+      );
+      const trabalhoMigracaoEl = document.querySelector("#trabalho-migracao");
+      const trabalhoLavouraEl = document.querySelector("#trabalho-lavoura");
+      const trabalhoPastagemEl = document.querySelector("#trabalho-pastagem");
+      const trabalhoCeleiroEl = document.querySelector("#trabalho-celeiro");
+      const trabalhoPescaEl = document.querySelector("#trabalho-pesca");
+      const trabalhoMinaEl = document.querySelector("#trabalho-mina");
+      const trabalhoComercioEl = document.querySelector("#trabalho-comercio");
+      const trabalhoFerrariaEl = document.querySelector("#trabalho-ferraria");
+      const trabalhoForjaEl = document.querySelector("#trabalho-forja");
+      const trabalhoGeralEl = document.querySelector("#trabalho-geral");
+      const estoqueAlimentosDetalheEl = document.querySelector(
+        "#estoque-alimentos-detalhe",
+      );
+      const estoqueMinerioEl = document.querySelector("#estoque-minerio");
+      const estoqueFerramentasEl = document.querySelector(
+        "#estoque-ferramentas",
+      );
+      const estoqueArmasEl = document.querySelector("#estoque-armas");
+      const estoqueMercadoriasEl = document.querySelector(
+        "#estoque-mercadorias",
+      );
+      const edificioAgriculturaEl = document.querySelector(
+        "#edificio-agricultura",
+      );
+      const edificioCeleiroEl = document.querySelector("#edificio-celeiro");
+      const edificioMinaEl = document.querySelector("#edificio-mina");
+      const edificioPescaEl = document.querySelector("#edificio-pesca");
+      const edificioComercioEl = document.querySelector("#edificio-comercio");
+      const edificioFerrariaEl = document.querySelector("#edificio-ferraria");
+      const edificioForjaEl = document.querySelector("#edificio-forja");
       const controlesMapaEl = document.querySelector("#controles-mapa");
       const diminuirZoomBotao = document.querySelector("#diminuir-zoom");
       const centralizarMapaBotao = document.querySelector("#centralizar-mapa");
@@ -851,10 +1041,10 @@
         altura: 3600,
       };
       const areaMoradias = {
-        x: 5500,
-        y: 5700,
-        largura: 700,
-        altura: 500,
+        x: 5350,
+        y: 5650,
+        largura: 1200,
+        altura: 900,
       };
       const areaCeleiro = {
         x: 7000,
@@ -881,6 +1071,60 @@
         largura: 1700,
         altura: 850,
       };
+      const areaMinaColonia = {
+        x: 900,
+        y: 6650,
+        largura: 700,
+        altura: 430,
+      };
+      const areaDepositoMinerio = {
+        x: 1780,
+        y: 6720,
+        largura: 470,
+        altura: 300,
+      };
+      const areaCaisPescaColonia = {
+        x: 12720,
+        y: 2050,
+        largura: 380,
+        altura: 720,
+      };
+      const areaCaisComercialColonia = {
+        x: 12520,
+        y: 5150,
+        largura: 580,
+        altura: 980,
+      };
+      const areaArmazemComercial = {
+        x: 11620,
+        y: 5410,
+        largura: 640,
+        altura: 430,
+      };
+      const areaFerrariaColonia = {
+        x: 10430,
+        y: 2920,
+        largura: 520,
+        altura: 360,
+      };
+      const areaArmazemFerramentas = {
+        x: 10430,
+        y: 3420,
+        largura: 520,
+        altura: 300,
+      };
+      const areaForjaColonia = {
+        x: 10430,
+        y: 4680,
+        largura: 520,
+        altura: 360,
+      };
+      const areaArsenalColonia = {
+        x: 10430,
+        y: 5180,
+        largura: 520,
+        altura: 300,
+      };
       const quantidadeColonosExpansao = 20;
       const versaoColonia = 5;
       const ouroInicialAdministrador = 2500;
@@ -896,9 +1140,42 @@
       const custoPastagemColonia = 500;
       const custoCeleiroColonia = 300;
       const capacidadeCeleiroColonia = 200;
+      const capacidadeCasaColonia = 5;
+      const maximoCasasColonia = 30;
+      const custoCasaColonia = 250;
+      const custoMinaColonia = 600;
+      const custoCaisPescaColonia = 500;
+      const custoCaisComercialColonia = 700;
+      const custoFerrariaColonia = 500;
+      const custoForjaColonia = 600;
+      const capacidadeMinerioColonia = 100;
+      const capacidadeFerramentasColonia = 60;
+      const capacidadeArmasColonia = 40;
+      const capacidadeMercadoriasColonia = 50;
+      const maximoTrabalhadoresLavoura = 5;
+      const maximoTrabalhadoresPastagem = 5;
+      const maximoTrabalhadoresPesca = 5;
+      const maximoTrabalhadoresMina = 5;
+      const maximoTrabalhadoresComercio = 5;
+      const maximoTrabalhadoresFerraria = 5;
+      const maximoTrabalhadoresForja = 5;
+      const alimentoPorAgricultor = 8;
+      const alimentoPorPastor = 4;
+      const alimentoPorPescador = 5;
+      const minerioPorMineiro = 5;
+      const mercadoriaPorMercador = 1;
+      const minerioPorFerramenta = 2;
+      const minerioPorArma = 3;
+      const valorVendaMinerio = 2;
+      const valorVendaFerramenta = 8;
+      const valorVendaArma = 12;
+      const valorVendaMercadoria = 5;
+      const maximoAdministradoresMigracao = 10;
+      const custoAdministradorMigracao = 100;
+      const custoIncentivoMigracao = 100;
+      const intervaloMigracao = 60;
+      const duracaoViagemMigrante = 12;
       const estoqueInicialAlimentos = 40;
-      const producaoLavouraColonia = 40;
-      const producaoPastagemColonia = 20;
       const consumoAlimentoPorColono = 1;
       const reservaAlimentosColonia = 80;
       const valorVendaAlimento = 1;
@@ -1009,6 +1286,34 @@
         estoqueAlimentos: 0,
         tempoNecessidadesColonia: 0,
         colonosComFome: 0,
+        populacaoColonia: 0,
+        quantidadeCasasColonia: 0,
+        quantidadeAdministradoresMigracao: 0,
+        cargasMigracaoDisponiveis: 0,
+        tempoRecargaMigracao: 0,
+        migracoesPendentes: [],
+        minaConstruida: false,
+        caisPescaConstruido: false,
+        caisComercialConstruido: false,
+        ferrariaColoniaConstruida: false,
+        forjaColoniaConstruida: false,
+        estoqueMinerio: 0,
+        estoqueFerramentas: 0,
+        estoqueArmas: 0,
+        estoqueMercadorias: 0,
+        empregosColonia: {
+          administracao: 0,
+          migracao: 0,
+          lavoura: 0,
+          pastagem: 0,
+          celeiro: 0,
+          pesca: 0,
+          mina: 0,
+          comercio: 0,
+          ferraria: 0,
+          forja: 0,
+          geral: 0,
+        },
         etapaConstrucaoColonia: 0,
         tempoConstrucaoColonia: 0,
         cameraExpansao: {
@@ -1085,6 +1390,21 @@
         estado.estoqueAlimentos = estoqueInicialAlimentos;
         estado.tempoNecessidadesColonia = 0;
         estado.colonosComFome = 0;
+        estado.populacaoColonia = quantidadeColonosExpansao;
+        estado.quantidadeCasasColonia = 0;
+        estado.quantidadeAdministradoresMigracao = 0;
+        estado.cargasMigracaoDisponiveis = 0;
+        estado.tempoRecargaMigracao = 0;
+        estado.migracoesPendentes = [];
+        estado.minaConstruida = false;
+        estado.caisPescaConstruido = false;
+        estado.caisComercialConstruido = false;
+        estado.ferrariaColoniaConstruida = false;
+        estado.forjaColoniaConstruida = false;
+        estado.estoqueMinerio = 0;
+        estado.estoqueFerramentas = 0;
+        estado.estoqueArmas = 0;
+        estado.estoqueMercadorias = 0;
         estado.etapaConstrucaoColonia = 0;
         estado.tempoConstrucaoColonia = 0;
         estado.mapaAtual = "expansao";
@@ -1175,6 +1495,26 @@
               estoqueAlimentos: estado.estoqueAlimentos,
               tempoNecessidades: estado.tempoNecessidadesColonia,
               colonosComFome: estado.colonosComFome,
+              populacao: estado.populacaoColonia,
+              casas: estado.quantidadeCasasColonia,
+              administradoresMigracao:
+                estado.quantidadeAdministradoresMigracao,
+              cargasMigracao: estado.cargasMigracaoDisponiveis,
+              tempoRecargaMigracao: estado.tempoRecargaMigracao,
+              migracoesPendentes: [...estado.migracoesPendentes],
+              edificios: {
+                mina: estado.minaConstruida,
+                caisPesca: estado.caisPescaConstruido,
+                caisComercial: estado.caisComercialConstruido,
+                ferraria: estado.ferrariaColoniaConstruida,
+                forja: estado.forjaColoniaConstruida,
+              },
+              estoques: {
+                minerio: estado.estoqueMinerio,
+                ferramentas: estado.estoqueFerramentas,
+                armas: estado.estoqueArmas,
+                mercadorias: estado.estoqueMercadorias,
+              },
             },
             construcao: {
               etapa: estado.etapaConstrucaoColonia,
@@ -1643,7 +1983,13 @@
           estado.obraAutomaticaColonia =
             salvo.expansao?.economia?.obraAutomatica === "lavoura" ||
             salvo.expansao?.economia?.obraAutomatica === "pastagem" ||
-            salvo.expansao?.economia?.obraAutomatica === "celeiro"
+            salvo.expansao?.economia?.obraAutomatica === "celeiro" ||
+            salvo.expansao?.economia?.obraAutomatica === "moradia" ||
+            salvo.expansao?.economia?.obraAutomatica === "mina" ||
+            salvo.expansao?.economia?.obraAutomatica === "caisPesca" ||
+            salvo.expansao?.economia?.obraAutomatica === "caisComercial" ||
+            salvo.expansao?.economia?.obraAutomatica === "ferraria" ||
+            salvo.expansao?.economia?.obraAutomatica === "forja"
               ? salvo.expansao.economia.obraAutomatica
               : null;
           estado.tempoObraAutomaticaColonia =
@@ -1676,6 +2022,87 @@
               quantidadeColonosExpansao,
               0,
             ),
+          );
+          estado.populacaoColonia = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.populacao,
+              0,
+              9999,
+              estado.coloniaIniciada ? quantidadeColonosExpansao : 0,
+            ),
+          );
+          estado.quantidadeCasasColonia = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.casas,
+              0,
+              maximoCasasColonia,
+              salvo.expansao?.construcao?.etapa >= 4 ? 4 : 0,
+            ),
+          );
+          estado.quantidadeAdministradoresMigracao = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.administradoresMigracao,
+              0,
+              maximoAdministradoresMigracao,
+              0,
+            ),
+          );
+          estado.cargasMigracaoDisponiveis = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.cargasMigracao,
+              0,
+              estado.quantidadeAdministradoresMigracao,
+              0,
+            ),
+          );
+          estado.tempoRecargaMigracao = numeroValido(
+            salvo.expansao?.economia?.tempoRecargaMigracao,
+            0,
+            intervaloMigracao,
+            0,
+          );
+          estado.migracoesPendentes = Array.isArray(
+            salvo.expansao?.economia?.migracoesPendentes,
+          )
+            ? salvo.expansao.economia.migracoesPendentes
+                .slice(0, maximoAdministradoresMigracao)
+                .map((tempo) =>
+                  numeroValido(tempo, 0, duracaoViagemMigrante, 0),
+                )
+            : [];
+          estado.minaConstruida =
+            salvo.expansao?.economia?.edificios?.mina === true;
+          estado.caisPescaConstruido =
+            salvo.expansao?.economia?.edificios?.caisPesca === true;
+          estado.caisComercialConstruido =
+            salvo.expansao?.economia?.edificios?.caisComercial === true;
+          estado.ferrariaColoniaConstruida =
+            salvo.expansao?.economia?.edificios?.ferraria === true;
+          estado.forjaColoniaConstruida =
+            salvo.expansao?.economia?.edificios?.forja === true;
+          estado.estoqueMinerio = numeroValido(
+            salvo.expansao?.economia?.estoques?.minerio,
+            0,
+            capacidadeMinerioColonia,
+            0,
+          );
+          estado.estoqueFerramentas = numeroValido(
+            salvo.expansao?.economia?.estoques?.ferramentas,
+            0,
+            capacidadeFerramentasColonia,
+            0,
+          );
+          estado.estoqueArmas = numeroValido(
+            salvo.expansao?.economia?.estoques?.armas,
+            0,
+            capacidadeArmasColonia,
+            0,
+          );
+          estado.estoqueMercadorias = numeroValido(
+            salvo.expansao?.economia?.estoques?.mercadorias,
+            0,
+            capacidadeMercadoriasColonia,
+            0,
           );
           estado.etapaConstrucaoColonia = Math.round(
             numeroValido(
@@ -1826,6 +2253,21 @@
         estado.estoqueAlimentos = 0;
         estado.tempoNecessidadesColonia = 0;
         estado.colonosComFome = 0;
+        estado.populacaoColonia = 0;
+        estado.quantidadeCasasColonia = 0;
+        estado.quantidadeAdministradoresMigracao = 0;
+        estado.cargasMigracaoDisponiveis = 0;
+        estado.tempoRecargaMigracao = 0;
+        estado.migracoesPendentes = [];
+        estado.minaConstruida = false;
+        estado.caisPescaConstruido = false;
+        estado.caisComercialConstruido = false;
+        estado.ferrariaColoniaConstruida = false;
+        estado.forjaColoniaConstruida = false;
+        estado.estoqueMinerio = 0;
+        estado.estoqueFerramentas = 0;
+        estado.estoqueArmas = 0;
+        estado.estoqueMercadorias = 0;
         estado.etapaConstrucaoColonia = 0;
         estado.tempoConstrucaoColonia = 0;
         estado.cameraExpansao.x = posicaoNovaColonia.x - larguraMundo / 2;
@@ -1843,15 +2285,131 @@
       }
 
       function capacidadeMoradiasColonia() {
+        if (estado.etapaConstrucaoColonia === 3) {
+          return (
+            Math.floor(
+              limitarProgresso(
+                estado.tempoConstrucaoColonia / duracaoConstrucaoColonia,
+              ) * 4,
+            ) * capacidadeCasaColonia
+          );
+        }
         return estado.etapaConstrucaoColonia >= 4
-          ? quantidadeColonosExpansao
+          ? estado.quantidadeCasasColonia * capacidadeCasaColonia
           : 0;
+      }
+
+      function redistribuirTrabalhadoresColonia() {
+        const empregos = {
+          administracao: 0,
+          migracao: 0,
+          lavoura: 0,
+          pastagem: 0,
+          celeiro: 0,
+          pesca: 0,
+          mina: 0,
+          comercio: 0,
+          ferraria: 0,
+          forja: 0,
+          geral: 0,
+        };
+        let disponiveis = estado.populacaoColonia;
+        const ocupar = (chave, maximo) => {
+          const quantidade = Math.min(maximo, Math.max(0, disponiveis));
+          empregos[chave] = quantidade;
+          disponiveis -= quantidade;
+        };
+
+        if (estado.etapaConstrucaoColonia < 4) {
+          empregos.geral = disponiveis;
+          estado.empregosColonia = empregos;
+          return empregos;
+        }
+
+        ocupar("administracao", 2);
+        ocupar("migracao", estado.quantidadeAdministradoresMigracao);
+        if (estado.lavouraConstruida) {
+          ocupar("lavoura", maximoTrabalhadoresLavoura);
+        }
+        if (estado.pastagemConstruida) {
+          ocupar("pastagem", maximoTrabalhadoresPastagem);
+        }
+        if (estado.celeiroConstruido) ocupar("celeiro", 2);
+        if (estado.caisPescaConstruido) {
+          const producaoTerrestre =
+            empregos.lavoura * alimentoPorAgricultor +
+            empregos.pastagem * alimentoPorPastor;
+          const pescadoresNecessarios = Math.ceil(
+            Math.max(0, estado.populacaoColonia - producaoTerrestre) /
+              alimentoPorPescador,
+          );
+          ocupar(
+            "pesca",
+            Math.min(maximoTrabalhadoresPesca, pescadoresNecessarios),
+          );
+        }
+        if (estado.minaConstruida) {
+          ocupar("mina", maximoTrabalhadoresMina);
+        }
+        if (estado.caisComercialConstruido) {
+          ocupar("comercio", maximoTrabalhadoresComercio);
+        }
+        if (estado.ferrariaColoniaConstruida) {
+          ocupar("ferraria", maximoTrabalhadoresFerraria);
+        }
+        if (estado.forjaColoniaConstruida) {
+          ocupar("forja", maximoTrabalhadoresForja);
+        }
+        empregos.geral = disponiveis;
+        estado.empregosColonia = empregos;
+        return empregos;
+      }
+
+      function casasNecessariasColonia() {
+        return Math.ceil(estado.populacaoColonia / capacidadeCasaColonia);
       }
 
       function nomeObraAutomaticaColonia(tipo) {
         if (tipo === "lavoura") return "lavoura";
         if (tipo === "pastagem") return "pastagem";
-        return "celeiro";
+        if (tipo === "celeiro") return "celeiro";
+        if (tipo === "moradia") return "casa";
+        if (tipo === "mina") return "mina e depósito de minério";
+        if (tipo === "caisPesca") return "cais de pesca";
+        if (tipo === "caisComercial") return "cais e armazém comercial";
+        if (tipo === "ferraria") return "ferraria e armazém de ferramentas";
+        return "forja e arsenal";
+      }
+
+      function custoObraAutomaticaColonia(tipo) {
+        const custos = {
+          lavoura: custoLavouraColonia,
+          pastagem: custoPastagemColonia,
+          celeiro: custoCeleiroColonia,
+          moradia: custoCasaColonia,
+          mina: custoMinaColonia,
+          caisPesca: custoCaisPescaColonia,
+          caisComercial: custoCaisComercialColonia,
+          ferraria: custoFerrariaColonia,
+          forja: custoForjaColonia,
+        };
+        return custos[tipo];
+      }
+
+      function proximaObraAutomaticaColonia() {
+        if (
+          estado.quantidadeCasasColonia < casasNecessariasColonia() &&
+          estado.quantidadeCasasColonia < maximoCasasColonia
+        ) return "moradia";
+        if (!estado.lavouraConstruida) return "lavoura";
+        if (!estado.pastagemConstruida) return "pastagem";
+        if (!estado.celeiroConstruido) return "celeiro";
+        if (!estado.minaConstruida) return "mina";
+        if (!estado.caisPescaConstruido) return "caisPesca";
+        if (!estado.caisComercialConstruido) return "caisComercial";
+        if (!estado.ferrariaColoniaConstruida) return "ferraria";
+        if (!estado.forjaColoniaConstruida) return "forja";
+        return null;
       }
 
       function prioridadeAtualColonia() {
@@ -1864,9 +2422,13 @@
         if (estado.obraAutomaticaColonia) {
           return `Construir ${nomeObraAutomaticaColonia(estado.obraAutomaticaColonia)}`;
         }
-        if (!estado.lavouraConstruida) return "Construir lavoura";
-        if (!estado.pastagemConstruida) return "Construir pastagem";
-        if (!estado.celeiroConstruido) return "Construir celeiro";
+        const proximaObra = proximaObraAutomaticaColonia();
+        if (proximaObra) {
+          const custo = custoObraAutomaticaColonia(proximaObra);
+          return estado.tesouroColonia >= custo
+            ? `Construir ${nomeObraAutomaticaColonia(proximaObra)}`
+            : `Aguardar ${custo} para ${nomeObraAutomaticaColonia(proximaObra)}`;
+        }
         if (estado.colonosComFome > 0) return "Repor alimentos";
         return "Manter alimento e moradia";
       }
@@ -1903,11 +2465,18 @@
             `${nomeObraAutomaticaColonia(estado.obraAutomaticaColonia)} · ${percentual}%`;
         } else {
           coloniaStatusEl.textContent = estado.etapaConstrucaoColonia < 4
-            ? "20 colonos · fundação automática"
+            ? `${estado.populacaoColonia} colonos · fundação automática`
             : estado.celeiroConstruido
-              ? "20 colonos · fundação concluída"
-              : "20 colonos · prioridades automáticas";
+              ? `${estado.populacaoColonia} moradores · cidade automática`
+              : `${estado.populacaoColonia} colonos · prioridades automáticas`;
         }
+      }
+
+      function statusEdificioColonia(tipo, construido) {
+        if (construido) return "Construído";
+        return estado.obraAutomaticaColonia === tipo
+          ? `${Math.round((estado.tempoObraAutomaticaColonia / duracaoObraAutomaticaColonia) * 100)}%`
+          : "Planejado";
       }
 
       function atualizarInterface() {
@@ -1931,6 +2500,7 @@
         patrimonioPessoalEl.textContent =
           `${formatarOuro(estado.ouro)} ouro`;
         tesouroColoniaEl.textContent = formatarOuro(estado.tesouroColonia);
+        const empregos = redistribuirTrabalhadoresColonia();
         const segundosParaTransferencia = Math.max(
           1,
           Math.ceil(
@@ -1941,14 +2511,33 @@
           `${segundosParaTransferencia} s · ${valorTransferenciaPosto} ouro`;
         const capacidadeMoradia = capacidadeMoradiasColonia();
         const colonosAbrigados = Math.min(
-          quantidadeColonosExpansao,
+          estado.populacaoColonia,
           capacidadeMoradia,
         );
+        const necessidadeAlimentos =
+          estado.populacaoColonia * consumoAlimentoPorColono;
+        const producaoAlimentos =
+          empregos.lavoura * alimentoPorAgricultor +
+          empregos.pastagem * alimentoPorPastor +
+          empregos.pesca * alimentoPorPescador;
+        populacaoColoniaStatusEl.textContent =
+          `${estado.populacaoColonia} moradores`;
         alimentosStatusEl.textContent = estado.celeiroConstruido
-          ? `${Math.floor(estado.estoqueAlimentos)} / ${capacidadeCeleiroColonia} no celeiro · consumo 20 / 60 s`
-          : `${Math.floor(estado.estoqueAlimentos)} provisórios · consumo 20 / 60 s`;
+          ? `${Math.floor(estado.estoqueAlimentos)} / ${capacidadeCeleiroColonia} · −${necessidadeAlimentos} / 60 s`
+          : `${Math.floor(estado.estoqueAlimentos)} provisórios · −${necessidadeAlimentos} / 60 s`;
         moradiaStatusEl.textContent =
-          `${colonosAbrigados} / ${quantidadeColonosExpansao} abrigados`;
+          `${colonosAbrigados} / ${estado.populacaoColonia} · ${estado.quantidadeCasasColonia} casas`;
+        empregosColoniaStatusEl.textContent =
+          `${estado.populacaoColonia} ocupados · +${producaoAlimentos} alimento / 60 s`;
+        estoquesColoniaStatusEl.textContent =
+          `Min ${Math.floor(estado.estoqueMinerio)}/${capacidadeMinerioColonia} · Fer ${Math.floor(estado.estoqueFerramentas)}/${capacidadeFerramentasColonia} · Arm ${Math.floor(estado.estoqueArmas)}/${capacidadeArmasColonia}`;
+        const segundosMigracao = estado.cargasMigracaoDisponiveis <
+          estado.quantidadeAdministradoresMigracao
+          ? Math.max(1, Math.ceil(intervaloMigracao - estado.tempoRecargaMigracao))
+          : intervaloMigracao;
+        migracaoStatusEl.textContent = estado.quantidadeAdministradoresMigracao > 0
+          ? `${estado.cargasMigracaoDisponiveis}/${estado.quantidadeAdministradoresMigracao} incentivos · ${segundosMigracao} s`
+          : "Sem administradores";
         prioridadeColoniaStatusEl.textContent = prioridadeAtualColonia();
         producaoColoniaStatusEl.textContent =
           estado.lavouraConstruida &&
@@ -1956,6 +2545,81 @@
             estado.celeiroConstruido
             ? "Automática acima da reserva de 80"
             : "Aguardando produção de alimentos";
+        abrirPainelColoniaBotao.disabled = !naNovaColonia;
+        contratarAdministradorMigracaoBotao.disabled =
+          !naNovaColonia ||
+          estado.etapaConstrucaoColonia < 2 ||
+          estado.quantidadeAdministradoresMigracao >=
+            maximoAdministradoresMigracao ||
+          estado.ouro < custoAdministradorMigracao;
+        contratarAdministradorMigracaoBotao.textContent =
+          estado.quantidadeAdministradoresMigracao >=
+            maximoAdministradoresMigracao
+            ? "Máximo de administradores de migração"
+            : `Contratar adm. de migração ${estado.quantidadeAdministradoresMigracao + 1}/10 · 100 ouro`;
+        incentivarMigracaoBotao.disabled =
+          !naNovaColonia ||
+          estado.etapaConstrucaoColonia < 4 ||
+          estado.cargasMigracaoDisponiveis <= 0 ||
+          estado.ouro < custoIncentivoMigracao;
+        incentivarMigracaoBotao.textContent = estado.cargasMigracaoDisponiveis > 0
+          ? `Incentivar migração · 100 ouro (${estado.cargasMigracaoDisponiveis})`
+          : "Incentivar migração · aguardando";
+
+        painelPopulacaoEl.textContent = String(estado.populacaoColonia);
+        painelCasasEl.textContent = String(estado.quantidadeCasasColonia);
+        painelCapacidadeCasasEl.textContent = String(capacidadeMoradia);
+        painelSemMoradiaEl.textContent = String(
+          Math.max(0, estado.populacaoColonia - capacidadeMoradia),
+        );
+        painelConstrucaoEl.textContent = estado.obraAutomaticaColonia
+          ? nomeObraAutomaticaColonia(estado.obraAutomaticaColonia)
+          : "Nenhuma";
+        trabalhoAdministracaoEl.textContent = String(empregos.administracao);
+        trabalhoMigracaoEl.textContent =
+          `${empregos.migracao} / ${maximoAdministradoresMigracao}`;
+        trabalhoLavouraEl.textContent =
+          `${empregos.lavoura} / ${maximoTrabalhadoresLavoura} · +${alimentoPorAgricultor} alimento cada`;
+        trabalhoPastagemEl.textContent =
+          `${empregos.pastagem} / ${maximoTrabalhadoresPastagem} · +${alimentoPorPastor} alimento cada`;
+        trabalhoCeleiroEl.textContent = `${empregos.celeiro} / 2`;
+        trabalhoPescaEl.textContent =
+          `${empregos.pesca} / ${maximoTrabalhadoresPesca} · +${alimentoPorPescador} alimento cada`;
+        trabalhoMinaEl.textContent =
+          `${empregos.mina} / ${maximoTrabalhadoresMina} · +${minerioPorMineiro} minério cada`;
+        trabalhoComercioEl.textContent =
+          `${empregos.comercio} / ${maximoTrabalhadoresComercio} · +${mercadoriaPorMercador} mercadoria cada`;
+        trabalhoFerrariaEl.textContent =
+          `${empregos.ferraria} / ${maximoTrabalhadoresFerraria} · 2 minério → 1 ferramenta`;
+        trabalhoForjaEl.textContent =
+          `${empregos.forja} / ${maximoTrabalhadoresForja} · 3 minério → 1 arma`;
+        trabalhoGeralEl.textContent = String(empregos.geral);
+        estoqueAlimentosDetalheEl.textContent =
+          `${Math.floor(estado.estoqueAlimentos)} / ${capacidadeCeleiroColonia}`;
+        estoqueMinerioEl.textContent =
+          `${Math.floor(estado.estoqueMinerio)} / ${capacidadeMinerioColonia}`;
+        estoqueFerramentasEl.textContent =
+          `${Math.floor(estado.estoqueFerramentas)} / ${capacidadeFerramentasColonia}`;
+        estoqueArmasEl.textContent =
+          `${Math.floor(estado.estoqueArmas)} / ${capacidadeArmasColonia}`;
+        estoqueMercadoriasEl.textContent =
+          `${Math.floor(estado.estoqueMercadorias)} / ${capacidadeMercadoriasColonia}`;
+        edificioAgriculturaEl.textContent =
+          estado.lavouraConstruida && estado.pastagemConstruida
+            ? "Construídos"
+            : "Em fundação";
+        edificioCeleiroEl.textContent =
+          statusEdificioColonia("celeiro", estado.celeiroConstruido);
+        edificioMinaEl.textContent =
+          statusEdificioColonia("mina", estado.minaConstruida);
+        edificioPescaEl.textContent =
+          statusEdificioColonia("caisPesca", estado.caisPescaConstruido);
+        edificioComercioEl.textContent =
+          statusEdificioColonia("caisComercial", estado.caisComercialConstruido);
+        edificioFerrariaEl.textContent =
+          statusEdificioColonia("ferraria", estado.ferrariaColoniaConstruida);
+        edificioForjaEl.textContent =
+          statusEdificioColonia("forja", estado.forjaColoniaConstruida);
         combateStatusEl.textContent = `ATQ ${estado.ataque} · ARM ${estado.armadura}`;
         cacarBotao.disabled = !noAssentamento || estado.vida <= 0;
         voltarBotao.disabled = !naFloresta;
@@ -2074,7 +2738,7 @@
         canvas.setAttribute(
           "aria-label",
           naNovaColonia
-            ? "Mapa costeiro ampliado da nova colônia com 20 colonos. Arraste para explorar e use dois dedos para ampliar. O administrador é o ponto verde."
+            ? `Mapa costeiro ampliado da nova colônia com ${estado.populacaoColonia} moradores. Arraste para explorar e use dois dedos para ampliar. O administrador é o ponto verde.`
             : noAssentamento
             ? `Mapa do assentamento com rio, cais, ferraria, banco, minas, ${estado.quantidadeFazendeiros} fazendeiros, ${estado.quantidadeFruticultores} fruticultores, ${estado.quantidadePescadores} pescadores, ${estado.quantidadeComerciantes} comerciantes, ${estado.quantidadeFerreiros} ferreiros, ${estado.quantidadeMineiros} mineiros e ${estado.quantidadeBanqueiros} banqueiros. O arqueiro é o ponto verde.`
             : `Mapa da floresta com ${estado.inimigos.length} inimigos vermelhos. O arqueiro é o ponto verde.`,
@@ -2613,6 +3277,12 @@
           const administracaoConcluida =
             estado.etapaConstrucaoColonia === 1;
           estado.etapaConstrucaoColonia += 1;
+          if (!administracaoConcluida) {
+            estado.quantidadeCasasColonia = Math.max(
+              4,
+              estado.quantidadeCasasColonia,
+            );
+          }
           estado.tempoConstrucaoColonia = 0;
           if (estado.mapaAtual === "expansao") {
             const posicaoColonia = posicaoJogadorNovaColonia();
@@ -2919,6 +3589,139 @@
         salvarProgresso();
       }
 
+      function abrirPainelColonia() {
+        atualizarInterface();
+        if (typeof painelColonia.showModal === "function") {
+          painelColonia.showModal();
+        } else {
+          painelColonia.setAttribute("open", "");
+        }
+      }
+
+      function fecharPainelColonia() {
+        if (typeof painelColonia.close === "function") {
+          painelColonia.close();
+        } else {
+          painelColonia.removeAttribute("open");
+        }
+      }
+
+      function contratarAdministradorMigracao() {
+        if (
+          estado.mapaAtual !== "expansao" ||
+          estado.etapaConstrucaoColonia < 2
+        ) {
+          definirMensagem(
+            "A administração colonial precisa estar concluída para contratar este profissional.",
+          );
+          return;
+        }
+        if (
+          estado.quantidadeAdministradoresMigracao >=
+          maximoAdministradoresMigracao
+        ) {
+          definirMensagem("A equipe de migração já tem 10 administradores.");
+          return;
+        }
+        if (estado.ouro < custoAdministradorMigracao) {
+          definirMensagem(
+            "Você precisa de 100 de ouro pessoal para contratar um administrador de migração.",
+          );
+          return;
+        }
+
+        estado.ouro = arredondarOuro(
+          estado.ouro - custoAdministradorMigracao,
+        );
+        estado.quantidadeAdministradoresMigracao += 1;
+        estado.populacaoColonia += 1;
+        estado.cargasMigracaoDisponiveis += 1;
+        estado.salvamentoAtivo = true;
+        definirMensagem(
+          `Administrador de migração ${estado.quantidadeAdministradoresMigracao}/10 contratado com ouro pessoal. Ele também precisa de alimento e moradia.`,
+        );
+        atualizarInterface();
+        salvarProgresso();
+      }
+
+      function incentivarMigracao() {
+        if (
+          estado.mapaAtual !== "expansao" ||
+          estado.etapaConstrucaoColonia < 4
+        ) {
+          definirMensagem("Conclua as primeiras moradias antes de incentivar a migração.");
+          return;
+        }
+        if (estado.cargasMigracaoDisponiveis <= 0) {
+          definirMensagem(
+            "Todos os administradores de migração estão ocupados. Um novo incentivo ficará disponível em até 60 segundos.",
+          );
+          return;
+        }
+        if (estado.ouro < custoIncentivoMigracao) {
+          definirMensagem(
+            "Você precisa de 100 de ouro pessoal para incentivar a chegada de um colono.",
+          );
+          return;
+        }
+
+        estado.ouro = arredondarOuro(estado.ouro - custoIncentivoMigracao);
+        estado.cargasMigracaoDisponiveis -= 1;
+        estado.migracoesPendentes.push(0);
+        estado.salvamentoAtivo = true;
+        definirMensagem(
+          "Incentivo pago com ouro pessoal. Um novo colono chegará de barco pela costa.",
+        );
+        atualizarInterface();
+        salvarProgresso();
+      }
+
+      function atualizarMigracaoColonia(delta) {
+        if (!estado.coloniaIniciada) return;
+
+        if (
+          estado.quantidadeAdministradoresMigracao > 0 &&
+          estado.cargasMigracaoDisponiveis <
+            estado.quantidadeAdministradoresMigracao
+        ) {
+          estado.tempoRecargaMigracao += delta;
+          if (estado.tempoRecargaMigracao >= intervaloMigracao) {
+            estado.tempoRecargaMigracao %= intervaloMigracao;
+            estado.cargasMigracaoDisponiveis =
+              estado.quantidadeAdministradoresMigracao;
+            definirMensagem(
+              "Os administradores de migração podem iniciar novos incentivos.",
+            );
+            atualizarInterface();
+            salvarProgresso();
+          }
+        } else {
+          estado.tempoRecargaMigracao = 0;
+        }
+
+        if (estado.migracoesPendentes.length === 0) return;
+        estado.migracoesPendentes = estado.migracoesPendentes.map(
+          (tempo) => tempo + delta,
+        );
+        const chegadas = estado.migracoesPendentes.filter(
+          (tempo) => tempo >= duracaoViagemMigrante,
+        ).length;
+        if (chegadas === 0) return;
+
+        estado.migracoesPendentes = estado.migracoesPendentes.filter(
+          (tempo) => tempo < duracaoViagemMigrante,
+        );
+        estado.populacaoColonia += chegadas;
+        redistribuirTrabalhadoresColonia();
+        definirMensagem(
+          chegadas === 1
+            ? "Um novo colono desembarcou e escolheu automaticamente o trabalho de maior prioridade."
+            : `${chegadas} novos colonos desembarcaram e receberam trabalhos automaticamente.`,
+        );
+        atualizarInterface();
+        salvarProgresso();
+      }
+
       function atualizarLoja() {
         const ataqueMaximo = estado.ataque >= nivelMaximo;
         const armaduraMaxima = estado.armadura >= nivelMaximo;
@@ -3049,11 +3852,7 @@
       }
 
       function iniciarObraAutomaticaColonia(tipo) {
-        const custo = tipo === "lavoura"
-          ? custoLavouraColonia
-          : tipo === "pastagem"
-            ? custoPastagemColonia
-            : custoCeleiroColonia;
+        const custo = custoObraAutomaticaColonia(tipo);
         if (estado.tesouroColonia < custo) return false;
 
         estado.tesouroColonia = arredondarOuro(
@@ -3061,22 +3860,49 @@
         );
         estado.obraAutomaticaColonia = tipo;
         estado.tempoObraAutomaticaColonia = 0;
-        const alvo = tipo === "celeiro"
-          ? {
-              x: areaCeleiro.x + areaCeleiro.largura / 2,
-              y: areaCeleiro.y + areaCeleiro.altura / 2,
-            }
-          : {
-              x:
-                (areaLavoura.x +
-                  areaLavoura.largura +
-                  areaPastagem.x) /
-                2,
-              y: areaLavoura.y + areaLavoura.altura / 2,
-            };
-        focarCameraExpansao(alvo, tipo === "celeiro" ? 0.75 : 0.55);
+        const alvos = {
+          lavoura: {
+            x: (areaLavoura.x + areaLavoura.largura + areaPastagem.x) / 2,
+            y: areaLavoura.y + areaLavoura.altura / 2,
+          },
+          pastagem: {
+            x: (areaLavoura.x + areaLavoura.largura + areaPastagem.x) / 2,
+            y: areaLavoura.y + areaLavoura.altura / 2,
+          },
+          celeiro: {
+            x: areaCeleiro.x + areaCeleiro.largura / 2,
+            y: areaCeleiro.y + areaCeleiro.altura / 2,
+          },
+          moradia: {
+            x: areaMoradias.x + areaMoradias.largura / 2,
+            y: areaMoradias.y + areaMoradias.altura / 2,
+          },
+          mina: {
+            x: areaMinaColonia.x + areaMinaColonia.largura / 2,
+            y: areaMinaColonia.y + areaMinaColonia.altura / 2,
+          },
+          caisPesca: {
+            x: limiteCosta,
+            y: areaCaisPescaColonia.y + areaCaisPescaColonia.altura / 2,
+          },
+          caisComercial: {
+            x: limiteCosta,
+            y:
+              areaCaisComercialColonia.y +
+              areaCaisComercialColonia.altura / 2,
+          },
+          ferraria: {
+            x: areaFerrariaColonia.x + areaFerrariaColonia.largura / 2,
+            y: areaFerrariaColonia.y + areaFerrariaColonia.altura / 2,
+          },
+          forja: {
+            x: areaForjaColonia.x + areaForjaColonia.largura / 2,
+            y: areaForjaColonia.y + areaForjaColonia.altura / 2,
+          },
+        };
+        focarCameraExpansao(alvos[tipo], tipo === "moradia" ? 0.8 : 0.6);
         definirMensagem(
-          `Os colonos priorizaram a ${nomeObraAutomaticaColonia(tipo)} e reservaram ${custo} do cofre municipal.`,
+          `Os colonos iniciaram ${nomeObraAutomaticaColonia(tipo)} e reservaram ${custo} do cofre municipal.`,
         );
         atualizarInterface();
         salvarProgresso();
@@ -3090,13 +3916,7 @@
         ) return;
 
         if (!estado.obraAutomaticaColonia) {
-          const proximaObra = !estado.lavouraConstruida
-            ? "lavoura"
-            : !estado.pastagemConstruida
-              ? "pastagem"
-              : !estado.celeiroConstruido
-                ? "celeiro"
-                : null;
+          const proximaObra = proximaObraAutomaticaColonia();
           if (!proximaObra || !iniciarObraAutomaticaColonia(proximaObra)) {
             return;
           }
@@ -3116,18 +3936,28 @@
           estado.lavouraConstruida = true;
         } else if (obraConcluida === "pastagem") {
           estado.pastagemConstruida = true;
-        } else {
+        } else if (obraConcluida === "celeiro") {
           estado.celeiroConstruido = true;
+        } else if (obraConcluida === "moradia") {
+          estado.quantidadeCasasColonia = Math.min(
+            maximoCasasColonia,
+            estado.quantidadeCasasColonia + 1,
+          );
+        } else if (obraConcluida === "mina") {
+          estado.minaConstruida = true;
+        } else if (obraConcluida === "caisPesca") {
+          estado.caisPescaConstruido = true;
+        } else if (obraConcluida === "caisComercial") {
+          estado.caisComercialConstruido = true;
+        } else if (obraConcluida === "ferraria") {
+          estado.ferrariaColoniaConstruida = true;
+        } else if (obraConcluida === "forja") {
+          estado.forjaColoniaConstruida = true;
         }
         estado.obraAutomaticaColonia = null;
         estado.tempoObraAutomaticaColonia = 0;
-        const mensagemObra = obraConcluida === "lavoura"
-          ? "Lavoura concluída"
-          : obraConcluida === "pastagem"
-            ? "Pastagem concluída"
-            : "Celeiro concluído";
         definirMensagem(
-          `${mensagemObra}. Os colonos reavaliaram as necessidades da cidade.`,
+          `Obra concluída: ${nomeObraAutomaticaColonia(obraConcluida)}. Os colonos reavaliaram as necessidades da cidade.`,
         );
         atualizarInterface();
         salvarProgresso();
@@ -3149,16 +3979,23 @@
         let alimentosProduzidos = 0;
         let alimentosConsumidos = 0;
         let alimentosVendidos = 0;
+        let minerioProduzido = 0;
+        let ferramentasProduzidas = 0;
+        let armasProduzidas = 0;
+        let mercadoriasProduzidas = 0;
+        let receitaBrutaRecursos = 0;
 
         for (let ciclo = 0; ciclo < ciclos; ciclo += 1) {
+          const empregos = redistribuirTrabalhadoresColonia();
           const producao =
-            (estado.lavouraConstruida ? producaoLavouraColonia : 0) +
-            (estado.pastagemConstruida ? producaoPastagemColonia : 0);
+            empregos.lavoura * alimentoPorAgricultor +
+            empregos.pastagem * alimentoPorPastor +
+            empregos.pesca * alimentoPorPescador;
           alimentosProduzidos += producao;
           estado.estoqueAlimentos += producao;
 
           const necessidade =
-            quantidadeColonosExpansao * consumoAlimentoPorColono;
+            estado.populacaoColonia * consumoAlimentoPorColono;
           const consumo = Math.min(necessidade, estado.estoqueAlimentos);
           estado.estoqueAlimentos -= consumo;
           alimentosConsumidos += consumo;
@@ -3173,17 +4010,73 @@
           estado.estoqueAlimentos -= excedente;
           alimentosVendidos += excedente;
           if (excedente > 0) {
-            dividirReceitaColonia(excedente * valorVendaAlimento);
+            receitaBrutaRecursos += excedente * valorVendaAlimento;
           }
+
+          const novoMinerio = empregos.mina * minerioPorMineiro;
+          minerioProduzido += novoMinerio;
+          estado.estoqueMinerio += novoMinerio;
+
+          const ferramentasPossiveis = Math.min(
+            empregos.ferraria,
+            Math.floor(estado.estoqueMinerio / minerioPorFerramenta),
+          );
+          estado.estoqueMinerio -=
+            ferramentasPossiveis * minerioPorFerramenta;
+          estado.estoqueFerramentas += ferramentasPossiveis;
+          ferramentasProduzidas += ferramentasPossiveis;
+
+          const armasPossiveis = Math.min(
+            empregos.forja,
+            Math.floor(estado.estoqueMinerio / minerioPorArma),
+          );
+          estado.estoqueMinerio -= armasPossiveis * minerioPorArma;
+          estado.estoqueArmas += armasPossiveis;
+          armasProduzidas += armasPossiveis;
+
+          const novasMercadorias =
+            empregos.comercio * mercadoriaPorMercador;
+          estado.estoqueMercadorias += novasMercadorias;
+          mercadoriasProduzidas += novasMercadorias;
+
+          const excessoMinerio = Math.max(
+            0,
+            estado.estoqueMinerio - capacidadeMinerioColonia,
+          );
+          const excessoFerramentas = Math.max(
+            0,
+            estado.estoqueFerramentas - capacidadeFerramentasColonia,
+          );
+          const excessoArmas = Math.max(
+            0,
+            estado.estoqueArmas - capacidadeArmasColonia,
+          );
+          const excessoMercadorias = Math.max(
+            0,
+            estado.estoqueMercadorias - capacidadeMercadoriasColonia,
+          );
+          estado.estoqueMinerio -= excessoMinerio;
+          estado.estoqueFerramentas -= excessoFerramentas;
+          estado.estoqueArmas -= excessoArmas;
+          estado.estoqueMercadorias -= excessoMercadorias;
+          receitaBrutaRecursos +=
+            excessoMinerio * valorVendaMinerio +
+            excessoFerramentas * valorVendaFerramenta +
+            excessoArmas * valorVendaArma +
+            excessoMercadorias * valorVendaMercadoria;
+        }
+
+        if (receitaBrutaRecursos > 0) {
+          dividirReceitaColonia(receitaBrutaRecursos);
         }
 
         definirMensagem(
-          alimentosVendidos > 0
-            ? `Os colonos consumiram ${alimentosConsumidos}, guardaram 80 no celeiro e venderam ${alimentosVendidos}. A cidade recebeu 90% e você recebeu 10%.`
+          receitaBrutaRecursos > 0
+            ? `Produção vendida por ${formatarOuro(receitaBrutaRecursos)}: 90% para a cidade e 10% para você. Estoques cheios vendem apenas o excedente.`
             : estado.colonosComFome > 0
               ? `${estado.colonosComFome} colonos ficaram sem alimento neste ciclo.`
               : estado.celeiroConstruido
-                ? `A cidade produziu ${alimentosProduzidos} e consumiu ${alimentosConsumidos} alimentos. O celeiro mantém uma reserva de 80 para a população.`
+                ? `Produção: ${alimentosProduzidos} alimentos, ${minerioProduzido} minério, ${ferramentasProduzidas} ferramentas, ${armasProduzidas} armas e ${mercadoriasProduzidas} mercadorias. A população consumiu ${alimentosConsumidos}.`
                 : `A cidade produziu ${alimentosProduzidos} e consumiu ${alimentosConsumidos} alimentos. Os colonos precisam concluir o celeiro para armazenar e vender excedentes.`,
         );
         atualizarInterface();
@@ -4021,7 +4914,8 @@
       }
 
       function posicaoTrabalhoAdministracao(indice) {
-        const angulo = (indice / quantidadeColonosExpansao) * Math.PI * 2;
+        const angulo =
+          (indice / Math.max(1, estado.populacaoColonia)) * Math.PI * 2;
         return {
           x:
             areaAdministracao.x +
@@ -4035,18 +4929,27 @@
       }
 
       function posicaoTrabalhoMoradias(indice) {
-        const coluna = indice % 5;
-        const linha = Math.floor(indice / 5);
+        const casa = posicaoCasaColonia(Math.floor(indice / capacidadeCasaColonia));
+        const vaga = indice % capacidadeCasaColonia;
         return {
-          x: areaMoradias.x + 80 + coluna * 135,
-          y: areaMoradias.y + 75 + linha * 115,
+          x: casa.x + 28 + vaga * 22,
+          y: casa.y + 68 + (vaga % 2) * 28,
+        };
+      }
+
+      function posicaoCasaColonia(indiceCasa) {
+        const coluna = indiceCasa % 6;
+        const linha = Math.floor(indiceCasa / 6);
+        return {
+          x: areaMoradias.x + 45 + coluna * 190,
+          y: areaMoradias.y + 65 + linha * 165,
         };
       }
 
       function posicaoRotinaRuralColonia(vaga, tipo) {
         const area = tipo === "lavoura" ? areaLavoura : areaPastagem;
-        const casa = casasAgricultores[vaga];
-        const centroCasa = { x: casa.x + 75, y: casa.y + 55 };
+        const casa = posicaoCasaColonia(vaga);
+        const centroCasa = { x: casa.x + 65, y: casa.y + 55 };
         const yEstrada = areaLavoura.y + areaLavoura.altura / 2;
         const portao = { x: recintoExterno.x, y: yEstrada };
         const estradaExterior = {
@@ -4083,6 +4986,74 @@
         );
       }
 
+      function empregoDoColono(indice) {
+        const empregos = estado.empregosColonia;
+        const ordem = [
+          "administracao",
+          "migracao",
+          "lavoura",
+          "pastagem",
+          "celeiro",
+          "pesca",
+          "mina",
+          "comercio",
+          "ferraria",
+          "forja",
+          "geral",
+        ];
+        let inicio = 0;
+        for (const tipo of ordem) {
+          const fim = inicio + empregos[tipo];
+          if (indice < fim) return { tipo, vaga: indice - inicio };
+          inicio = fim;
+        }
+        return { tipo: "geral", vaga: indice };
+      }
+
+      function centroObraColonia(tipo) {
+        const centros = {
+          moradia: {
+            x: areaMoradias.x + areaMoradias.largura / 2,
+            y: areaMoradias.y + areaMoradias.altura / 2,
+          },
+          mina: {
+            x: areaMinaColonia.x + areaMinaColonia.largura / 2,
+            y: areaMinaColonia.y + areaMinaColonia.altura / 2,
+          },
+          caisPesca: {
+            x: limiteCosta - 80,
+            y: areaCaisPescaColonia.y + areaCaisPescaColonia.altura / 2,
+          },
+          caisComercial: {
+            x: limiteCosta - 120,
+            y:
+              areaCaisComercialColonia.y +
+              areaCaisComercialColonia.altura / 2,
+          },
+          ferraria: {
+            x: areaFerrariaColonia.x + areaFerrariaColonia.largura / 2,
+            y: areaFerrariaColonia.y + areaFerrariaColonia.altura / 2,
+          },
+          forja: {
+            x: areaForjaColonia.x + areaForjaColonia.largura / 2,
+            y: areaForjaColonia.y + areaForjaColonia.altura / 2,
+          },
+          celeiro: {
+            x: areaCeleiro.x + areaCeleiro.largura / 2,
+            y: areaCeleiro.y + areaCeleiro.altura / 2,
+          },
+          lavoura: {
+            x: areaLavoura.x + areaLavoura.largura / 2,
+            y: areaLavoura.y + areaLavoura.altura / 2,
+          },
+          pastagem: {
+            x: areaPastagem.x + areaPastagem.largura / 2,
+            y: areaPastagem.y + areaPastagem.altura / 2,
+          },
+        };
+        return centros[tipo] || posicaoAdministrador;
+      }
+
       function posicaoColonoNovaColonia(indice) {
         const desembarque = posicaoFormacaoColonos(
           { x: posicaoNovaColonia.x + 35, y: posicaoNovaColonia.y + 75 },
@@ -4105,44 +5076,55 @@
           );
           posicao = interpolarPonto(administracao, moradias, progresso);
         } else if (estado.etapaConstrucaoColonia >= 4) {
-          if (
-            estado.obraAutomaticaColonia === "celeiro" &&
-            indice < 6
-          ) {
-            const progresso = limitarProgresso(
-              estado.tempoObraAutomaticaColonia /
-                (duracaoObraAutomaticaColonia * 0.45),
+          const emprego = empregoDoColono(indice);
+          if (emprego.tipo === "lavoura") {
+            posicao = posicaoRotinaRuralColonia(emprego.vaga, "lavoura");
+          } else if (emprego.tipo === "pastagem") {
+            posicao = posicaoRotinaRuralColonia(emprego.vaga, "pastagem");
+          } else if (emprego.tipo === "administracao") {
+            posicao = posicaoFormacaoColonos(posicaoAdministrador, emprego.vaga);
+          } else if (emprego.tipo === "migracao") {
+            posicao = posicaoFormacaoColonos(
+              { x: posicaoAdministrador.x + 230, y: posicaoAdministrador.y },
+              emprego.vaga,
             );
-            const trabalhoCeleiro = posicaoFormacaoColonos(
-              {
-                x: areaCeleiro.x + areaCeleiro.largura / 2,
-                y: areaCeleiro.y + areaCeleiro.altura / 2,
-              },
-              indice,
+          } else if (emprego.tipo === "celeiro") {
+            posicao = posicaoFormacaoColonos(
+              { x: areaCeleiro.x + areaCeleiro.largura / 2, y: areaCeleiro.y + areaCeleiro.altura + 75 },
+              emprego.vaga,
             );
-            posicao = interpolarPonto(
-              administracao,
-              trabalhoCeleiro,
-              progresso,
+          } else if (emprego.tipo === "pesca") {
+            posicao = posicaoFormacaoColonos(
+              { x: limiteCosta - 60, y: areaCaisPescaColonia.y + 180 },
+              emprego.vaga,
             );
-          } else if (
-            (estado.lavouraConstruida ||
-              estado.obraAutomaticaColonia === "lavoura") &&
-            indice >= 6 &&
-            indice < 11
-          ) {
-            const vaga = indice - 6;
-            posicao = posicaoRotinaRuralColonia(vaga, "lavoura");
-          } else if (
-            (estado.pastagemConstruida ||
-              estado.obraAutomaticaColonia === "pastagem") &&
-            indice >= 11 &&
-            indice < 16
-          ) {
-            const vaga = indice - 11;
-            posicao = posicaoRotinaRuralColonia(vaga, "pastagem");
+          } else if (emprego.tipo === "mina") {
+            posicao = posicaoFormacaoColonos(
+              { x: areaMinaColonia.x + areaMinaColonia.largura / 2, y: areaMinaColonia.y + areaMinaColonia.altura / 2 },
+              emprego.vaga,
+            );
+          } else if (emprego.tipo === "comercio") {
+            posicao = posicaoFormacaoColonos(
+              { x: limiteCosta - 90, y: areaCaisComercialColonia.y + 300 },
+              emprego.vaga,
+            );
+          } else if (emprego.tipo === "ferraria") {
+            posicao = posicaoFormacaoColonos(
+              { x: areaFerrariaColonia.x + areaFerrariaColonia.largura / 2, y: areaFerrariaColonia.y + areaFerrariaColonia.altura + 60 },
+              emprego.vaga,
+            );
+          } else if (emprego.tipo === "forja") {
+            posicao = posicaoFormacaoColonos(
+              { x: areaForjaColonia.x + areaForjaColonia.largura / 2, y: areaForjaColonia.y + areaForjaColonia.altura + 60 },
+              emprego.vaga,
+            );
+          } else if (estado.obraAutomaticaColonia) {
+            posicao = posicaoFormacaoColonos(
+              centroObraColonia(estado.obraAutomaticaColonia),
+              emprego.vaga,
+            );
           } else {
-            posicao = indice < 6 ? administracao : moradias;
+            posicao = moradias;
           }
         }
 
@@ -4202,8 +5184,8 @@
       }
 
       function desenharMoradiasColonia() {
-        const progresso = progressoEtapaColonia(3);
-        if (progresso <= 0) return;
+        const progressoInicial = progressoEtapaColonia(3);
+        if (estado.etapaConstrucaoColonia < 3) return;
         contexto.strokeStyle = "#66744c";
         contexto.lineWidth = 8;
         contexto.strokeRect(
@@ -4213,17 +5195,24 @@
           areaMoradias.altura,
         );
 
-        const casas = [
-          [areaMoradias.x + 70, areaMoradias.y + 70],
-          [areaMoradias.x + 285, areaMoradias.y + 70],
-          [areaMoradias.x + 500, areaMoradias.y + 70],
-          [areaMoradias.x + 70, areaMoradias.y + 300],
-          [areaMoradias.x + 285, areaMoradias.y + 300],
-          [areaMoradias.x + 500, areaMoradias.y + 300],
-        ];
-        casas.forEach(([x, y], indice) => {
-          const progressoCasa = limitarProgresso(progresso * 6 - indice);
-          if (progressoCasa <= 0) return;
+        const casasConcluidas = estado.etapaConstrucaoColonia >= 4
+          ? estado.quantidadeCasasColonia
+          : 4;
+        const casaAdicional =
+          estado.obraAutomaticaColonia === "moradia" &&
+          casasConcluidas < maximoCasasColonia;
+        const totalParaDesenhar = casasConcluidas + (casaAdicional ? 1 : 0);
+        for (let indice = 0; indice < totalParaDesenhar; indice += 1) {
+          const { x, y } = posicaoCasaColonia(indice);
+          const progressoCasa = estado.etapaConstrucaoColonia < 4
+            ? limitarProgresso(progressoInicial * 4 - indice)
+            : indice < casasConcluidas
+              ? 1
+              : limitarProgresso(
+                  estado.tempoObraAutomaticaColonia /
+                    duracaoObraAutomaticaColonia,
+                );
+          if (progressoCasa <= 0) continue;
           contexto.strokeStyle = "#6a5130";
           contexto.lineWidth = 8;
           contexto.strokeRect(x, y, 130, 105);
@@ -4241,7 +5230,34 @@
             contexto.closePath();
             contexto.fill();
           }
-        });
+          contexto.fillStyle = "#f1dfad";
+          contexto.font = "bold 14px sans-serif";
+          contexto.textAlign = "center";
+          contexto.textBaseline = "middle";
+          const moradoresNaCasa = Math.max(
+            0,
+            Math.min(
+              capacidadeCasaColonia,
+              estado.populacaoColonia - indice * capacidadeCasaColonia,
+            ),
+          );
+          contexto.fillText(
+            `CASA ${indice + 1} · ${moradoresNaCasa}/${capacidadeCasaColonia}`,
+            x + 65,
+            y + 55,
+          );
+        }
+        contexto.fillStyle = "#33402a";
+        contexto.font = "bold 22px sans-serif";
+        contexto.textAlign = "center";
+        contexto.textBaseline = "middle";
+        contexto.fillText(
+          `BLOCOS DE MORADIA · ${estado.quantidadeCasasColonia} CASAS`,
+          areaMoradias.x + areaMoradias.largura / 2,
+          areaMoradias.y + 28,
+        );
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
       }
 
       function desenharDefesasColonia() {
@@ -4476,7 +5492,7 @@
         contexto.textBaseline = "middle";
         contexto.fillText(
           progresso >= 1
-            ? "CELEIRO"
+            ? `CELEIRO · ${Math.floor(estado.estoqueAlimentos)}/${capacidadeCeleiroColonia}`
             : `CELEIRO · ${Math.round(progresso * 100)}%`,
           x + largura / 2,
           y + 115,
@@ -4584,7 +5600,7 @@
           contexto.fillStyle = "#332819";
           contexto.fillText(
             progressoLavoura >= 1
-              ? "LAVOURA"
+              ? `LAVOURA · ${estado.empregosColonia.lavoura}/${maximoTrabalhadoresLavoura} · +${alimentoPorAgricultor} CADA`
               : `LAVOURA · ${Math.round(progressoLavoura * 100)}%`,
             areaLavoura.x + areaLavoura.largura / 2,
             areaLavoura.y + 35,
@@ -4647,7 +5663,7 @@
           contexto.fillStyle = "#29371d";
           contexto.fillText(
             progressoPastagem >= 1
-              ? "PASTAGEM"
+              ? `PASTAGEM · ${estado.empregosColonia.pastagem}/${maximoTrabalhadoresPastagem} · +${alimentoPorPastor} CADA`
               : `PASTAGEM · ${Math.round(progressoPastagem * 100)}%`,
             areaPastagem.x + areaPastagem.largura / 2,
             areaPastagem.y + 42,
@@ -4673,14 +5689,203 @@
         contexto.textBaseline = "alphabetic";
       }
 
+      function progressoEdificioColonia(tipo, construido) {
+        if (construido) return 1;
+        return estado.obraAutomaticaColonia === tipo
+          ? Math.min(
+              1,
+              estado.tempoObraAutomaticaColonia /
+                duracaoObraAutomaticaColonia,
+            )
+          : 0;
+      }
+
+      function desenharEdificioColonia(area, tipo, construido, nome, cor) {
+        const progresso = progressoEdificioColonia(tipo, construido);
+        contexto.lineWidth = 10;
+        contexto.strokeStyle = progresso > 0 ? "#4b3927" : "#697057";
+        contexto.strokeRect(
+          area.x,
+          area.y,
+          area.largura,
+          area.altura,
+        );
+        if (progresso > 0) {
+          contexto.fillStyle = cor;
+          contexto.fillRect(
+            area.x + 10,
+            area.y + 10,
+            (area.largura - 20) * progresso,
+            area.altura - 20,
+          );
+        }
+        contexto.fillStyle = "#30261b";
+        contexto.font = "bold 22px sans-serif";
+        contexto.textAlign = "center";
+        contexto.textBaseline = "middle";
+        contexto.fillText(
+          progresso >= 1
+            ? nome
+            : progresso > 0
+              ? `${nome} · ${Math.round(progresso * 100)}%`
+              : `LOCAL: ${nome}`,
+          area.x + area.largura / 2,
+          area.y + area.altura / 2,
+        );
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
+      }
+
+      function desenharInfraestruturaColonia() {
+        if (estado.etapaConstrucaoColonia < 4) return;
+
+        desenharEdificioColonia(
+          areaMinaColonia,
+          "mina",
+          estado.minaConstruida,
+          "MINA · 5 VAGAS",
+          "#77756f",
+        );
+        desenharEdificioColonia(
+          areaDepositoMinerio,
+          "mina",
+          estado.minaConstruida,
+          `MINÉRIO ${Math.floor(estado.estoqueMinerio)}/${capacidadeMinerioColonia}`,
+          "#95846a",
+        );
+
+        const progressoPesca = progressoEdificioColonia(
+          "caisPesca",
+          estado.caisPescaConstruido,
+        );
+        contexto.fillStyle = "#6f5638";
+        contexto.fillRect(
+          limiteCosta - 130,
+          areaCaisPescaColonia.y,
+          540 * progressoPesca,
+          110,
+        );
+        desenharEdificioColonia(
+          areaCaisPescaColonia,
+          "caisPesca",
+          estado.caisPescaConstruido,
+          "CAIS DE PESCA · 5 VAGAS",
+          "#7094a2",
+        );
+
+        const progressoComercial = progressoEdificioColonia(
+          "caisComercial",
+          estado.caisComercialConstruido,
+        );
+        contexto.fillStyle = "#705335";
+        contexto.fillRect(
+          limiteCosta - 180,
+          areaCaisComercialColonia.y + 160,
+          760 * progressoComercial,
+          180,
+        );
+        desenharEdificioColonia(
+          areaCaisComercialColonia,
+          "caisComercial",
+          estado.caisComercialConstruido,
+          "CAIS COMERCIAL · 5 VAGAS",
+          "#8b6843",
+        );
+        desenharEdificioColonia(
+          areaArmazemComercial,
+          "caisComercial",
+          estado.caisComercialConstruido,
+          `MERCADORIAS ${Math.floor(estado.estoqueMercadorias)}/${capacidadeMercadoriasColonia}`,
+          "#9b7648",
+        );
+
+        desenharEdificioColonia(
+          areaFerrariaColonia,
+          "ferraria",
+          estado.ferrariaColoniaConstruida,
+          "FERRARIA · 5 VAGAS",
+          "#9a5b35",
+        );
+        desenharEdificioColonia(
+          areaArmazemFerramentas,
+          "ferraria",
+          estado.ferrariaColoniaConstruida,
+          `FERRAMENTAS ${Math.floor(estado.estoqueFerramentas)}/${capacidadeFerramentasColonia}`,
+          "#9b7f5e",
+        );
+        desenharEdificioColonia(
+          areaForjaColonia,
+          "forja",
+          estado.forjaColoniaConstruida,
+          "FORJA · 5 VAGAS",
+          "#8e4933",
+        );
+        desenharEdificioColonia(
+          areaArsenalColonia,
+          "forja",
+          estado.forjaColoniaConstruida,
+          `ARMAS ${Math.floor(estado.estoqueArmas)}/${capacidadeArmasColonia}`,
+          "#75594a",
+        );
+      }
+
+      function desenharBarcosMigracaoColonia() {
+        estado.migracoesPendentes.forEach((tempo, indice) => {
+          const progresso = limitarProgresso(tempo / duracaoViagemMigrante);
+          const yDestino = estado.caisComercialConstruido
+            ? areaCaisComercialColonia.y + 250
+            : posicaoNovaColonia.y + 80;
+          const x = 13820 - progresso * 760;
+          const y = yDestino + indice * 95;
+          contexto.fillStyle = "#4b3020";
+          contexto.beginPath();
+          contexto.moveTo(x - 95, y);
+          contexto.lineTo(x + 95, y);
+          contexto.lineTo(x + 65, y + 55);
+          contexto.lineTo(x - 65, y + 55);
+          contexto.closePath();
+          contexto.fill();
+          contexto.fillStyle = "#e8dfc2";
+          contexto.fillRect(x - 6, y - 85, 12, 86);
+          contexto.beginPath();
+          contexto.moveTo(x + 2, y - 82);
+          contexto.lineTo(x + 70, y - 18);
+          contexto.lineTo(x + 2, y - 18);
+          contexto.closePath();
+          contexto.fill();
+          desenharCirculo(x - 28, y - 5, 8, "#ded3b4", "#59462c");
+        });
+      }
+
       function desenharColonosNovaColonia() {
+        redistribuirTrabalhadoresColonia();
+        const coresEmprego = {
+          administracao: "#e1c27a",
+          migracao: "#55d6d1",
+          lavoura: "#e2b44f",
+          pastagem: "#a6ce6a",
+          celeiro: "#d6924f",
+          pesca: "#62b8e8",
+          mina: "#a9adb3",
+          comercio: "#bb8ee8",
+          ferraria: "#e48345",
+          forja: "#df594c",
+          geral: "#ded3b4",
+        };
         for (
           let indice = 0;
-          indice < quantidadeColonosExpansao;
+          indice < estado.populacaoColonia;
           indice += 1
         ) {
           const posicao = posicaoColonoNovaColonia(indice);
-          desenharCirculo(posicao.x, posicao.y, 7, "#e1c27a", "#59462c");
+          const emprego = empregoDoColono(indice);
+          desenharCirculo(
+            posicao.x,
+            posicao.y,
+            emprego.tipo === "migracao" ? 8 : 7,
+            coresEmprego[emprego.tipo],
+            "#59462c",
+          );
         }
       }
 
@@ -4721,13 +5926,14 @@
         contexto.textAlign = "start";
         contexto.textBaseline = "alphabetic";
 
+        desenharBarcosMigracaoColonia();
         desenharAreasProdutivasColonia();
         desenharDefesasColonia();
         desenharAdministracaoColonia();
         desenharMoradiasPrestigioColonia();
         desenharCeleiroColonia();
         desenharMoradiasColonia();
-        desenharCasasAgricultoresColonia();
+        desenharInfraestruturaColonia();
         desenharColonosNovaColonia();
       }
 
@@ -5385,6 +6591,7 @@
         atualizarBanqueiro(delta);
         atualizarEscriturario(delta);
         atualizarTransferenciaPosto(delta);
+        atualizarMigracaoColonia(delta);
         atualizarPrioridadesColonia(delta);
         atualizarNecessidadesColonia(delta);
         atualizarConstrucaoColonia(delta);
@@ -5448,6 +6655,13 @@
         "click",
         construirPastagemColonia,
       );
+      abrirPainelColoniaBotao.addEventListener("click", abrirPainelColonia);
+      fecharPainelColoniaBotao.addEventListener("click", fecharPainelColonia);
+      contratarAdministradorMigracaoBotao.addEventListener(
+        "click",
+        contratarAdministradorMigracao,
+      );
+      incentivarMigracaoBotao.addEventListener("click", incentivarMigracao);
       diminuirZoomBotao.addEventListener("click", () =>
         alterarZoomExpansao(0.8),
       );
