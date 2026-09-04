@@ -340,6 +340,16 @@
         margin-top: 0;
       }
 
+      .registros-resumo {
+        margin: 0 0 0.75rem;
+        color: #d4cbb4;
+        line-height: 1.45;
+      }
+
+      .registros-destaque {
+        color: #f1cc69 !important;
+      }
+
       .lista-colonia {
         margin: 0.55rem 0 0;
         padding: 0;
@@ -586,8 +596,11 @@
         <button id="abrir-painel-colonia" class="acao-colonia secundario" type="button">
           Painel colonial
         </button>
+        <button id="abrir-registros" class="acao-colonia secundario" type="button">
+          Registros
+        </button>
         <button id="contratar-administrador-migracao" class="acao-colonia" type="button">
-          Contratar adm. de migração · 100 ouro
+          Contratar escriturário de migração · 100 ouro
         </button>
         <button id="incentivar-migracao" class="acao-colonia" type="button">
           Incentivar migração · 100 ouro
@@ -687,7 +700,7 @@
             <li>A torre administrativa, as moradias de prestígio e o celeiro ocupam o recinto interno planejado; os blocos de moradia ocupam o recinto externo planejado.</li>
             <li>O campo de grãos, a horta e pomar, o feijoal, a pastagem e a mina ficam no extremo oeste. A costa é reservada para pesca, comércio e chegada de migrantes.</li>
             <li>A horta e pomar produz 4 cestas por trabalhador; cada cesta vale 2 alimentos. O feijoal produz 3 sacas; cada saca vale 3 alimentos.</li>
-            <li>A pastagem produz 4 provisões por trabalhador. Cada área agrícola aceita até 5 trabalhadores.</li>
+            <li>A pastagem maior aceita até 10 trabalhadores e produz 4 provisões por trabalhador. Os campos menores aceitam até 5.</li>
             <li>O campo produz 6 grãos por agricultor. O moinho transforma 4 grãos em 3 farinhas e a padaria transforma 3 farinhas em 2 pães; cada pão vale 4 alimentos.</li>
             <li>Custos municipais: pastagem 500; celeiro central 300; horta/pomar 350 + armazém 200; feijoal 350 + armazém 200; campo de grãos 400 + silo 250; moinho 450 + depósito 200; padaria 500 + despensa 250.</li>
             <li>As muralhas não existem no início. Depois das construções produtivas, a cidade pode erguer a paliçada interna por 4 trechos de 250 e a externa por 4 trechos de 450.</li>
@@ -695,10 +708,14 @@
             <li>O cais de pesca aceita 5 pescadores e produz 5 alimentos por trabalhador a cada 60 segundos.</li>
             <li>O celeiro central armazena até 200 provisões. Celeiros secundários ilustrados armazenam grãos, hortaliças, feijão, farinha e pães no recinto externo.</li>
             <li>A mina produz minério; a ferraria transforma 2 minérios em 1 ferramenta; a forja transforma 3 minérios em 1 arma. Cada atividade aceita até 5 trabalhadores.</li>
+            <li>A floresta do noroeste começa com 120 de 200 árvores. Cada lenhador corta 2 árvores e entrega 10 madeiras; cada reflorestador planta 6 árvores por minuto.</li>
+            <li>Há duas cabanas de lenhadores com 3 vagas cada, uma cabana de reflorestamento com 2 vagas e duas cabanas de coleta com 3 vagas cada. Cada coletor entrega 3 ervas medicinais.</li>
+            <li>Armas de madeira: 4 madeiras por lança, 6 por arco. A flecharia usa 2 madeiras para fazer 12 flechas; uma aljava completa leva 20 flechas.</li>
             <li>Minério, ferramentas, armas e mercadorias possuem depósitos próprios. Quando um depósito enche, somente o excedente é vendido.</li>
             <li>Toda venda colonial é dividida: 90% para o tesouro da cidade e 10% para o patrimônio pessoal do administrador.</li>
-            <li>Um administrador de migração custa 100 de ouro pessoal, consome alimento, ocupa moradia e libera um incentivo a cada 60 segundos.</li>
-            <li>Cada incentivo custa 100 de ouro pessoal e traz 1 novo colono de barco. Podem trabalhar até 10 administradores de migração.</li>
+            <li>Um escriturário de migração custa 100 de ouro pessoal, consome alimento, ocupa moradia e libera um incentivo a cada 60 segundos.</li>
+            <li>A cada 60 segundos existe 5% de chance de migração espontânea; cada escriturário acrescenta 1 ponto percentual, até 15% com 10 profissionais.</li>
+            <li>Cada incentivo custa 100 de ouro pessoal e traz 1 novo colono de barco. Podem trabalhar até 10 escriturários de migração.</li>
             <li>Descansar custa 3 de ouro e recupera até 30 de vida.</li>
             <li>Ao ser derrotado, você volta com vida completa e perde 15 de ouro.</li>
             <li>Cada ponto de ataque causa 1 de dano.</li>
@@ -734,14 +751,19 @@
             <h3 id="titulo-empregos-colonia">Trabalho automático</h3>
             <ul class="lista-colonia">
               <li>Administração municipal <span id="trabalho-administracao">0</span></li>
-              <li>Administração de migração <span id="trabalho-migracao">0 / 10</span></li>
+              <li>Escriturários de migração <span id="trabalho-migracao">0 / 10</span></li>
               <li>Agricultores de grãos <span id="trabalho-lavoura">0 / 5 · +6 grãos cada</span></li>
               <li>Horticultores <span id="trabalho-horta">0 / 5 · +4 cestas cada</span></li>
               <li>Produtores de feijão <span id="trabalho-feijao">0 / 5 · +3 sacas cada</span></li>
-              <li>Pastores <span id="trabalho-pastagem">0 / 5 · +4 alimento cada</span></li>
+              <li>Pastores <span id="trabalho-pastagem">0 / 10 · +4 alimento cada</span></li>
               <li>Celeireiros <span id="trabalho-celeiro">0 / 2</span></li>
               <li>Moleiros <span id="trabalho-moinho">0 / 5 · grãos → farinha</span></li>
               <li>Padeiros <span id="trabalho-padaria">0 / 5 · farinha → pão</span></li>
+              <li>Lenhadores <span id="trabalho-lenhador">0 / 6 · árvores → madeira</span></li>
+              <li>Reflorestadores <span id="trabalho-reflorestador">0 / 2 · +6 árvores cada</span></li>
+              <li>Coletores de ervas <span id="trabalho-coletor">0 / 6 · +3 ervas cada</span></li>
+              <li>Armeiros de madeira <span id="trabalho-armeiro-madeira">0 / 5 · lanças e arcos</span></li>
+              <li>Flecheiros <span id="trabalho-flecheiro">0 / 5 · +12 flechas cada</span></li>
               <li>Pescadores <span id="trabalho-pesca">0 / 5 · +5 alimento cada</span></li>
               <li>Mineiros <span id="trabalho-mina">0 / 5 · +5 minério cada</span></li>
               <li>Mercadores <span id="trabalho-comercio">0 / 5 · +1 mercadoria cada</span></li>
@@ -760,9 +782,15 @@
               <li>Armazém — feijão (valor 3) <span id="estoque-feijao">0 / 100</span></li>
               <li>Depósito — farinha (ingrediente) <span id="estoque-farinha">0 / 120</span></li>
               <li>Despensa — pães (valor 4) <span id="estoque-paes">0 / 100</span></li>
+              <li>Reserva florestal — árvores <span id="estoque-arvores">0 / 200</span></li>
+              <li>Depósito de madeira <span id="estoque-madeira">0 / 180</span></li>
+              <li>Ervário — ervas medicinais <span id="estoque-ervas">0 / 100</span></li>
               <li>Depósito de minério <span id="estoque-minerio">0 / 100</span></li>
               <li>Armazém de ferramentas <span id="estoque-ferramentas">0 / 60</span></li>
-              <li>Arsenal — armas <span id="estoque-armas">0 / 40</span></li>
+              <li>Arsenal — armas de metal <span id="estoque-armas">0 / 40</span></li>
+              <li>Arsenal — lanças de madeira <span id="estoque-lancas">0 / 60</span></li>
+              <li>Arsenal — arcos <span id="estoque-arcos">0 / 40</span></li>
+              <li>Depósito de munição — flechas <span id="estoque-flechas">0 / 600</span></li>
               <li>Armazém comercial <span id="estoque-mercadorias">0 / 50</span></li>
             </ul>
           </section>
@@ -777,6 +805,12 @@
               <li>Campo de grãos + silo <span id="edificio-graos">Planejados</span></li>
               <li>Moinho + depósito de farinha <span id="edificio-moinho">Planejados</span></li>
               <li>Padaria + despensa de pães <span id="edificio-padaria">Planejados</span></li>
+              <li>Cabanas de lenhadores <span id="edificio-lenhadores">0 / 2</span></li>
+              <li>Cabana de reflorestamento <span id="edificio-reflorestamento">Planejada</span></li>
+              <li>Cabanas de coleta <span id="edificio-coleta">0 / 2</span></li>
+              <li>Depósitos de madeira e ervas <span id="edificio-floresta-estoques">Planejados</span></li>
+              <li>Oficina + arsenal de madeira <span id="edificio-armas-madeira">Planejados</span></li>
+              <li>Flecharia + depósito de munição <span id="edificio-flecharia">Planejados</span></li>
               <li>Mina + depósito <span id="edificio-mina">Planejados</span></li>
               <li>Cais de pesca <span id="edificio-pesca">Planejado</span></li>
               <li>Cais comercial + armazém <span id="edificio-comercio">Planejados</span></li>
@@ -784,6 +818,93 @@
               <li>Forja + arsenal <span id="edificio-forja">Planejados</span></li>
               <li>Paliçada interna — estágio 1 <span id="edificio-palicada-interna">0 / 4 trechos</span></li>
               <li>Paliçada externa — estágio 1 <span id="edificio-palicada-externa">0 / 4 trechos</span></li>
+            </ul>
+          </section>
+        </div>
+      </section>
+    </dialog>
+
+    <dialog id="registros-colonia" aria-labelledby="titulo-registros-colonia">
+      <section class="loja-conteudo">
+        <header class="loja-cabecalho">
+          <div>
+            <h2 id="titulo-registros-colonia">Registros da colônia</h2>
+            <p>Estoques, limites, fluxo produtivo e prontidão de armamentos.</p>
+          </div>
+          <button id="fechar-registros" class="secundario fechar-loja" type="button" aria-label="Fechar registros da colônia">×</button>
+        </header>
+
+        <p class="registros-resumo" id="registro-resumo">
+          Os valores são atualizados automaticamente a cada ciclo de 60 segundos.
+        </p>
+        <div class="painel-colonia-grade">
+          <section class="economia" aria-labelledby="titulo-registro-financas">
+            <h3 id="titulo-registro-financas">Livro-caixa</h3>
+            <ul class="lista-colonia">
+              <li>Cofre municipal <span id="registro-tesouro">0 ouro</span></li>
+              <li>Patrimônio pessoal <span id="registro-patrimonio">0 ouro</span></li>
+              <li>Próximo repasse do posto <span id="registro-repasse">60 s · 300 ouro</span></li>
+              <li>Consumo da população <span id="registro-consumo">0 alimento / 60 s</span></li>
+              <li>Chance migratória espontânea <span id="registro-chance-migracao">5% / 60 s</span></li>
+              <li>Vagas para migrantes <span id="registro-vagas-migracao">0</span></li>
+            </ul>
+          </section>
+
+          <section class="economia" aria-labelledby="titulo-registro-alimentos">
+            <h3 id="titulo-registro-alimentos">Alimentos</h3>
+            <ul class="lista-colonia">
+              <li>Valor alimentar disponível <span id="registro-alimento-total">0</span></li>
+              <li>Provisões · valor 1 <span id="registro-provisoes">0 / 200</span></li>
+              <li>Grãos · ingrediente <span id="registro-graos">0 / 150</span></li>
+              <li>Frutas e verduras · valor 2 <span id="registro-hortalicas">0 / 100</span></li>
+              <li>Feijão · valor 3 <span id="registro-feijao">0 / 100</span></li>
+              <li>Farinha · ingrediente <span id="registro-farinha">0 / 120</span></li>
+              <li>Pães · valor 4 <span id="registro-paes">0 / 100</span></li>
+            </ul>
+          </section>
+
+          <section class="economia" aria-labelledby="titulo-registro-natureza">
+            <h3 id="titulo-registro-natureza">Floresta e matérias-primas</h3>
+            <ul class="lista-colonia">
+              <li>Árvores em pé <span id="registro-arvores">0 / 200</span></li>
+              <li>Madeira cortada <span id="registro-madeira">0 / 180</span></li>
+              <li>Ervas medicinais <span id="registro-ervas">0 / 100</span></li>
+              <li>Minério <span id="registro-minerio">0 / 100</span></li>
+              <li>Ferramentas <span id="registro-ferramentas">0 / 60</span></li>
+              <li>Mercadorias <span id="registro-mercadorias">0 / 50</span></li>
+            </ul>
+          </section>
+
+          <section class="economia" aria-labelledby="titulo-registro-armamentos">
+            <h3 id="titulo-registro-armamentos">Armamentos e munição</h3>
+            <ul class="lista-colonia">
+              <li>Armas de metal <span id="registro-armas-metal">0 / 40</span></li>
+              <li>Lanças de madeira · 4 madeira <span id="registro-lancas">0 / 60</span></li>
+              <li>Arcos · 6 madeira <span id="registro-arcos">0 / 40</span></li>
+              <li>Flechas · 2 madeira → 12 <span id="registro-flechas">0 / 600</span></li>
+              <li>Aljavas completas · 20 flechas <span id="registro-aljavas">0</span></li>
+              <li>Arqueiros abastecidos <span id="registro-arqueiros-prontos" class="registros-destaque">0</span></li>
+            </ul>
+          </section>
+
+          <section class="economia" aria-labelledby="titulo-registro-fluxos">
+            <h3 id="titulo-registro-fluxos">Ciclo florestal · 60 segundos</h3>
+            <ul class="lista-colonia">
+              <li>Lenhadores <span id="registro-producao-madeira">0 árvore · 0 madeira</span></li>
+              <li>Reflorestadores <span id="registro-producao-arvores">+0 árvores</span></li>
+              <li>Coletores <span id="registro-producao-ervas">+0 ervas</span></li>
+              <li>Armeiros de madeira <span id="registro-producao-armas-madeira">0 trabalhadores</span></li>
+              <li>Flecheiros <span id="registro-producao-flechas">0 flechas possíveis</span></li>
+            </ul>
+          </section>
+
+          <section class="economia" aria-labelledby="titulo-registro-regras">
+            <h3 id="titulo-registro-regras">Regras do almoxarifado</h3>
+            <ul>
+              <li>O excedente de um depósito cheio é vendido automaticamente.</li>
+              <li>90% da receita entra no cofre municipal e 10% no patrimônio pessoal.</li>
+              <li>Sem árvores suficientes, o corte para; o reflorestamento recupera a reserva.</li>
+              <li>Arcos só contam como abastecidos quando há uma aljava de 20 flechas disponível.</li>
             </ul>
           </section>
         </div>
@@ -956,6 +1077,7 @@
       const abrirPainelColoniaBotao = document.querySelector(
         "#abrir-painel-colonia",
       );
+      const abrirRegistrosBotao = document.querySelector("#abrir-registros");
       const contratarAdministradorMigracaoBotao = document.querySelector(
         "#contratar-administrador-migracao",
       );
@@ -965,6 +1087,10 @@
       const painelColonia = document.querySelector("#painel-colonia");
       const fecharPainelColoniaBotao = document.querySelector(
         "#fechar-painel-colonia",
+      );
+      const registrosColonia = document.querySelector("#registros-colonia");
+      const fecharRegistrosBotao = document.querySelector(
+        "#fechar-registros",
       );
       const painelPopulacaoEl = document.querySelector("#painel-populacao");
       const painelCasasEl = document.querySelector("#painel-casas");
@@ -984,6 +1110,17 @@
       const trabalhoCeleiroEl = document.querySelector("#trabalho-celeiro");
       const trabalhoMoinhoEl = document.querySelector("#trabalho-moinho");
       const trabalhoPadariaEl = document.querySelector("#trabalho-padaria");
+      const trabalhoLenhadorEl = document.querySelector("#trabalho-lenhador");
+      const trabalhoReflorestadorEl = document.querySelector(
+        "#trabalho-reflorestador",
+      );
+      const trabalhoColetorEl = document.querySelector("#trabalho-coletor");
+      const trabalhoArmeiroMadeiraEl = document.querySelector(
+        "#trabalho-armeiro-madeira",
+      );
+      const trabalhoFlecheiroEl = document.querySelector(
+        "#trabalho-flecheiro",
+      );
       const trabalhoPescaEl = document.querySelector("#trabalho-pesca");
       const trabalhoMinaEl = document.querySelector("#trabalho-mina");
       const trabalhoComercioEl = document.querySelector("#trabalho-comercio");
@@ -998,11 +1135,17 @@
       const estoqueFeijaoEl = document.querySelector("#estoque-feijao");
       const estoqueFarinhaEl = document.querySelector("#estoque-farinha");
       const estoquePaesEl = document.querySelector("#estoque-paes");
+      const estoqueArvoresEl = document.querySelector("#estoque-arvores");
+      const estoqueMadeiraEl = document.querySelector("#estoque-madeira");
+      const estoqueErvasEl = document.querySelector("#estoque-ervas");
       const estoqueMinerioEl = document.querySelector("#estoque-minerio");
       const estoqueFerramentasEl = document.querySelector(
         "#estoque-ferramentas",
       );
       const estoqueArmasEl = document.querySelector("#estoque-armas");
+      const estoqueLancasEl = document.querySelector("#estoque-lancas");
+      const estoqueArcosEl = document.querySelector("#estoque-arcos");
+      const estoqueFlechasEl = document.querySelector("#estoque-flechas");
       const estoqueMercadoriasEl = document.querySelector(
         "#estoque-mercadorias",
       );
@@ -1015,6 +1158,22 @@
       const edificioGraosEl = document.querySelector("#edificio-graos");
       const edificioMoinhoEl = document.querySelector("#edificio-moinho");
       const edificioPadariaEl = document.querySelector("#edificio-padaria");
+      const edificioLenhadoresEl = document.querySelector(
+        "#edificio-lenhadores",
+      );
+      const edificioReflorestamentoEl = document.querySelector(
+        "#edificio-reflorestamento",
+      );
+      const edificioColetaEl = document.querySelector("#edificio-coleta");
+      const edificioFlorestaEstoquesEl = document.querySelector(
+        "#edificio-floresta-estoques",
+      );
+      const edificioArmasMadeiraEl = document.querySelector(
+        "#edificio-armas-madeira",
+      );
+      const edificioFlechariaEl = document.querySelector(
+        "#edificio-flecharia",
+      );
       const edificioMinaEl = document.querySelector("#edificio-mina");
       const edificioPescaEl = document.querySelector("#edificio-pesca");
       const edificioComercioEl = document.querySelector("#edificio-comercio");
@@ -1049,6 +1208,44 @@
       );
       const novoJogoBotao = document.querySelector("#novo-jogo");
       const apagarBotao = document.querySelector("#apagar");
+      const registrosEls = Object.fromEntries(
+        [
+          "resumo",
+          "tesouro",
+          "patrimonio",
+          "repasse",
+          "consumo",
+          "chance-migracao",
+          "vagas-migracao",
+          "alimento-total",
+          "provisoes",
+          "graos",
+          "hortalicas",
+          "feijao",
+          "farinha",
+          "paes",
+          "arvores",
+          "madeira",
+          "ervas",
+          "minerio",
+          "ferramentas",
+          "mercadorias",
+          "armas-metal",
+          "lancas",
+          "arcos",
+          "flechas",
+          "aljavas",
+          "arqueiros-prontos",
+          "producao-madeira",
+          "producao-arvores",
+          "producao-ervas",
+          "producao-armas-madeira",
+          "producao-flechas",
+        ].map((nome) => [
+          nome,
+          document.querySelector(`#registro-${nome}`),
+        ]),
+      );
 
       const larguraMundo = 1400;
       const alturaMundo = 900;
@@ -1124,6 +1321,62 @@
         y: 4400,
         largura: 3500,
         altura: 1100,
+      };
+      const areaFlorestaColonia = {
+        x: 350,
+        y: 450,
+        largura: 3600,
+        altura: 1700,
+      };
+      const areasCabanasLenhadores = [
+        { x: 600, y: 1650, largura: 600, altura: 300 },
+        { x: 1450, y: 1650, largura: 600, altura: 300 },
+      ];
+      const areaCabanaReflorestamento = {
+        x: 2400,
+        y: 1650,
+        largura: 600,
+        altura: 300,
+      };
+      const areasCabanasColeta = [
+        { x: 750, y: 760, largura: 540, altura: 280 },
+        { x: 2650, y: 760, largura: 540, altura: 280 },
+      ];
+      const areaDepositoMadeira = {
+        x: 5100,
+        y: 1700,
+        largura: 440,
+        altura: 260,
+      };
+      const areaErvario = {
+        x: 5600,
+        y: 1700,
+        largura: 440,
+        altura: 260,
+      };
+      const areaOficinaArmasMadeira = {
+        x: 6500,
+        y: 1650,
+        largura: 500,
+        altura: 300,
+      };
+      const areaArsenalMadeira = {
+        x: 7100,
+        y: 1700,
+        largura: 440,
+        altura: 260,
+      };
+      const areaFlecharia = {
+        x: 7700,
+        y: 1650,
+        largura: 500,
+        altura: 300,
+      };
+      const areaDepositoFlechas = {
+        x: 8300,
+        y: 1700,
+        largura: 440,
+        altura: 260,
       };
       const areaArmazemGraos = {
         x: 5150,
@@ -1244,12 +1497,28 @@
       const custoArmazemFarinhaColonia = 200;
       const custoPadariaColonia = 500;
       const custoArmazemPaesColonia = 250;
+      const custoCabanaLenhadoresColonia = 350;
+      const custoDepositoMadeiraColonia = 250;
+      const custoCabanaReflorestamentoColonia = 300;
+      const custoCabanaColetaColonia = 300;
+      const custoErvarioColonia = 200;
+      const custoOficinaArmasMadeiraColonia = 600;
+      const custoArsenalMadeiraColonia = 250;
+      const custoFlechariaColonia = 450;
+      const custoDepositoFlechasColonia = 200;
       const capacidadeCeleiroColonia = 200;
       const capacidadeGraosColonia = 150;
       const capacidadeHortalicasColonia = 100;
       const capacidadeFeijaoColonia = 100;
       const capacidadeFarinhaColonia = 120;
       const capacidadePaesColonia = 100;
+      const capacidadeArvoresColonia = 200;
+      const estoqueInicialArvoresColonia = 120;
+      const capacidadeMadeiraColonia = 180;
+      const capacidadeErvasColonia = 100;
+      const capacidadeLancasMadeiraColonia = 60;
+      const capacidadeArcosColonia = 40;
+      const capacidadeFlechasColonia = 600;
       const capacidadeCasaColonia = 5;
       const maximoCasasColonia = 30;
       const custoCasaColonia = 250;
@@ -1268,9 +1537,14 @@
       const maximoTrabalhadoresLavoura = 5;
       const maximoTrabalhadoresHorta = 5;
       const maximoTrabalhadoresFeijao = 5;
-      const maximoTrabalhadoresPastagem = 5;
+      const maximoTrabalhadoresPastagem = 10;
       const maximoTrabalhadoresMoinho = 5;
       const maximoTrabalhadoresPadaria = 5;
+      const trabalhadoresPorCabanaLenhadores = 3;
+      const maximoTrabalhadoresReflorestamento = 2;
+      const trabalhadoresPorCabanaColeta = 3;
+      const maximoTrabalhadoresArmasMadeira = 5;
+      const maximoTrabalhadoresFlecharia = 5;
       const maximoTrabalhadoresPesca = 5;
       const maximoTrabalhadoresMina = 5;
       const maximoTrabalhadoresComercio = 5;
@@ -1285,6 +1559,15 @@
       const farinhaProduzidaPorMoleiro = 3;
       const farinhaPorPao = 3;
       const paesProduzidosPorPadeiro = 2;
+      const arvoresCortadasPorLenhador = 2;
+      const madeiraPorLenhador = 10;
+      const arvoresPlantadasPorReflorestador = 6;
+      const ervasPorColetor = 3;
+      const madeiraPorLanca = 4;
+      const madeiraPorArco = 6;
+      const madeiraPorLoteFlechas = 2;
+      const flechasPorLote = 12;
+      const flechasPorAljava = 20;
       const valorAlimentarProvisao = 1;
       const valorAlimentarHortalica = 2;
       const valorAlimentarFeijao = 3;
@@ -1302,10 +1585,17 @@
       const valorVendaFeijao = 3;
       const valorVendaFarinha = 2;
       const valorVendaPao = 5;
+      const valorVendaMadeira = 1;
+      const valorVendaErva = 3;
+      const valorVendaLancaMadeira = 8;
+      const valorVendaArco = 12;
+      const valorVendaFlecha = 1;
       const maximoAdministradoresMigracao = 10;
       const custoAdministradorMigracao = 100;
       const custoIncentivoMigracao = 100;
       const intervaloMigracao = 60;
+      const chanceBaseMigracao = 0.05;
+      const chancePorEscriturarioMigracao = 0.01;
       const duracaoViagemMigrante = 12;
       const estoqueInicialAlimentos = 120;
       const consumoAlimentoPorColono = 1;
@@ -1422,6 +1712,15 @@
         armazemFarinhaConstruido: false,
         padariaConstruida: false,
         armazemPaesConstruido: false,
+        quantidadeCabanasLenhadores: 0,
+        depositoMadeiraConstruido: false,
+        cabanaReflorestamentoConstruida: false,
+        quantidadeCabanasColeta: 0,
+        ervarioConstruido: false,
+        oficinaArmasMadeiraConstruida: false,
+        arsenalMadeiraConstruido: false,
+        flechariaConstruida: false,
+        depositoFlechasConstruido: false,
         obraAutomaticaColonia: null,
         tempoObraAutomaticaColonia: 0,
         estoqueAlimentos: 0,
@@ -1430,6 +1729,12 @@
         estoqueFeijao: 0,
         estoqueFarinha: 0,
         estoquePaes: 0,
+        estoqueArvores: 0,
+        estoqueMadeira: 0,
+        estoqueErvas: 0,
+        estoqueLancasMadeira: 0,
+        estoqueArcos: 0,
+        estoqueFlechas: 0,
         tempoNecessidadesColonia: 0,
         colonosComFome: 0,
         populacaoColonia: 0,
@@ -1437,6 +1742,7 @@
         quantidadeAdministradoresMigracao: 0,
         cargasMigracaoDisponiveis: 0,
         tempoRecargaMigracao: 0,
+        tempoTentativaMigracao: 0,
         migracoesPendentes: [],
         minaConstruida: false,
         caisPescaConstruido: false,
@@ -1459,6 +1765,11 @@
           celeiro: 0,
           moinho: 0,
           padaria: 0,
+          lenhador: 0,
+          reflorestador: 0,
+          coletor: 0,
+          armeiroMadeira: 0,
+          flecheiro: 0,
           pesca: 0,
           mina: 0,
           comercio: 0,
@@ -1582,6 +1893,15 @@
         estado.armazemFarinhaConstruido = false;
         estado.padariaConstruida = false;
         estado.armazemPaesConstruido = false;
+        estado.quantidadeCabanasLenhadores = 0;
+        estado.depositoMadeiraConstruido = false;
+        estado.cabanaReflorestamentoConstruida = false;
+        estado.quantidadeCabanasColeta = 0;
+        estado.ervarioConstruido = false;
+        estado.oficinaArmasMadeiraConstruida = false;
+        estado.arsenalMadeiraConstruido = false;
+        estado.flechariaConstruida = false;
+        estado.depositoFlechasConstruido = false;
         estado.obraAutomaticaColonia = null;
         estado.tempoObraAutomaticaColonia = 0;
         estado.estoqueAlimentos = estoqueInicialAlimentos;
@@ -1590,6 +1910,12 @@
         estado.estoqueFeijao = 0;
         estado.estoqueFarinha = 0;
         estado.estoquePaes = 0;
+        estado.estoqueArvores = estoqueInicialArvoresColonia;
+        estado.estoqueMadeira = 0;
+        estado.estoqueErvas = 0;
+        estado.estoqueLancasMadeira = 0;
+        estado.estoqueArcos = 0;
+        estado.estoqueFlechas = 0;
         estado.tempoNecessidadesColonia = 0;
         estado.colonosComFome = 0;
         estado.populacaoColonia = quantidadeColonosExpansao;
@@ -1597,6 +1923,7 @@
         estado.quantidadeAdministradoresMigracao = 0;
         estado.cargasMigracaoDisponiveis = 0;
         estado.tempoRecargaMigracao = 0;
+        estado.tempoTentativaMigracao = 0;
         estado.migracoesPendentes = [];
         estado.minaConstruida = false;
         estado.caisPescaConstruido = false;
@@ -1704,6 +2031,19 @@
               armazemFarinhaConstruido: estado.armazemFarinhaConstruido,
               padariaConstruida: estado.padariaConstruida,
               armazemPaesConstruido: estado.armazemPaesConstruido,
+              floresta: {
+                cabanasLenhadores: estado.quantidadeCabanasLenhadores,
+                depositoMadeira: estado.depositoMadeiraConstruido,
+                cabanaReflorestamento:
+                  estado.cabanaReflorestamentoConstruida,
+                cabanasColeta: estado.quantidadeCabanasColeta,
+                ervario: estado.ervarioConstruido,
+                oficinaArmasMadeira:
+                  estado.oficinaArmasMadeiraConstruida,
+                arsenalMadeira: estado.arsenalMadeiraConstruido,
+                flecharia: estado.flechariaConstruida,
+                depositoFlechas: estado.depositoFlechasConstruido,
+              },
               defesas: {
                 trechosPalicadaInterna: estado.trechosPalicadaInterna,
                 trechosPalicadaExterna: estado.trechosPalicadaExterna,
@@ -1727,6 +2067,7 @@
                 estado.quantidadeAdministradoresMigracao,
               cargasMigracao: estado.cargasMigracaoDisponiveis,
               tempoRecargaMigracao: estado.tempoRecargaMigracao,
+              tempoTentativaMigracao: estado.tempoTentativaMigracao,
               migracoesPendentes: [...estado.migracoesPendentes],
               edificios: {
                 mina: estado.minaConstruida,
@@ -1741,6 +2082,12 @@
                 feijao: estado.estoqueFeijao,
                 farinha: estado.estoqueFarinha,
                 paes: estado.estoquePaes,
+                arvores: estado.estoqueArvores,
+                madeira: estado.estoqueMadeira,
+                ervas: estado.estoqueErvas,
+                lancasMadeira: estado.estoqueLancasMadeira,
+                arcos: estado.estoqueArcos,
+                flechas: estado.estoqueFlechas,
                 minerio: estado.estoqueMinerio,
                 ferramentas: estado.estoqueFerramentas,
                 armas: estado.estoqueArmas,
@@ -2229,6 +2576,36 @@
             salvo.expansao?.economia?.padariaConstruida === true;
           estado.armazemPaesConstruido =
             salvo.expansao?.economia?.armazemPaesConstruido === true;
+          estado.quantidadeCabanasLenhadores = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.floresta?.cabanasLenhadores,
+              0,
+              2,
+              0,
+            ),
+          );
+          estado.depositoMadeiraConstruido =
+            salvo.expansao?.economia?.floresta?.depositoMadeira === true;
+          estado.cabanaReflorestamentoConstruida =
+            salvo.expansao?.economia?.floresta?.cabanaReflorestamento === true;
+          estado.quantidadeCabanasColeta = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.floresta?.cabanasColeta,
+              0,
+              2,
+              0,
+            ),
+          );
+          estado.ervarioConstruido =
+            salvo.expansao?.economia?.floresta?.ervario === true;
+          estado.oficinaArmasMadeiraConstruida =
+            salvo.expansao?.economia?.floresta?.oficinaArmasMadeira === true;
+          estado.arsenalMadeiraConstruido =
+            salvo.expansao?.economia?.floresta?.arsenalMadeira === true;
+          estado.flechariaConstruida =
+            salvo.expansao?.economia?.floresta?.flecharia === true;
+          estado.depositoFlechasConstruido =
+            salvo.expansao?.economia?.floresta?.depositoFlechas === true;
           estado.trechosPalicadaInterna = Math.round(
             numeroValido(
               salvo.expansao?.economia?.defesas?.trechosPalicadaInterna,
@@ -2258,6 +2635,15 @@
             salvo.expansao?.economia?.obraAutomatica === "armazemFarinha" ||
             salvo.expansao?.economia?.obraAutomatica === "padaria" ||
             salvo.expansao?.economia?.obraAutomatica === "armazemPaes" ||
+            salvo.expansao?.economia?.obraAutomatica === "cabanaLenhadores" ||
+            salvo.expansao?.economia?.obraAutomatica === "depositoMadeira" ||
+            salvo.expansao?.economia?.obraAutomatica === "cabanaReflorestamento" ||
+            salvo.expansao?.economia?.obraAutomatica === "cabanaColeta" ||
+            salvo.expansao?.economia?.obraAutomatica === "ervario" ||
+            salvo.expansao?.economia?.obraAutomatica === "oficinaArmasMadeira" ||
+            salvo.expansao?.economia?.obraAutomatica === "arsenalMadeira" ||
+            salvo.expansao?.economia?.obraAutomatica === "flecharia" ||
+            salvo.expansao?.economia?.obraAutomatica === "depositoFlechas" ||
             salvo.expansao?.economia?.obraAutomatica === "moradia" ||
             salvo.expansao?.economia?.obraAutomatica === "mina" ||
             salvo.expansao?.economia?.obraAutomatica === "caisPesca" ||
@@ -2313,6 +2699,42 @@
             capacidadePaesColonia,
             0,
           );
+          estado.estoqueArvores = numeroValido(
+            salvo.expansao?.economia?.estoques?.arvores,
+            0,
+            capacidadeArvoresColonia,
+            estado.coloniaIniciada ? estoqueInicialArvoresColonia : 0,
+          );
+          estado.estoqueMadeira = numeroValido(
+            salvo.expansao?.economia?.estoques?.madeira,
+            0,
+            capacidadeMadeiraColonia,
+            0,
+          );
+          estado.estoqueErvas = numeroValido(
+            salvo.expansao?.economia?.estoques?.ervas,
+            0,
+            capacidadeErvasColonia,
+            0,
+          );
+          estado.estoqueLancasMadeira = numeroValido(
+            salvo.expansao?.economia?.estoques?.lancasMadeira,
+            0,
+            capacidadeLancasMadeiraColonia,
+            0,
+          );
+          estado.estoqueArcos = numeroValido(
+            salvo.expansao?.economia?.estoques?.arcos,
+            0,
+            capacidadeArcosColonia,
+            0,
+          );
+          estado.estoqueFlechas = numeroValido(
+            salvo.expansao?.economia?.estoques?.flechas,
+            0,
+            capacidadeFlechasColonia,
+            0,
+          );
           estado.tempoNecessidadesColonia = estado.coloniaIniciada
             ? numeroValido(
                 salvo.expansao?.economia?.tempoNecessidades,
@@ -2363,6 +2785,12 @@
           );
           estado.tempoRecargaMigracao = numeroValido(
             salvo.expansao?.economia?.tempoRecargaMigracao,
+            0,
+            intervaloMigracao,
+            0,
+          );
+          estado.tempoTentativaMigracao = numeroValido(
+            salvo.expansao?.economia?.tempoTentativaMigracao,
             0,
             intervaloMigracao,
             0,
@@ -2563,6 +2991,15 @@
         estado.armazemFarinhaConstruido = false;
         estado.padariaConstruida = false;
         estado.armazemPaesConstruido = false;
+        estado.quantidadeCabanasLenhadores = 0;
+        estado.depositoMadeiraConstruido = false;
+        estado.cabanaReflorestamentoConstruida = false;
+        estado.quantidadeCabanasColeta = 0;
+        estado.ervarioConstruido = false;
+        estado.oficinaArmasMadeiraConstruida = false;
+        estado.arsenalMadeiraConstruido = false;
+        estado.flechariaConstruida = false;
+        estado.depositoFlechasConstruido = false;
         estado.obraAutomaticaColonia = null;
         estado.tempoObraAutomaticaColonia = 0;
         estado.estoqueAlimentos = 0;
@@ -2571,6 +3008,12 @@
         estado.estoqueFeijao = 0;
         estado.estoqueFarinha = 0;
         estado.estoquePaes = 0;
+        estado.estoqueArvores = 0;
+        estado.estoqueMadeira = 0;
+        estado.estoqueErvas = 0;
+        estado.estoqueLancasMadeira = 0;
+        estado.estoqueArcos = 0;
+        estado.estoqueFlechas = 0;
         estado.tempoNecessidadesColonia = 0;
         estado.colonosComFome = 0;
         estado.populacaoColonia = 0;
@@ -2578,6 +3021,7 @@
         estado.quantidadeAdministradoresMigracao = 0;
         estado.cargasMigracaoDisponiveis = 0;
         estado.tempoRecargaMigracao = 0;
+        estado.tempoTentativaMigracao = 0;
         estado.migracoesPendentes = [];
         estado.minaConstruida = false;
         estado.caisPescaConstruido = false;
@@ -2632,6 +3076,11 @@
           celeiro: 0,
           moinho: 0,
           padaria: 0,
+          lenhador: 0,
+          reflorestador: 0,
+          coletor: 0,
+          armeiroMadeira: 0,
+          flecheiro: 0,
           pesca: 0,
           mina: 0,
           comercio: 0,
@@ -2645,6 +3094,17 @@
           empregos[chave] = quantidade;
           disponiveis -= quantidade;
         };
+        const adicionar = (chave, maximo, quantidade = 1) => {
+          const vagas = Math.max(0, maximo - empregos[chave]);
+          const adicionados = Math.min(
+            vagas,
+            quantidade,
+            Math.max(0, disponiveis),
+          );
+          empregos[chave] += adicionados;
+          disponiveis -= adicionados;
+          return adicionados;
+        };
 
         if (estado.etapaConstrucaoColonia < 4) {
           empregos.geral = disponiveis;
@@ -2655,32 +3115,58 @@
         ocupar("administracao", 2);
         ocupar("migracao", estado.quantidadeAdministradoresMigracao);
         if (estado.celeiroConstruido) ocupar("celeiro", 2);
-        if (estado.hortaConstruida && estado.armazemHortalicasConstruido) {
-          ocupar("horta", maximoTrabalhadoresHorta);
-        }
-        if (estado.feijaoConstruido && estado.armazemFeijaoConstruido) {
-          ocupar("feijao", maximoTrabalhadoresFeijao);
-        }
-        if (estado.pastagemConstruida && estado.celeiroConstruido) {
-          ocupar("pastagem", maximoTrabalhadoresPastagem);
-        }
-        if (estado.caisPescaConstruido) {
-          const producaoTerrestre =
-            empregos.horta *
-              hortalicasPorHorticultor *
-              valorAlimentarHortalica +
-            empregos.feijao * feijaoPorProdutor * valorAlimentarFeijao +
-            empregos.pastagem *
-              alimentoPorPastor *
-              valorAlimentarProvisao;
-          const pescadoresNecessarios = Math.ceil(
-            Math.max(0, estado.populacaoColonia - producaoTerrestre) /
-              (alimentoPorPescador * valorAlimentarProvisao),
-          );
-          ocupar(
-            "pesca",
-            Math.min(maximoTrabalhadoresPesca, pescadoresNecessarios),
-          );
+        const trabalhosAlimentares = [
+          {
+            chave: "horta",
+            ativo:
+              estado.hortaConstruida &&
+              estado.armazemHortalicasConstruido,
+            maximo: maximoTrabalhadoresHorta,
+            valor:
+              hortalicasPorHorticultor * valorAlimentarHortalica,
+          },
+          {
+            chave: "feijao",
+            ativo:
+              estado.feijaoConstruido &&
+              estado.armazemFeijaoConstruido,
+            maximo: maximoTrabalhadoresFeijao,
+            valor: feijaoPorProdutor * valorAlimentarFeijao,
+          },
+          {
+            chave: "pastagem",
+            ativo:
+              estado.pastagemConstruida && estado.celeiroConstruido,
+            maximo: maximoTrabalhadoresPastagem,
+            valor: alimentoPorPastor * valorAlimentarProvisao,
+          },
+          {
+            chave: "pesca",
+            ativo: estado.caisPescaConstruido,
+            maximo: maximoTrabalhadoresPesca,
+            valor: alimentoPorPescador * valorAlimentarProvisao,
+          },
+        ];
+        let producaoDiretaPlanejada = 0;
+        let adicionouTrabalhoAlimentar = true;
+        while (
+          disponiveis > 0 &&
+          producaoDiretaPlanejada < estado.populacaoColonia &&
+          adicionouTrabalhoAlimentar
+        ) {
+          adicionouTrabalhoAlimentar = false;
+          for (const trabalho of trabalhosAlimentares) {
+            if (
+              !trabalho.ativo ||
+              empregos[trabalho.chave] >= trabalho.maximo ||
+              disponiveis <= 0 ||
+              producaoDiretaPlanejada >= estado.populacaoColonia
+            ) continue;
+            if (adicionar(trabalho.chave, trabalho.maximo) > 0) {
+              producaoDiretaPlanejada += trabalho.valor;
+              adicionouTrabalhoAlimentar = true;
+            }
+          }
         }
         const cadeiaPaoCompleta =
           estado.lavouraConstruida &&
@@ -2717,6 +3203,55 @@
           empregos.padaria = equipes;
           disponiveis -= equipes * 3;
         }
+        const trabalhosFlorestais = [
+          {
+            chave: "lenhador",
+            maximo:
+              estado.depositoMadeiraConstruido
+                ? estado.quantidadeCabanasLenhadores *
+                  trabalhadoresPorCabanaLenhadores
+                : 0,
+          },
+          {
+            chave: "reflorestador",
+            maximo: estado.cabanaReflorestamentoConstruida
+              ? maximoTrabalhadoresReflorestamento
+              : 0,
+          },
+          {
+            chave: "coletor",
+            maximo: estado.ervarioConstruido
+              ? estado.quantidadeCabanasColeta *
+                trabalhadoresPorCabanaColeta
+              : 0,
+          },
+          {
+            chave: "armeiroMadeira",
+            maximo:
+              estado.oficinaArmasMadeiraConstruida &&
+              estado.arsenalMadeiraConstruido
+                ? maximoTrabalhadoresArmasMadeira
+                : 0,
+          },
+          {
+            chave: "flecheiro",
+            maximo:
+              estado.flechariaConstruida &&
+              estado.depositoFlechasConstruido
+                ? maximoTrabalhadoresFlecharia
+                : 0,
+          },
+        ];
+        let adicionouTrabalhoFlorestal = true;
+        while (disponiveis > 0 && adicionouTrabalhoFlorestal) {
+          adicionouTrabalhoFlorestal = false;
+          for (const trabalho of trabalhosFlorestais) {
+            if (disponiveis <= 0) break;
+            if (adicionar(trabalho.chave, trabalho.maximo) > 0) {
+              adicionouTrabalhoFlorestal = true;
+            }
+          }
+        }
         if (estado.minaConstruida) {
           ocupar("mina", maximoTrabalhadoresMina);
         }
@@ -2735,7 +3270,32 @@
       }
 
       function casasNecessariasColonia() {
-        return Math.ceil(estado.populacaoColonia / capacidadeCasaColonia);
+        const reservaMigratoria =
+          estado.quantidadeAdministradoresMigracao > 0 ? 1 : 0;
+        return Math.ceil(
+          (estado.populacaoColonia +
+            estado.migracoesPendentes.length +
+            reservaMigratoria) /
+            capacidadeCasaColonia,
+        );
+      }
+
+      function vagasMigracaoColonia() {
+        return Math.max(
+          0,
+          capacidadeMoradiasColonia() -
+            estado.populacaoColonia -
+            estado.migracoesPendentes.length,
+        );
+      }
+
+      function chanceMigracaoColonia() {
+        return Math.min(
+          0.15,
+          chanceBaseMigracao +
+            estado.quantidadeAdministradoresMigracao *
+              chancePorEscriturarioMigracao,
+        );
       }
 
       function nomeObraAutomaticaColonia(tipo) {
@@ -2751,6 +3311,23 @@
         if (tipo === "armazemFarinha") return "depósito de farinha";
         if (tipo === "padaria") return "padaria";
         if (tipo === "armazemPaes") return "despensa de pães";
+        if (tipo === "cabanaLenhadores") {
+          return `cabana de lenhadores ${estado.quantidadeCabanasLenhadores + 1}/2`;
+        }
+        if (tipo === "depositoMadeira") return "depósito de madeira";
+        if (tipo === "cabanaReflorestamento") {
+          return "cabana de reflorestamento";
+        }
+        if (tipo === "cabanaColeta") {
+          return `cabana de coleta ${estado.quantidadeCabanasColeta + 1}/2`;
+        }
+        if (tipo === "ervario") return "ervário medicinal";
+        if (tipo === "oficinaArmasMadeira") {
+          return "oficina de armas de madeira";
+        }
+        if (tipo === "arsenalMadeira") return "arsenal de madeira";
+        if (tipo === "flecharia") return "flecharia";
+        if (tipo === "depositoFlechas") return "depósito de munição";
         if (tipo === "moradia") return "casa";
         if (tipo === "mina") return "mina e depósito de minério";
         if (tipo === "caisPesca") return "cais de pesca";
@@ -2777,6 +3354,15 @@
           armazemFarinha: custoArmazemFarinhaColonia,
           padaria: custoPadariaColonia,
           armazemPaes: custoArmazemPaesColonia,
+          cabanaLenhadores: custoCabanaLenhadoresColonia,
+          depositoMadeira: custoDepositoMadeiraColonia,
+          cabanaReflorestamento: custoCabanaReflorestamentoColonia,
+          cabanaColeta: custoCabanaColetaColonia,
+          ervario: custoErvarioColonia,
+          oficinaArmasMadeira: custoOficinaArmasMadeiraColonia,
+          arsenalMadeira: custoArsenalMadeiraColonia,
+          flecharia: custoFlechariaColonia,
+          depositoFlechas: custoDepositoFlechasColonia,
           moradia: custoCasaColonia,
           mina: custoMinaColonia,
           caisPesca: custoCaisPescaColonia,
@@ -2806,6 +3392,25 @@
         if (!estado.armazemFarinhaConstruido) return "armazemFarinha";
         if (!estado.padariaConstruida) return "padaria";
         if (!estado.armazemPaesConstruido) return "armazemPaes";
+        if (estado.quantidadeCabanasLenhadores < 1) {
+          return "cabanaLenhadores";
+        }
+        if (!estado.depositoMadeiraConstruido) return "depositoMadeira";
+        if (!estado.cabanaReflorestamentoConstruida) {
+          return "cabanaReflorestamento";
+        }
+        if (estado.quantidadeCabanasColeta < 1) return "cabanaColeta";
+        if (!estado.ervarioConstruido) return "ervario";
+        if (estado.quantidadeCabanasLenhadores < 2) {
+          return "cabanaLenhadores";
+        }
+        if (estado.quantidadeCabanasColeta < 2) return "cabanaColeta";
+        if (!estado.oficinaArmasMadeiraConstruida) {
+          return "oficinaArmasMadeira";
+        }
+        if (!estado.arsenalMadeiraConstruido) return "arsenalMadeira";
+        if (!estado.flechariaConstruida) return "flecharia";
+        if (!estado.depositoFlechasConstruido) return "depositoFlechas";
         if (!estado.minaConstruida) return "mina";
         if (!estado.caisPescaConstruido) return "caisPesca";
         if (!estado.caisComercialConstruido) return "caisComercial";
@@ -2887,6 +3492,18 @@
           : "Planejado";
       }
 
+      function statusEstruturaRepetidaColonia(tipo, quantidade, total) {
+        if (estado.obraAutomaticaColonia === tipo) {
+          const percentual = Math.round(
+            (estado.tempoObraAutomaticaColonia /
+              duracaoObraAutomaticaColonia) *
+              100,
+          );
+          return `${quantidade} / ${total} · próxima ${percentual}%`;
+        }
+        return `${quantidade} / ${total}`;
+      }
+
       function statusPalicadaColonia(tipo, trechos) {
         if (trechos === totalTrechosPalicadaColonia) {
           return "Estágio 1 concluído";
@@ -2965,9 +3582,22 @@
           estado.quantidadeAdministradoresMigracao
           ? Math.max(1, Math.ceil(intervaloMigracao - estado.tempoRecargaMigracao))
           : intervaloMigracao;
-        migracaoStatusEl.textContent = estado.quantidadeAdministradoresMigracao > 0
-          ? `${estado.cargasMigracaoDisponiveis}/${estado.quantidadeAdministradoresMigracao} incentivos · ${segundosMigracao} s`
-          : "Sem administradores";
+        const segundosTentativaMigracao = Math.max(
+          1,
+          Math.ceil(
+            intervaloMigracao - estado.tempoTentativaMigracao,
+          ),
+        );
+        const chanceMigracaoPercentual = Math.round(
+          chanceMigracaoColonia() * 100,
+        );
+        const vagasMigracao = vagasMigracaoColonia();
+        const semEspacoMigracao = naNovaColonia && vagasMigracao <= 0;
+        migracaoStatusEl.textContent = semEspacoMigracao
+          ? `Sem espaço para migrantes · ${chanceMigracaoPercentual}%`
+          : estado.quantidadeAdministradoresMigracao > 0
+            ? `${estado.cargasMigracaoDisponiveis}/${estado.quantidadeAdministradoresMigracao} incentivos · ${chanceMigracaoPercentual}% · ${segundosTentativaMigracao} s`
+            : `Chance base ${chanceMigracaoPercentual}% · ${segundosTentativaMigracao} s`;
         prioridadeColoniaStatusEl.textContent = prioridadeAtualColonia();
         producaoColoniaStatusEl.textContent =
           estado.hortaConstruida &&
@@ -2977,6 +3607,7 @@
             ? "Consumo e venda automáticos"
             : "Aguardando alimentos imediatos";
         abrirPainelColoniaBotao.disabled = !naNovaColonia;
+        abrirRegistrosBotao.disabled = !naNovaColonia;
         contratarAdministradorMigracaoBotao.disabled =
           !naNovaColonia ||
           estado.etapaConstrucaoColonia < 2 ||
@@ -2986,16 +3617,19 @@
         contratarAdministradorMigracaoBotao.textContent =
           estado.quantidadeAdministradoresMigracao >=
             maximoAdministradoresMigracao
-            ? "Máximo de administradores de migração"
-            : `Contratar adm. de migração ${estado.quantidadeAdministradoresMigracao + 1}/10 · 100 ouro`;
+            ? "Máximo de escriturários de migração"
+            : `Contratar escriturário ${estado.quantidadeAdministradoresMigracao + 1}/10 · 100 ouro${semEspacoMigracao ? " · sem espaço para migrantes" : ""}`;
         incentivarMigracaoBotao.disabled =
           !naNovaColonia ||
           estado.etapaConstrucaoColonia < 4 ||
           estado.cargasMigracaoDisponiveis <= 0 ||
+          vagasMigracao <= 0 ||
           estado.ouro < custoIncentivoMigracao;
-        incentivarMigracaoBotao.textContent = estado.cargasMigracaoDisponiveis > 0
-          ? `Incentivar migração · 100 ouro (${estado.cargasMigracaoDisponiveis})`
-          : "Incentivar migração · aguardando";
+        incentivarMigracaoBotao.textContent = vagasMigracao <= 0
+          ? "Incentivar migração · sem espaço"
+          : estado.cargasMigracaoDisponiveis > 0
+            ? `Incentivar migração · 100 ouro (${estado.cargasMigracaoDisponiveis})`
+            : "Incentivar migração · aguardando";
 
         painelPopulacaoEl.textContent = String(estado.populacaoColonia);
         painelCasasEl.textContent = String(estado.quantidadeCasasColonia);
@@ -3022,6 +3656,16 @@
           `${empregos.moinho} / ${maximoTrabalhadoresMoinho} · ${graosPorFarinha} grãos → ${farinhaProduzidaPorMoleiro} farinhas`;
         trabalhoPadariaEl.textContent =
           `${empregos.padaria} / ${maximoTrabalhadoresPadaria} · ${farinhaPorPao} farinhas → ${paesProduzidosPorPadeiro} pães`;
+        trabalhoLenhadorEl.textContent =
+          `${empregos.lenhador} / ${2 * trabalhadoresPorCabanaLenhadores} · ${arvoresCortadasPorLenhador} árvores → ${madeiraPorLenhador} madeira`;
+        trabalhoReflorestadorEl.textContent =
+          `${empregos.reflorestador} / ${maximoTrabalhadoresReflorestamento} · +${arvoresPlantadasPorReflorestador} árvores cada`;
+        trabalhoColetorEl.textContent =
+          `${empregos.coletor} / ${2 * trabalhadoresPorCabanaColeta} · +${ervasPorColetor} ervas cada`;
+        trabalhoArmeiroMadeiraEl.textContent =
+          `${empregos.armeiroMadeira} / ${maximoTrabalhadoresArmasMadeira} · lanças e arcos`;
+        trabalhoFlecheiroEl.textContent =
+          `${empregos.flecheiro} / ${maximoTrabalhadoresFlecharia} · +${flechasPorLote} flechas cada`;
         trabalhoPescaEl.textContent =
           `${empregos.pesca} / ${maximoTrabalhadoresPesca} · +${alimentoPorPescador} alimento cada`;
         trabalhoMinaEl.textContent =
@@ -3045,12 +3689,24 @@
           `${formatarQuantidade(estado.estoqueFarinha)} / ${capacidadeFarinhaColonia}`;
         estoquePaesEl.textContent =
           `${formatarQuantidade(estado.estoquePaes)} / ${capacidadePaesColonia}`;
+        estoqueArvoresEl.textContent =
+          `${Math.floor(estado.estoqueArvores)} / ${capacidadeArvoresColonia}`;
+        estoqueMadeiraEl.textContent =
+          `${Math.floor(estado.estoqueMadeira)} / ${capacidadeMadeiraColonia}`;
+        estoqueErvasEl.textContent =
+          `${Math.floor(estado.estoqueErvas)} / ${capacidadeErvasColonia}`;
         estoqueMinerioEl.textContent =
           `${Math.floor(estado.estoqueMinerio)} / ${capacidadeMinerioColonia}`;
         estoqueFerramentasEl.textContent =
           `${Math.floor(estado.estoqueFerramentas)} / ${capacidadeFerramentasColonia}`;
         estoqueArmasEl.textContent =
           `${Math.floor(estado.estoqueArmas)} / ${capacidadeArmasColonia}`;
+        estoqueLancasEl.textContent =
+          `${Math.floor(estado.estoqueLancasMadeira)} / ${capacidadeLancasMadeiraColonia}`;
+        estoqueArcosEl.textContent =
+          `${Math.floor(estado.estoqueArcos)} / ${capacidadeArcosColonia}`;
+        estoqueFlechasEl.textContent =
+          `${Math.floor(estado.estoqueFlechas)} / ${capacidadeFlechasColonia}`;
         estoqueMercadoriasEl.textContent =
           `${Math.floor(estado.estoqueMercadorias)} / ${capacidadeMercadoriasColonia}`;
         edificioAgriculturaEl.textContent =
@@ -3092,6 +3748,48 @@
                 estado.padariaConstruida ? "armazemPaes" : "padaria",
                 false,
               );
+        edificioLenhadoresEl.textContent = statusEstruturaRepetidaColonia(
+          "cabanaLenhadores",
+          estado.quantidadeCabanasLenhadores,
+          2,
+        );
+        edificioReflorestamentoEl.textContent = statusEdificioColonia(
+          "cabanaReflorestamento",
+          estado.cabanaReflorestamentoConstruida,
+        );
+        edificioColetaEl.textContent = statusEstruturaRepetidaColonia(
+          "cabanaColeta",
+          estado.quantidadeCabanasColeta,
+          2,
+        );
+        edificioFlorestaEstoquesEl.textContent =
+          estado.depositoMadeiraConstruido && estado.ervarioConstruido
+            ? "Construídos"
+            : statusEdificioColonia(
+                estado.depositoMadeiraConstruido
+                  ? "ervario"
+                  : "depositoMadeira",
+                false,
+              );
+        edificioArmasMadeiraEl.textContent =
+          estado.oficinaArmasMadeiraConstruida &&
+          estado.arsenalMadeiraConstruido
+            ? "Construídos"
+            : statusEdificioColonia(
+                estado.oficinaArmasMadeiraConstruida
+                  ? "arsenalMadeira"
+                  : "oficinaArmasMadeira",
+                false,
+              );
+        edificioFlechariaEl.textContent =
+          estado.flechariaConstruida && estado.depositoFlechasConstruido
+            ? "Construídos"
+            : statusEdificioColonia(
+                estado.flechariaConstruida
+                  ? "depositoFlechas"
+                  : "flecharia",
+                false,
+              );
         edificioMinaEl.textContent =
           statusEdificioColonia("mina", estado.minaConstruida);
         edificioPescaEl.textContent =
@@ -3110,6 +3808,60 @@
           "palicadaExterna",
           estado.trechosPalicadaExterna,
         );
+        const aljavasCompletas = Math.floor(
+          estado.estoqueFlechas / flechasPorAljava,
+        );
+        const arqueirosAbastecidos = Math.min(
+          Math.floor(estado.estoqueArcos),
+          aljavasCompletas,
+        );
+        registrosEls.resumo.textContent = estado.depositoMadeiraConstruido
+          ? `Reserva renovável: ${Math.floor(estado.estoqueArvores)} árvores. O excedente dos depósitos é vendido em divisão 90%/10%.`
+          : "A cadeia florestal será construída automaticamente depois da cadeia alimentar.";
+        registrosEls.tesouro.textContent =
+          `${formatarOuro(estado.tesouroColonia)} ouro`;
+        registrosEls.patrimonio.textContent =
+          `${formatarOuro(estado.ouro)} ouro`;
+        registrosEls.repasse.textContent =
+          `${segundosParaTransferencia} s · ${valorTransferenciaPosto} ouro`;
+        registrosEls.consumo.textContent =
+          `${necessidadeAlimentos} alimento / 60 s`;
+        registrosEls["chance-migracao"].textContent =
+          `${chanceMigracaoPercentual}% / 60 s`;
+        registrosEls["vagas-migracao"].textContent = semEspacoMigracao
+          ? "Sem espaço"
+          : `${vagasMigracao} disponíveis`;
+        registrosEls["alimento-total"].textContent =
+          formatarQuantidade(valorAlimentarDisponivel);
+        registrosEls.provisoes.textContent = estoqueAlimentosDetalheEl.textContent;
+        registrosEls.graos.textContent = estoqueGraosEl.textContent;
+        registrosEls.hortalicas.textContent = estoqueHortalicasEl.textContent;
+        registrosEls.feijao.textContent = estoqueFeijaoEl.textContent;
+        registrosEls.farinha.textContent = estoqueFarinhaEl.textContent;
+        registrosEls.paes.textContent = estoquePaesEl.textContent;
+        registrosEls.arvores.textContent = estoqueArvoresEl.textContent;
+        registrosEls.madeira.textContent = estoqueMadeiraEl.textContent;
+        registrosEls.ervas.textContent = estoqueErvasEl.textContent;
+        registrosEls.minerio.textContent = estoqueMinerioEl.textContent;
+        registrosEls.ferramentas.textContent = estoqueFerramentasEl.textContent;
+        registrosEls.mercadorias.textContent = estoqueMercadoriasEl.textContent;
+        registrosEls["armas-metal"].textContent = estoqueArmasEl.textContent;
+        registrosEls.lancas.textContent = estoqueLancasEl.textContent;
+        registrosEls.arcos.textContent = estoqueArcosEl.textContent;
+        registrosEls.flechas.textContent = estoqueFlechasEl.textContent;
+        registrosEls.aljavas.textContent = String(aljavasCompletas);
+        registrosEls["arqueiros-prontos"].textContent =
+          `${arqueirosAbastecidos} de ${Math.floor(estado.estoqueArcos)} arcos`;
+        registrosEls["producao-madeira"].textContent =
+          `−${empregos.lenhador * arvoresCortadasPorLenhador} árvores · +${empregos.lenhador * madeiraPorLenhador} madeira`;
+        registrosEls["producao-arvores"].textContent =
+          `+${empregos.reflorestador * arvoresPlantadasPorReflorestador} árvores`;
+        registrosEls["producao-ervas"].textContent =
+          `+${empregos.coletor * ervasPorColetor} ervas`;
+        registrosEls["producao-armas-madeira"].textContent =
+          `${empregos.armeiroMadeira} trabalhadores · 4 madeira/lança · 6/arco`;
+        registrosEls["producao-flechas"].textContent =
+          `${empregos.flecheiro * flechasPorLote} flechas · −${empregos.flecheiro * madeiraPorLoteFlechas} madeira`;
         combateStatusEl.textContent = `ATQ ${estado.ataque} · ARM ${estado.armadura}`;
         cacarBotao.disabled = !noAssentamento || estado.vida <= 0;
         voltarBotao.disabled = !naFloresta;
@@ -4091,6 +4843,27 @@
         }
       }
 
+      function abrirRegistros() {
+        if (estado.mapaAtual !== "expansao") {
+          definirMensagem("Os registros pertencem à administração da nova colônia.");
+          return;
+        }
+        atualizarInterface();
+        if (typeof registrosColonia.showModal === "function") {
+          registrosColonia.showModal();
+        } else {
+          registrosColonia.setAttribute("open", "");
+        }
+      }
+
+      function fecharRegistros() {
+        if (typeof registrosColonia.close === "function") {
+          registrosColonia.close();
+        } else {
+          registrosColonia.removeAttribute("open");
+        }
+      }
+
       function contratarAdministradorMigracao() {
         if (
           estado.mapaAtual !== "expansao" ||
@@ -4105,12 +4878,12 @@
           estado.quantidadeAdministradoresMigracao >=
           maximoAdministradoresMigracao
         ) {
-          definirMensagem("A equipe de migração já tem 10 administradores.");
+          definirMensagem("A equipe de migração já tem 10 escriturários.");
           return;
         }
         if (estado.ouro < custoAdministradorMigracao) {
           definirMensagem(
-            "Você precisa de 100 de ouro pessoal para contratar um administrador de migração.",
+            "Você precisa de 100 de ouro pessoal para contratar um escriturário de migração.",
           );
           return;
         }
@@ -4123,7 +4896,7 @@
         estado.cargasMigracaoDisponiveis += 1;
         estado.salvamentoAtivo = true;
         definirMensagem(
-          `Administrador de migração ${estado.quantidadeAdministradoresMigracao}/10 contratado com ouro pessoal. Ele também precisa de alimento e moradia.`,
+          `Escriturário de migração ${estado.quantidadeAdministradoresMigracao}/10 contratado. A chance espontânea agora é ${Math.round(chanceMigracaoColonia() * 100)}% por minuto; ele também precisa de alimento e moradia.`,
         );
         atualizarInterface();
         salvarProgresso();
@@ -4139,7 +4912,13 @@
         }
         if (estado.cargasMigracaoDisponiveis <= 0) {
           definirMensagem(
-            "Todos os administradores de migração estão ocupados. Um novo incentivo ficará disponível em até 60 segundos.",
+            "Todos os escriturários de migração estão ocupados. Um novo incentivo ficará disponível em até 60 segundos.",
+          );
+          return;
+        }
+        if (vagasMigracaoColonia() <= 0) {
+          definirMensagem(
+            "Não há espaço para migrantes. A cidade precisa concluir outra casa.",
           );
           return;
         }
@@ -4163,6 +4942,8 @@
 
       function atualizarMigracaoColonia(delta) {
         if (!estado.coloniaIniciada) return;
+        let alterouMigracao = false;
+        let mensagemMigracao = "";
 
         if (
           estado.quantidadeAdministradoresMigracao > 0 &&
@@ -4174,35 +4955,55 @@
             estado.tempoRecargaMigracao %= intervaloMigracao;
             estado.cargasMigracaoDisponiveis =
               estado.quantidadeAdministradoresMigracao;
-            definirMensagem(
-              "Os administradores de migração podem iniciar novos incentivos.",
-            );
-            atualizarInterface();
-            salvarProgresso();
+            alterouMigracao = true;
+            mensagemMigracao =
+              "Os escriturários de migração podem iniciar novos incentivos.";
           }
         } else {
           estado.tempoRecargaMigracao = 0;
         }
 
-        if (estado.migracoesPendentes.length === 0) return;
-        estado.migracoesPendentes = estado.migracoesPendentes.map(
-          (tempo) => tempo + delta,
-        );
-        const chegadas = estado.migracoesPendentes.filter(
-          (tempo) => tempo >= duracaoViagemMigrante,
-        ).length;
-        if (chegadas === 0) return;
+        let chegadas = 0;
+        if (estado.migracoesPendentes.length > 0) {
+          estado.migracoesPendentes = estado.migracoesPendentes.map(
+            (tempo) => tempo + delta,
+          );
+          chegadas = estado.migracoesPendentes.filter(
+            (tempo) => tempo >= duracaoViagemMigrante,
+          ).length;
+          if (chegadas > 0) {
+            estado.migracoesPendentes = estado.migracoesPendentes.filter(
+              (tempo) => tempo < duracaoViagemMigrante,
+            );
+            estado.populacaoColonia += chegadas;
+            alterouMigracao = true;
+            mensagemMigracao =
+              chegadas === 1
+                ? "Um novo colono desembarcou e escolheu automaticamente o trabalho de maior prioridade."
+                : `${chegadas} novos colonos desembarcaram e receberam trabalhos automaticamente.`;
+          }
+        }
 
-        estado.migracoesPendentes = estado.migracoesPendentes.filter(
-          (tempo) => tempo < duracaoViagemMigrante,
+        estado.tempoTentativaMigracao += delta;
+        const tentativas = Math.floor(
+          estado.tempoTentativaMigracao / intervaloMigracao,
         );
-        estado.populacaoColonia += chegadas;
+        if (tentativas > 0) {
+          estado.tempoTentativaMigracao %= intervaloMigracao;
+          for (let tentativa = 0; tentativa < tentativas; tentativa += 1) {
+            if (vagasMigracaoColonia() <= 0) break;
+            if (Math.random() < chanceMigracaoColonia()) {
+              estado.migracoesPendentes.push(0);
+              alterouMigracao = true;
+              mensagemMigracao =
+                `Migração espontânea: um colono aceitou a chance de ${Math.round(chanceMigracaoColonia() * 100)}% e chegará de barco.`;
+            }
+          }
+        }
+
+        if (!alterouMigracao) return;
         redistribuirTrabalhadoresColonia();
-        definirMensagem(
-          chegadas === 1
-            ? "Um novo colono desembarcou e escolheu automaticamente o trabalho de maior prioridade."
-            : `${chegadas} novos colonos desembarcaram e receberam trabalhos automaticamente.`,
-        );
+        definirMensagem(mensagemMigracao);
         atualizarInterface();
         salvarProgresso();
       }
@@ -4481,6 +5282,30 @@
           estado.padariaConstruida = true;
         } else if (obraConcluida === "armazemPaes") {
           estado.armazemPaesConstruido = true;
+        } else if (obraConcluida === "cabanaLenhadores") {
+          estado.quantidadeCabanasLenhadores = Math.min(
+            2,
+            estado.quantidadeCabanasLenhadores + 1,
+          );
+        } else if (obraConcluida === "depositoMadeira") {
+          estado.depositoMadeiraConstruido = true;
+        } else if (obraConcluida === "cabanaReflorestamento") {
+          estado.cabanaReflorestamentoConstruida = true;
+        } else if (obraConcluida === "cabanaColeta") {
+          estado.quantidadeCabanasColeta = Math.min(
+            2,
+            estado.quantidadeCabanasColeta + 1,
+          );
+        } else if (obraConcluida === "ervario") {
+          estado.ervarioConstruido = true;
+        } else if (obraConcluida === "oficinaArmasMadeira") {
+          estado.oficinaArmasMadeiraConstruida = true;
+        } else if (obraConcluida === "arsenalMadeira") {
+          estado.arsenalMadeiraConstruido = true;
+        } else if (obraConcluida === "flecharia") {
+          estado.flechariaConstruida = true;
+        } else if (obraConcluida === "depositoFlechas") {
+          estado.depositoFlechasConstruido = true;
         } else if (obraConcluida === "moradia") {
           estado.quantidadeCasasColonia = Math.min(
             maximoCasasColonia,
@@ -4536,6 +5361,12 @@
         let feijaoProduzido = 0;
         let farinhaProduzida = 0;
         let paesProduzidos = 0;
+        let madeiraProduzida = 0;
+        let arvoresPlantadas = 0;
+        let ervasProduzidas = 0;
+        let lancasProduzidas = 0;
+        let arcosProduzidos = 0;
+        let flechasProduzidas = 0;
         let minerioProduzido = 0;
         let ferramentasProduzidas = 0;
         let armasProduzidas = 0;
@@ -4599,6 +5430,67 @@
           receitaBrutaRecursos +=
             excedenteProvisoes * valorVendaAlimento;
 
+          const operacoesLenhadores = Math.min(
+            empregos.lenhador,
+            Math.floor(
+              estado.estoqueArvores / arvoresCortadasPorLenhador,
+            ),
+          );
+          const arvoresCortadas =
+            operacoesLenhadores * arvoresCortadasPorLenhador;
+          const novaMadeira = operacoesLenhadores * madeiraPorLenhador;
+          estado.estoqueArvores -= arvoresCortadas;
+          estado.estoqueMadeira += novaMadeira;
+          madeiraProduzida += novaMadeira;
+
+          const novasArvores = Math.min(
+            capacidadeArvoresColonia - estado.estoqueArvores,
+            empregos.reflorestador * arvoresPlantadasPorReflorestador,
+          );
+          estado.estoqueArvores += novasArvores;
+          arvoresPlantadas += novasArvores;
+
+          const novasErvas = empregos.coletor * ervasPorColetor;
+          estado.estoqueErvas += novasErvas;
+          ervasProduzidas += novasErvas;
+
+          for (
+            let trabalhador = 0;
+            trabalhador < empregos.armeiroMadeira;
+            trabalhador += 1
+          ) {
+            const priorizarArco =
+              estado.estoqueArcos <= estado.estoqueLancasMadeira;
+            if (
+              priorizarArco &&
+              estado.estoqueMadeira >= madeiraPorArco
+            ) {
+              estado.estoqueMadeira -= madeiraPorArco;
+              estado.estoqueArcos += 1;
+              arcosProduzidos += 1;
+            } else if (estado.estoqueMadeira >= madeiraPorLanca) {
+              estado.estoqueMadeira -= madeiraPorLanca;
+              estado.estoqueLancasMadeira += 1;
+              lancasProduzidas += 1;
+            } else if (estado.estoqueMadeira >= madeiraPorArco) {
+              estado.estoqueMadeira -= madeiraPorArco;
+              estado.estoqueArcos += 1;
+              arcosProduzidos += 1;
+            } else {
+              break;
+            }
+          }
+
+          const lotesFlechas = Math.min(
+            empregos.flecheiro,
+            Math.floor(estado.estoqueMadeira / madeiraPorLoteFlechas),
+          );
+          estado.estoqueMadeira -=
+            lotesFlechas * madeiraPorLoteFlechas;
+          const novasFlechas = lotesFlechas * flechasPorLote;
+          estado.estoqueFlechas += novasFlechas;
+          flechasProduzidas += novasFlechas;
+
           const novoMinerio = empregos.mina * minerioPorMineiro;
           minerioProduzido += novoMinerio;
           estado.estoqueMinerio += novoMinerio;
@@ -4661,6 +5553,26 @@
             0,
             estado.estoquePaes - capacidadePaesColonia,
           );
+          const excessoMadeira = Math.max(
+            0,
+            estado.estoqueMadeira - capacidadeMadeiraColonia,
+          );
+          const excessoErvas = Math.max(
+            0,
+            estado.estoqueErvas - capacidadeErvasColonia,
+          );
+          const excessoLancas = Math.max(
+            0,
+            estado.estoqueLancasMadeira - capacidadeLancasMadeiraColonia,
+          );
+          const excessoArcos = Math.max(
+            0,
+            estado.estoqueArcos - capacidadeArcosColonia,
+          );
+          const excessoFlechas = Math.max(
+            0,
+            estado.estoqueFlechas - capacidadeFlechasColonia,
+          );
           estado.estoqueMinerio -= excessoMinerio;
           estado.estoqueFerramentas -= excessoFerramentas;
           estado.estoqueArmas -= excessoArmas;
@@ -4670,12 +5582,22 @@
           estado.estoqueFeijao -= excessoFeijao;
           estado.estoqueFarinha -= excessoFarinha;
           estado.estoquePaes -= excessoPaes;
+          estado.estoqueMadeira -= excessoMadeira;
+          estado.estoqueErvas -= excessoErvas;
+          estado.estoqueLancasMadeira -= excessoLancas;
+          estado.estoqueArcos -= excessoArcos;
+          estado.estoqueFlechas -= excessoFlechas;
           receitaBrutaRecursos +=
             excessoGraos * valorVendaGrao +
             excessoHortalicas * valorVendaHortalica +
             excessoFeijao * valorVendaFeijao +
             excessoFarinha * valorVendaFarinha +
             excessoPaes * valorVendaPao +
+            excessoMadeira * valorVendaMadeira +
+            excessoErvas * valorVendaErva +
+            excessoLancas * valorVendaLancaMadeira +
+            excessoArcos * valorVendaArco +
+            excessoFlechas * valorVendaFlecha +
             excessoMinerio * valorVendaMinerio +
             excessoFerramentas * valorVendaFerramenta +
             excessoArmas * valorVendaArma +
@@ -4692,7 +5614,7 @@
             : estado.colonosComFome > 0
               ? `${estado.colonosComFome} colonos ficaram sem alimento neste ciclo.`
               : estado.celeiroConstruido
-                ? `Produção: ${valorAlimentarProduzido} em valor alimentar, ${graosProduzidos} grãos, ${farinhaProduzida} farinhas, ${paesProduzidos} pães, ${minerioProduzido} minérios, ${ferramentasProduzidas} ferramentas, ${armasProduzidas} armas e ${mercadoriasProduzidas} mercadorias. Consumo: ${formatarQuantidade(alimentosConsumidos)}.`
+                ? `Produção: ${valorAlimentarProduzido} em alimento, ${graosProduzidos} grãos, ${farinhaProduzida} farinhas, ${paesProduzidos} pães; ${madeiraProduzida} madeiras, ${arvoresPlantadas} árvores replantadas, ${ervasProduzidas} ervas, ${lancasProduzidas} lanças, ${arcosProduzidos} arcos e ${flechasProduzidas} flechas; ${minerioProduzido} minérios, ${ferramentasProduzidas} ferramentas, ${armasProduzidas} armas de metal e ${mercadoriasProduzidas} mercadorias. Consumo: ${formatarQuantidade(alimentosConsumidos)}.`
                 : `A cidade produziu ${hortalicasProduzidas} cestas e ${feijaoProduzido} sacas de feijão. Os colonos precisam concluir o celeiro central para organizar os estoques.`,
         );
         atualizarInterface();
@@ -5580,11 +6502,14 @@
         };
         const entrada = {
           x: area.x + area.largura - 90,
-          y: area.y + 105 + vaga * 105,
+          y: area.y + 110 + (vaga % 5) * 160,
         };
         const trabalho = {
-          x: area.x + 150 + vaga * ((area.largura - 300) / 4),
-          y: area.y + 170 + (vaga % 2) * 300,
+          x:
+            area.x +
+            150 +
+            (vaga % 5) * ((area.largura - 300) / 4),
+          y: area.y + 170 + Math.floor(vaga / 5) * 470,
         };
         const deslocamentos = {
           lavoura: 0,
@@ -5613,6 +6538,63 @@
         );
       }
 
+      function posicaoRotinaFlorestalColonia(vaga, tipo) {
+        let area;
+        if (tipo === "lenhador") {
+          area = areasCabanasLenhadores[
+            Math.min(1, Math.floor(vaga / trabalhadoresPorCabanaLenhadores))
+          ];
+        } else if (tipo === "coletor") {
+          area = areasCabanasColeta[
+            Math.min(1, Math.floor(vaga / trabalhadoresPorCabanaColeta))
+          ];
+        } else {
+          area = areaCabanaReflorestamento;
+        }
+        const casa = posicaoCasaColonia(vaga);
+        const centroCasa = { x: casa.x + 65, y: casa.y + 55 };
+        const portao = { x: recintoExterno.x, y: yEstradaCampoColonia };
+        const trilhaNorte = { x: 4300, y: 2200 };
+        const cabana = {
+          x: area.x + area.largura / 2,
+          y: area.y + area.altura / 2,
+        };
+        const trabalho = {
+          x: Math.max(
+            areaFlorestaColonia.x + 120,
+            Math.min(
+              areaFlorestaColonia.x + areaFlorestaColonia.largura - 120,
+              cabana.x + ((vaga % 3) - 1) * 160,
+            ),
+          ),
+          y:
+            tipo === "coletor"
+              ? cabana.y + 250
+              : cabana.y - 260 - (vaga % 2) * 120,
+        };
+        const deslocamento =
+          tipo === "lenhador" ? 0 : tipo === "reflorestador" ? 7 : 13;
+        const progresso =
+          ((tempoRio + vaga * 2.1 + deslocamento) % 36) / 36;
+        return percorrerCaminho(
+          [
+            centroCasa,
+            portao,
+            { x: 4300, y: yEstradaCampoColonia },
+            trilhaNorte,
+            cabana,
+            trabalho,
+            cabana,
+            trabalho,
+            cabana,
+            trilhaNorte,
+            portao,
+            centroCasa,
+          ],
+          progresso,
+        );
+      }
+
       function empregoDoColono(indice) {
         const empregos = estado.empregosColonia;
         const ordem = [
@@ -5626,6 +6608,11 @@
           "lavoura",
           "moinho",
           "padaria",
+          "lenhador",
+          "reflorestador",
+          "coletor",
+          "armeiroMadeira",
+          "flecheiro",
           "mina",
           "comercio",
           "ferraria",
@@ -5739,6 +6726,62 @@
             x: areaArmazemPaes.x + areaArmazemPaes.largura / 2,
             y: areaArmazemPaes.y + areaArmazemPaes.altura / 2,
           },
+          cabanaLenhadores: {
+            x:
+              areasCabanasLenhadores[
+                Math.min(1, estado.quantidadeCabanasLenhadores)
+              ].x + 300,
+            y:
+              areasCabanasLenhadores[
+                Math.min(1, estado.quantidadeCabanasLenhadores)
+              ].y + 150,
+          },
+          depositoMadeira: {
+            x: areaDepositoMadeira.x + areaDepositoMadeira.largura / 2,
+            y: areaDepositoMadeira.y + areaDepositoMadeira.altura / 2,
+          },
+          cabanaReflorestamento: {
+            x:
+              areaCabanaReflorestamento.x +
+              areaCabanaReflorestamento.largura / 2,
+            y:
+              areaCabanaReflorestamento.y +
+              areaCabanaReflorestamento.altura / 2,
+          },
+          cabanaColeta: {
+            x:
+              areasCabanasColeta[
+                Math.min(1, estado.quantidadeCabanasColeta)
+              ].x + 270,
+            y:
+              areasCabanasColeta[
+                Math.min(1, estado.quantidadeCabanasColeta)
+              ].y + 140,
+          },
+          ervario: {
+            x: areaErvario.x + areaErvario.largura / 2,
+            y: areaErvario.y + areaErvario.altura / 2,
+          },
+          oficinaArmasMadeira: {
+            x:
+              areaOficinaArmasMadeira.x +
+              areaOficinaArmasMadeira.largura / 2,
+            y:
+              areaOficinaArmasMadeira.y +
+              areaOficinaArmasMadeira.altura / 2,
+          },
+          arsenalMadeira: {
+            x: areaArsenalMadeira.x + areaArsenalMadeira.largura / 2,
+            y: areaArsenalMadeira.y + areaArsenalMadeira.altura / 2,
+          },
+          flecharia: {
+            x: areaFlecharia.x + areaFlecharia.largura / 2,
+            y: areaFlecharia.y + areaFlecharia.altura / 2,
+          },
+          depositoFlechas: {
+            x: areaDepositoFlechas.x + areaDepositoFlechas.largura / 2,
+            y: areaDepositoFlechas.y + areaDepositoFlechas.altura / 2,
+          },
           palicadaInterna: centroTrechoPalicadaColonia(
             recintoInterno,
             estado.trechosPalicadaInterna,
@@ -5807,6 +6850,36 @@
           } else if (emprego.tipo === "padaria") {
             posicao = posicaoFormacaoColonos(
               { x: areaPadariaColonia.x + areaPadariaColonia.largura / 2, y: areaPadariaColonia.y + areaPadariaColonia.altura + 60 },
+              emprego.vaga,
+            );
+          } else if (
+            emprego.tipo === "lenhador" ||
+            emprego.tipo === "reflorestador" ||
+            emprego.tipo === "coletor"
+          ) {
+            posicao = posicaoRotinaFlorestalColonia(
+              emprego.vaga,
+              emprego.tipo,
+            );
+          } else if (emprego.tipo === "armeiroMadeira") {
+            posicao = posicaoFormacaoColonos(
+              {
+                x:
+                  areaOficinaArmasMadeira.x +
+                  areaOficinaArmasMadeira.largura / 2,
+                y:
+                  areaOficinaArmasMadeira.y +
+                  areaOficinaArmasMadeira.altura +
+                  60,
+              },
+              emprego.vaga,
+            );
+          } else if (emprego.tipo === "flecheiro") {
+            posicao = posicaoFormacaoColonos(
+              {
+                x: areaFlecharia.x + areaFlecharia.largura / 2,
+                y: areaFlecharia.y + areaFlecharia.altura + 60,
+              },
               emprego.vaga,
             );
           } else if (emprego.tipo === "mina") {
@@ -6801,6 +7874,144 @@
         contexto.textBaseline = "alphabetic";
       }
 
+      function progressoEstruturaRepetidaColonia(
+        tipo,
+        quantidadeConstruida,
+        indice,
+      ) {
+        if (indice < quantidadeConstruida) return 1;
+        if (
+          indice === quantidadeConstruida &&
+          estado.obraAutomaticaColonia === tipo
+        ) {
+          return limitarProgresso(
+            estado.tempoObraAutomaticaColonia /
+              duracaoObraAutomaticaColonia,
+          );
+        }
+        return 0;
+      }
+
+      function desenharCabanaFlorestalColonia(
+        area,
+        progresso,
+        nome,
+        cor,
+      ) {
+        contexto.lineWidth = 9;
+        contexto.strokeStyle = progresso > 0 ? "#4b3927" : "#5c704f";
+        contexto.strokeRect(area.x, area.y, area.largura, area.altura);
+        if (progresso > 0) {
+          contexto.fillStyle = cor;
+          contexto.fillRect(
+            area.x + 9,
+            area.y + area.altura - 9 - (area.altura - 18) * progresso,
+            area.largura - 18,
+            (area.altura - 18) * progresso,
+          );
+        }
+        if (progresso > 0.65) {
+          contexto.fillStyle = "#4d321f";
+          contexto.beginPath();
+          contexto.moveTo(area.x - 12, area.y + 30);
+          contexto.lineTo(area.x + area.largura / 2, area.y - 55);
+          contexto.lineTo(area.x + area.largura + 12, area.y + 30);
+          contexto.closePath();
+          contexto.fill();
+        }
+        contexto.fillStyle = progresso > 0.65 ? "#f1dfad" : "#31432e";
+        contexto.font = "bold 20px sans-serif";
+        contexto.textAlign = "center";
+        contexto.textBaseline = "middle";
+        contexto.fillText(
+          progresso >= 1
+            ? nome
+            : progresso > 0
+              ? `${nome} · ${Math.round(progresso * 100)}%`
+              : `LOCAL: ${nome}`,
+          area.x + area.largura / 2,
+          area.y + area.altura / 2,
+        );
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
+      }
+
+      function desenharFlorestaNoroesteColonia() {
+        const area = areaFlorestaColonia;
+        contexto.fillStyle = "#547345";
+        contexto.fillRect(area.x, area.y, area.largura, area.altura);
+        contexto.strokeStyle = "#365233";
+        contexto.lineWidth = 14;
+        contexto.strokeRect(area.x, area.y, area.largura, area.altura);
+
+        const quantidadeVisual = Math.ceil(
+          54 * (estado.estoqueArvores / capacidadeArvoresColonia),
+        );
+        for (let indice = 0; indice < quantidadeVisual; indice += 1) {
+          const coluna = indice % 12;
+          const linha = Math.floor(indice / 12);
+          const x = area.x + 170 + coluna * 275 + (linha % 2) * 70;
+          const y = area.y + 260 + linha * 280;
+          contexto.fillStyle = "#624329";
+          contexto.fillRect(x - 13, y, 26, 85);
+          desenharCirculo(
+            x,
+            y - 20,
+            58 + (indice % 3) * 5,
+            indice % 2 === 0 ? "#315b34" : "#3f6b3c",
+            "#29472b",
+          );
+        }
+
+        contexto.fillStyle = "#e6d8ad";
+        contexto.fillRect(area.x + 55, area.y + 45, 780, 62);
+        contexto.fillStyle = "#2e402b";
+        contexto.font = "bold 24px sans-serif";
+        contexto.textAlign = "center";
+        contexto.textBaseline = "middle";
+        contexto.fillText(
+          `FLORESTA · ${Math.floor(estado.estoqueArvores)}/${capacidadeArvoresColonia} ÁRVORES`,
+          area.x + 445,
+          area.y + 76,
+        );
+
+        areasCabanasLenhadores.forEach((cabana, indice) => {
+          desenharCabanaFlorestalColonia(
+            cabana,
+            progressoEstruturaRepetidaColonia(
+              "cabanaLenhadores",
+              estado.quantidadeCabanasLenhadores,
+              indice,
+            ),
+            `LENHADORES ${indice + 1} · 3 VAGAS`,
+            "#8a6039",
+          );
+        });
+        desenharCabanaFlorestalColonia(
+          areaCabanaReflorestamento,
+          progressoEdificioColonia(
+            "cabanaReflorestamento",
+            estado.cabanaReflorestamentoConstruida,
+          ),
+          "REFLORESTAMENTO · 2 VAGAS",
+          "#668b4b",
+        );
+        areasCabanasColeta.forEach((cabana, indice) => {
+          desenharCabanaFlorestalColonia(
+            cabana,
+            progressoEstruturaRepetidaColonia(
+              "cabanaColeta",
+              estado.quantidadeCabanasColeta,
+              indice,
+            ),
+            `COLETA ${indice + 1} · 3 VAGAS`,
+            "#7a6b53",
+          );
+        });
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
+      }
+
       function desenharIconeEstoqueColonia(tipo, x, y) {
         if (tipo === "graos") {
           contexto.strokeStyle = "#e5bd52";
@@ -6833,6 +8044,57 @@
             desenharCirculo(x - 30, y + 10, 9, "#b95437");
             desenharCirculo(x + 30, y + 10, 9, "#6f913d");
           }
+        } else if (tipo === "madeira") {
+          contexto.fillStyle = "#7c522e";
+          contexto.fillRect(x - 58, y - 28, 116, 22);
+          contexto.fillRect(x - 48, y + 4, 106, 22);
+          contexto.fillStyle = "#c28a4e";
+          desenharCirculo(x - 58, y - 17, 11, "#c28a4e", "#5c3a22");
+          desenharCirculo(x + 58, y + 15, 11, "#c28a4e", "#5c3a22");
+        } else if (tipo === "ervas") {
+          contexto.strokeStyle = "#375d35";
+          contexto.lineWidth = 6;
+          for (let indice = -2; indice <= 2; indice += 1) {
+            contexto.beginPath();
+            contexto.moveTo(x + indice * 20, y + 40);
+            contexto.lineTo(x + indice * 15, y - 34);
+            contexto.stroke();
+            desenharCirculo(
+              x + indice * 15 - 10,
+              y - 15 + Math.abs(indice) * 4,
+              10,
+              indice % 2 === 0 ? "#6f9c55" : "#8b67a8",
+            );
+          }
+        } else if (tipo === "lancas" || tipo === "flechas") {
+          contexto.strokeStyle = tipo === "flechas" ? "#d5c08b" : "#8b6137";
+          contexto.lineWidth = tipo === "flechas" ? 5 : 8;
+          for (let indice = -1; indice <= 1; indice += 1) {
+            contexto.beginPath();
+            contexto.moveTo(x - 48, y + 30 + indice * 12);
+            contexto.lineTo(x + 44, y - 28 + indice * 12);
+            contexto.stroke();
+            contexto.fillStyle = "#686d70";
+            contexto.beginPath();
+            contexto.moveTo(x + 44, y - 28 + indice * 12);
+            contexto.lineTo(x + 27, y - 25 + indice * 12);
+            contexto.lineTo(x + 38, y - 10 + indice * 12);
+            contexto.closePath();
+            contexto.fill();
+          }
+        } else if (tipo === "arcos") {
+          contexto.strokeStyle = "#744a27";
+          contexto.lineWidth = 9;
+          contexto.beginPath();
+          contexto.arc(x - 18, y, 48, -Math.PI / 2, Math.PI / 2);
+          contexto.stroke();
+          contexto.strokeStyle = "#e0d2ad";
+          contexto.lineWidth = 4;
+          contexto.beginPath();
+          contexto.moveTo(x - 18, y - 48);
+          contexto.lineTo(x + 30, y);
+          contexto.lineTo(x - 18, y + 48);
+          contexto.stroke();
         } else if (tipo === "minerio") {
           desenharCirculo(x - 30, y + 12, 25, "#6f7478", "#3d4144");
           desenharCirculo(x + 5, y - 6, 28, "#92979a", "#3d4144");
@@ -7034,10 +8296,89 @@
         );
       }
 
+      function desenharInfraestruturaFlorestalColonia() {
+        desenharArmazemAlimentoColonia(
+          areaDepositoMadeira,
+          "depositoMadeira",
+          estado.depositoMadeiraConstruido,
+          "MADEIRA",
+          estado.estoqueMadeira,
+          capacidadeMadeiraColonia,
+          "madeira",
+        );
+        desenharArmazemAlimentoColonia(
+          areaErvario,
+          "ervario",
+          estado.ervarioConstruido,
+          "ERVAS",
+          estado.estoqueErvas,
+          capacidadeErvasColonia,
+          "ervas",
+        );
+        desenharEdificioColonia(
+          areaOficinaArmasMadeira,
+          "oficinaArmasMadeira",
+          estado.oficinaArmasMadeiraConstruida,
+          `ARMAS DE MADEIRA · ${estado.empregosColonia.armeiroMadeira}/${maximoTrabalhadoresArmasMadeira}`,
+          "#9a6c3c",
+        );
+        if (
+          progressoEdificioColonia(
+            "oficinaArmasMadeira",
+            estado.oficinaArmasMadeiraConstruida,
+          ) > 0.72
+        ) {
+          desenharIconeEstoqueColonia(
+            "lancas",
+            areaOficinaArmasMadeira.x +
+              areaOficinaArmasMadeira.largura / 2,
+            areaOficinaArmasMadeira.y +
+              areaOficinaArmasMadeira.altura / 2 +
+              70,
+          );
+        }
+        desenharArmazemAlimentoColonia(
+          areaArsenalMadeira,
+          "arsenalMadeira",
+          estado.arsenalMadeiraConstruido,
+          `ARCOS ${Math.floor(estado.estoqueArcos)} · LANÇAS`,
+          estado.estoqueLancasMadeira,
+          capacidadeLancasMadeiraColonia,
+          "arcos",
+        );
+        desenharEdificioColonia(
+          areaFlecharia,
+          "flecharia",
+          estado.flechariaConstruida,
+          `FLECHARIA · ${estado.empregosColonia.flecheiro}/${maximoTrabalhadoresFlecharia}`,
+          "#aa854c",
+        );
+        if (
+          progressoEdificioColonia("flecharia", estado.flechariaConstruida) >
+          0.72
+        ) {
+          desenharIconeEstoqueColonia(
+            "flechas",
+            areaFlecharia.x + areaFlecharia.largura / 2,
+            areaFlecharia.y + areaFlecharia.altura / 2 + 65,
+          );
+        }
+        desenharArmazemAlimentoColonia(
+          areaDepositoFlechas,
+          "depositoFlechas",
+          estado.depositoFlechasConstruido,
+          "FLECHAS",
+          estado.estoqueFlechas,
+          capacidadeFlechasColonia,
+          "flechas",
+        );
+      }
+
       function desenharInfraestruturaColonia() {
         if (estado.etapaConstrucaoColonia < 4) return;
 
         desenharCadeiaAlimentarColonia();
+        desenharInfraestruturaFlorestalColonia();
 
         desenharEdificioColonia(
           areaMinaColonia,
@@ -7177,6 +8518,11 @@
           celeiro: "#d6924f",
           moinho: "#d8c28a",
           padaria: "#d9824b",
+          lenhador: "#795137",
+          reflorestador: "#3f9d58",
+          coletor: "#9c6fc0",
+          armeiroMadeira: "#c9924d",
+          flecheiro: "#d5b863",
           pesca: "#62b8e8",
           mina: "#a9adb3",
           comercio: "#bb8ee8",
@@ -7239,6 +8585,7 @@
         contexto.textBaseline = "alphabetic";
 
         desenharBarcosMigracaoColonia();
+        desenharFlorestaNoroesteColonia();
         desenharAreasProdutivasColonia();
         desenharDefesasColonia();
         desenharAdministracaoColonia();
@@ -7969,6 +9316,8 @@
       );
       abrirPainelColoniaBotao.addEventListener("click", abrirPainelColonia);
       fecharPainelColoniaBotao.addEventListener("click", fecharPainelColonia);
+      abrirRegistrosBotao.addEventListener("click", abrirRegistros);
+      fecharRegistrosBotao.addEventListener("click", fecharRegistros);
       contratarAdministradorMigracaoBotao.addEventListener(
         "click",
         contratarAdministradorMigracao,
