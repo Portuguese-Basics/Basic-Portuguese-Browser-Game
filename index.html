@@ -543,6 +543,7 @@
         <div class="indicador indicador-colonia">Cofre municipal<span id="tesouro-colonia">0</span></div>
         <div class="indicador indicador-colonia">Próximo repasse<span id="transferencia-status">60 s · 300 ouro</span></div>
         <div class="indicador indicador-colonia">População<span id="populacao-colonia-status">20 moradores</span></div>
+        <div class="indicador indicador-colonia">Famílias<span id="familias-colonia-status">10 famílias · 0 crianças</span></div>
         <div class="indicador indicador-colonia">Saúde colonial<span id="saude-colonia-status">100 / 100</span></div>
         <div class="indicador indicador-colonia">Alimentos<span id="alimentos-status">0 em estoque</span></div>
         <div class="indicador indicador-colonia">Moradia<span id="moradia-status">0 / 20 abrigados</span></div>
@@ -718,6 +719,8 @@
             <li>Arsenais, munição, ferramentas, ervas e medicamentos ficam protegidos no recinto interno. Minério, pedra, madeira, alimentos e mercadorias permanecem junto às zonas produtivas. Quando um depósito enche, somente o excedente é vendido.</li>
             <li>Toda venda colonial é dividida: 90% para o tesouro da cidade e 10% para o patrimônio pessoal do administrador.</li>
             <li>Um escriturário de migração custa 100 de ouro pessoal, consome alimento, ocupa moradia e libera um incentivo a cada 60 segundos.</li>
+            <li>Adultos formam famílias. Cada família elegível tem apenas 0,1% de chance de ter um bebê por minuto quando saúde, alimento e moradia estão estáveis.</li>
+            <li>Bebês levam 30 minutos para chegar à infância e 2 horas no total para virar colonos adultos. A escola custa 550 do cofre e exige um professor sempre que houver jovens.</li>
             <li>A cada 60 segundos existe 5% de chance de migração espontânea; cada escriturário acrescenta 1 ponto percentual, até 15% com 10 profissionais.</li>
             <li>Quando a cidade não precisa de migrantes ou não tem moradia livre, os escriturários fiscalizam o posto original: cada um acrescenta 1% do repasse, ou 3 de ouro por minuto, diretamente ao patrimônio pessoal.</li>
             <li>Cada incentivo custa 100 de ouro pessoal e traz 1 novo colono de barco. Podem trabalhar até 10 escriturários de migração.</li>
@@ -752,11 +755,24 @@
             </ul>
           </section>
 
+          <section class="economia" aria-labelledby="titulo-familias-colonia">
+            <h3 id="titulo-familias-colonia">Famílias e infância</h3>
+            <ul class="lista-colonia">
+              <li>Adultos <span id="painel-adultos">20</span></li>
+              <li>Famílias formadas <span id="painel-familias">10</span></li>
+              <li>Bebês <span id="painel-bebes">0</span></li>
+              <li>Crianças <span id="painel-criancas">0</span></li>
+              <li>Chance de nascimento <span id="painel-chance-nascimento">0% / 60 s</span></li>
+              <li>Próxima maioridade <span id="painel-proxima-maturidade">Nenhuma</span></li>
+            </ul>
+          </section>
+
           <section class="economia" aria-labelledby="titulo-empregos-colonia">
             <h3 id="titulo-empregos-colonia">Trabalho automático</h3>
             <ul class="lista-colonia">
               <li>Administração municipal <span id="trabalho-administracao">0</span></li>
               <li>Escriturários de migração <span id="trabalho-migracao">0 / 10</span></li>
+              <li>Professor da escola <span id="trabalho-professor">0 / 1 · essencial</span></li>
               <li>Agricultores de grãos <span id="trabalho-lavoura">0 / 5 · +6 grãos cada</span></li>
               <li>Horticultores <span id="trabalho-horta">0 / 5 · +4 cestas cada</span></li>
               <li>Produtores de feijão <span id="trabalho-feijao">0 / 5 · +3 sacas cada</span></li>
@@ -819,6 +835,7 @@
               <li>Cabanas de coleta <span id="edificio-coleta">0 / 2</span></li>
               <li>Depósitos de madeira e ervas <span id="edificio-floresta-estoques">Planejados</span></li>
               <li>Clínica + farmácia <span id="edificio-clinica">Planejadas</span></li>
+              <li>Escola <span id="edificio-escola">Planejada</span></li>
               <li>Banco + cofre municipal e pessoal <span id="edificio-banco">Planejados</span></li>
               <li>Oficina + arsenal de madeira <span id="edificio-armas-madeira">Planejados</span></li>
               <li>Flecharia + depósito de munição <span id="edificio-flecharia">Planejados</span></li>
@@ -877,6 +894,20 @@
             </ul>
           </section>
 
+          <section class="economia" aria-labelledby="titulo-registro-familias">
+            <h3 id="titulo-registro-familias">Famílias e educação</h3>
+            <ul class="lista-colonia">
+              <li>Adultos trabalhadores <span id="registro-adultos">0</span></li>
+              <li>Famílias <span id="registro-familias">0</span></li>
+              <li>Bebês · até 30 minutos <span id="registro-bebes">0</span></li>
+              <li>Crianças · maioridade em 2 horas <span id="registro-criancas">0</span></li>
+              <li>Chance de nascimento <span id="registro-chance-nascimento">0% / 60 s</span></li>
+              <li>Próxima maioridade <span id="registro-proxima-maturidade">Nenhuma</span></li>
+              <li>Escola <span id="registro-escola">Planejada</span></li>
+              <li>Professor essencial <span id="registro-professor">0 / 1</span></li>
+            </ul>
+          </section>
+
           <section class="economia" aria-labelledby="titulo-registro-natureza">
             <h3 id="titulo-registro-natureza">Floresta e matérias-primas</h3>
             <ul class="lista-colonia">
@@ -928,6 +959,9 @@
               <li>Arcos só contam como abastecidos quando há uma aljava de 20 flechas disponível.</li>
               <li>Ervas são insumo da clínica: 2 ervas produzem 1 medicamento. Cada medicamento recupera 2 pontos de saúde colonial.</li>
               <li>Sem tratamento, a pressão sanitária aumenta com a população e com a fome. Saúde abaixo de 60 suspende a migração.</li>
+              <li>Cada família elegível tem 0,1% de chance de ter um bebê por minuto, desde que existam saúde, alimentos e moradia livres.</li>
+              <li>Bebês consomem 0,25 alimento; crianças consomem 0,5. Aos 30 minutos tornam-se crianças e, após 2 horas, adultos.</li>
+              <li>Com bebês ou crianças, a escola vira prioridade municipal. Um professor é essencial; sem escola e professor, a maioridade fica pausada.</li>
               <li>O banco, a farmácia, os medicamentos, os arsenais, as ferramentas e a munição ficam protegidos no recinto interno.</li>
             </ul>
           </section>
@@ -1058,6 +1092,9 @@
       const populacaoColoniaStatusEl = document.querySelector(
         "#populacao-colonia-status",
       );
+      const familiasColoniaStatusEl = document.querySelector(
+        "#familias-colonia-status",
+      );
       const saudeColoniaStatusEl = document.querySelector(
         "#saude-colonia-status",
       );
@@ -1150,10 +1187,21 @@
       );
       const painelSemMoradiaEl = document.querySelector("#painel-sem-moradia");
       const painelConstrucaoEl = document.querySelector("#painel-construcao");
+      const painelAdultosEl = document.querySelector("#painel-adultos");
+      const painelFamiliasEl = document.querySelector("#painel-familias");
+      const painelBebesEl = document.querySelector("#painel-bebes");
+      const painelCriancasEl = document.querySelector("#painel-criancas");
+      const painelChanceNascimentoEl = document.querySelector(
+        "#painel-chance-nascimento",
+      );
+      const painelProximaMaturidadeEl = document.querySelector(
+        "#painel-proxima-maturidade",
+      );
       const trabalhoAdministracaoEl = document.querySelector(
         "#trabalho-administracao",
       );
       const trabalhoMigracaoEl = document.querySelector("#trabalho-migracao");
+      const trabalhoProfessorEl = document.querySelector("#trabalho-professor");
       const trabalhoLavouraEl = document.querySelector("#trabalho-lavoura");
       const trabalhoHortaEl = document.querySelector("#trabalho-horta");
       const trabalhoFeijaoEl = document.querySelector("#trabalho-feijao");
@@ -1226,6 +1274,7 @@
         "#edificio-floresta-estoques",
       );
       const edificioClinicaEl = document.querySelector("#edificio-clinica");
+      const edificioEscolaEl = document.querySelector("#edificio-escola");
       const edificioBancoEl = document.querySelector("#edificio-banco");
       const edificioArmasMadeiraEl = document.querySelector(
         "#edificio-armas-madeira",
@@ -1279,6 +1328,14 @@
           "chance-migracao",
           "vagas-migracao",
           "fiscalizacao",
+          "adultos",
+          "familias",
+          "bebes",
+          "criancas",
+          "chance-nascimento",
+          "proxima-maturidade",
+          "escola",
+          "professor",
           "alimento-total",
           "provisoes",
           "graos",
@@ -1465,6 +1522,12 @@
         largura: 560,
         altura: 440,
       };
+      const areaEscolaColonia = {
+        x: 6050,
+        y: 3550,
+        largura: 600,
+        altura: 420,
+      };
       const areaArmazemGraos = {
         x: 5150,
         y: 2050,
@@ -1602,6 +1665,7 @@
       const custoCabanaColetaColonia = 300;
       const custoErvarioColonia = 200;
       const custoClinicaColonia = 600;
+      const custoEscolaColonia = 550;
       const custoBancoColonia = 700;
       const custoOficinaArmasMadeiraColonia = 600;
       const custoArsenalMadeiraColonia = 250;
@@ -1712,6 +1776,12 @@
       const duracaoViagemMigrante = 12;
       const estoqueInicialAlimentos = 120;
       const consumoAlimentoPorColono = 1;
+      const consumoAlimentoPorBebe = 0.25;
+      const consumoAlimentoPorCrianca = 0.5;
+      const chanceNascimentoPorFamilia = 0.001;
+      const maximoFilhosDependentesPorFamilia = 3;
+      const duracaoBebeColonia = 30 * 60;
+      const duracaoInfanciaColonia = 2 * 60 * 60;
       const reservaAlimentosColonia = 80;
       const valorVendaAlimento = 1;
       const intervaloNecessidadesColonia = 60;
@@ -1833,6 +1903,7 @@
         quantidadeCabanasColeta: 0,
         ervarioConstruido: false,
         clinicaConstruida: false,
+        escolaConstruida: false,
         bancoColoniaConstruido: false,
         oficinaArmasMadeiraConstruida: false,
         arsenalMadeiraConstruido: false,
@@ -1857,6 +1928,8 @@
         tempoNecessidadesColonia: 0,
         colonosComFome: 0,
         populacaoColonia: 0,
+        familiasColonia: [],
+        criancasColonia: [],
         quantidadeCasasColonia: 0,
         quantidadeAdministradoresMigracao: 0,
         cargasMigracaoDisponiveis: 0,
@@ -1879,6 +1952,7 @@
         empregosColonia: {
           administracao: 0,
           migracao: 0,
+          professor: 0,
           lavoura: 0,
           horta: 0,
           feijao: 0,
@@ -1996,6 +2070,156 @@
         return String(valor).replace(".", ",");
       }
 
+      function totalMoradoresColonia() {
+        return estado.populacaoColonia + estado.criancasColonia.length;
+      }
+
+      function quantidadeBebesColonia() {
+        return estado.criancasColonia.filter(
+          (crianca) => crianca.idade < duracaoBebeColonia,
+        ).length;
+      }
+
+      function quantidadeCriancasColonia() {
+        return estado.criancasColonia.length - quantidadeBebesColonia();
+      }
+
+      function sincronizarFamiliasColonia() {
+        const quantidadeAlvo = Math.floor(estado.populacaoColonia / 2);
+        estado.familiasColonia = Array.isArray(estado.familiasColonia)
+          ? estado.familiasColonia.slice(0, quantidadeAlvo)
+          : [];
+        while (estado.familiasColonia.length < quantidadeAlvo) {
+          const indice = estado.familiasColonia.length + 1;
+          estado.familiasColonia.push({
+            id: `familia-${indice}-${crypto.randomUUID()}`,
+          });
+        }
+        const idsFamilia = new Set(
+          estado.familiasColonia.map((familia) => familia.id),
+        );
+        const familiaPadrao = estado.familiasColonia[0]?.id || null;
+        estado.criancasColonia.forEach((crianca) => {
+          if (!idsFamilia.has(crianca.familiaId)) {
+            crianca.familiaId = familiaPadrao;
+          }
+        });
+        return estado.familiasColonia.length;
+      }
+
+      function familiasElegiveisNascimentoColonia() {
+        sincronizarFamiliasColonia();
+        const dependentesPorFamilia = new Map();
+        estado.criancasColonia.forEach((crianca) => {
+          dependentesPorFamilia.set(
+            crianca.familiaId,
+            (dependentesPorFamilia.get(crianca.familiaId) || 0) + 1,
+          );
+        });
+        return estado.familiasColonia.filter(
+          (familia) =>
+            (dependentesPorFamilia.get(familia.id) || 0) <
+            maximoFilhosDependentesPorFamilia,
+        );
+      }
+
+      function necessidadeAlimentosColonia() {
+        return (
+          estado.populacaoColonia * consumoAlimentoPorColono +
+          quantidadeBebesColonia() * consumoAlimentoPorBebe +
+          quantidadeCriancasColonia() * consumoAlimentoPorCrianca
+        );
+      }
+
+      function condicoesNascimentoAtendidasColonia() {
+        const moradores = totalMoradoresColonia();
+        return (
+          estado.coloniaIniciada &&
+          estado.etapaConstrucaoColonia >= 4 &&
+          estado.saudeColonia >= 80 &&
+          estado.colonosComFome === 0 &&
+          capacidadeMoradiasColonia() - moradores -
+              estado.migracoesPendentes.length >
+            0 &&
+          valorAlimentarTotalColonia() >= necessidadeAlimentosColonia() * 2
+        );
+      }
+
+      function chanceNascimentoColonia() {
+        if (!condicoesNascimentoAtendidasColonia()) return 0;
+        const familiasElegiveis = familiasElegiveisNascimentoColonia().length;
+        return Math.min(
+          0.05,
+          1 - Math.pow(1 - chanceNascimentoPorFamilia, familiasElegiveis),
+        );
+      }
+
+      function textoTempoInfancia(segundos) {
+        const minutos = Math.max(0, Math.ceil(segundos / 60));
+        const horas = Math.floor(minutos / 60);
+        const resto = minutos % 60;
+        if (horas <= 0) return `${resto} min`;
+        return resto > 0 ? `${horas} h ${resto} min` : `${horas} h`;
+      }
+
+      function proximaMaturidadeColonia() {
+        if (estado.criancasColonia.length === 0) return "Nenhuma";
+        const idadeMaisAlta = Math.max(
+          ...estado.criancasColonia.map((crianca) => crianca.idade),
+        );
+        if (idadeMaisAlta >= duracaoInfanciaColonia) {
+          return estado.escolaConstruida && estado.empregosColonia.professor > 0
+            ? "Neste ciclo"
+            : "Pausada · falta escola ou professor";
+        }
+        return textoTempoInfancia(duracaoInfanciaColonia - idadeMaisAlta);
+      }
+
+      function atualizarFamiliasColonia() {
+        let maioridades = 0;
+        let nascimentos = 0;
+        estado.criancasColonia.forEach((crianca) => {
+          crianca.idade = Math.min(
+            duracaoInfanciaColonia,
+            crianca.idade + intervaloNecessidadesColonia,
+          );
+        });
+
+        if (
+          estado.escolaConstruida &&
+          estado.empregosColonia.professor > 0
+        ) {
+          const aindaCriancas = [];
+          estado.criancasColonia.forEach((crianca) => {
+            if (crianca.idade >= duracaoInfanciaColonia) {
+              maioridades += 1;
+            } else {
+              aindaCriancas.push(crianca);
+            }
+          });
+          estado.criancasColonia = aindaCriancas;
+          estado.populacaoColonia += maioridades;
+          sincronizarFamiliasColonia();
+        }
+
+        const familiasElegiveis = familiasElegiveisNascimentoColonia();
+        if (
+          familiasElegiveis.length > 0 &&
+          Math.random() < chanceNascimentoColonia()
+        ) {
+          const familia = familiasElegiveis[
+            Math.floor(Math.random() * familiasElegiveis.length)
+          ];
+          estado.criancasColonia.push({
+            id: `crianca-${estado.criancasColonia.length + 1}-${crypto.randomUUID()}`,
+            familiaId: familia.id,
+            idade: 0,
+          });
+          nascimentos = 1;
+        }
+        return { nascimentos, maioridades };
+      }
+
       function reiniciarNovaColonia() {
         estado.coloniaIniciada = true;
         estado.revisaoColonia = versaoColonia;
@@ -2022,6 +2246,7 @@
         estado.quantidadeCabanasColeta = 0;
         estado.ervarioConstruido = false;
         estado.clinicaConstruida = false;
+        estado.escolaConstruida = false;
         estado.bancoColoniaConstruido = false;
         estado.oficinaArmasMadeiraConstruida = false;
         estado.arsenalMadeiraConstruido = false;
@@ -2046,6 +2271,9 @@
         estado.tempoNecessidadesColonia = 0;
         estado.colonosComFome = 0;
         estado.populacaoColonia = quantidadeColonosExpansao;
+        estado.familiasColonia = [];
+        estado.criancasColonia = [];
+        sincronizarFamiliasColonia();
         estado.quantidadeCasasColonia = 0;
         estado.quantidadeAdministradoresMigracao = 0;
         estado.cargasMigracaoDisponiveis = 0;
@@ -2192,6 +2420,14 @@
               colonosComFome: estado.colonosComFome,
               saude: estado.saudeColonia,
               populacao: estado.populacaoColonia,
+              familias: estado.familiasColonia.map((familia) => ({
+                id: familia.id,
+              })),
+              criancas: estado.criancasColonia.map((crianca) => ({
+                id: crianca.id,
+                familiaId: crianca.familiaId,
+                idade: crianca.idade,
+              })),
               casas: estado.quantidadeCasasColonia,
               administradoresMigracao:
                 estado.quantidadeAdministradoresMigracao,
@@ -2207,6 +2443,7 @@
                 ferraria: estado.ferrariaColoniaConstruida,
                 forja: estado.forjaColoniaConstruida,
                 clinica: estado.clinicaConstruida,
+                escola: estado.escolaConstruida,
                 banco: estado.bancoColoniaConstruido,
               },
               estoques: {
@@ -2776,6 +3013,7 @@
             salvo.expansao?.economia?.obraAutomatica === "cabanaColeta" ||
             salvo.expansao?.economia?.obraAutomatica === "ervario" ||
             salvo.expansao?.economia?.obraAutomatica === "clinica" ||
+            salvo.expansao?.economia?.obraAutomatica === "escola" ||
             salvo.expansao?.economia?.obraAutomatica === "banco" ||
             salvo.expansao?.economia?.obraAutomatica === "oficinaArmasMadeira" ||
             salvo.expansao?.economia?.obraAutomatica === "arsenalMadeira" ||
@@ -2909,6 +3147,41 @@
               estado.coloniaIniciada ? quantidadeColonosExpansao : 0,
             ),
           );
+          estado.familiasColonia = Array.isArray(
+            salvo.expansao?.economia?.familias,
+          )
+            ? salvo.expansao.economia.familias
+                .slice(0, Math.floor(estado.populacaoColonia / 2))
+                .map((familia, indice) => ({
+                  id:
+                    typeof familia?.id === "string" && familia.id.length <= 120
+                      ? familia.id
+                      : `familia-salva-${indice + 1}-${crypto.randomUUID()}`,
+                }))
+            : [];
+          estado.criancasColonia = Array.isArray(
+            salvo.expansao?.economia?.criancas,
+          )
+            ? salvo.expansao.economia.criancas
+                .slice(0, maximoCasasColonia * capacidadeCasaColonia)
+                .map((crianca, indice) => ({
+                  id:
+                    typeof crianca?.id === "string" && crianca.id.length <= 120
+                      ? crianca.id
+                      : `crianca-salva-${indice + 1}-${crypto.randomUUID()}`,
+                  familiaId:
+                    typeof crianca?.familiaId === "string"
+                      ? crianca.familiaId
+                      : null,
+                  idade: numeroValido(
+                    crianca?.idade,
+                    0,
+                    duracaoInfanciaColonia,
+                    0,
+                  ),
+                }))
+            : [];
+          sincronizarFamiliasColonia();
           estado.quantidadeCasasColonia = Math.round(
             numeroValido(
               salvo.expansao?.economia?.casas,
@@ -2968,6 +3241,8 @@
             salvo.expansao?.economia?.edificios?.forja === true;
           estado.clinicaConstruida =
             salvo.expansao?.economia?.edificios?.clinica === true;
+          estado.escolaConstruida =
+            salvo.expansao?.economia?.edificios?.escola === true;
           estado.bancoColoniaConstruido =
             salvo.expansao?.economia?.edificios?.banco === true;
           estado.estoqueMinerio = numeroValido(
@@ -3159,6 +3434,7 @@
         estado.quantidadeCabanasColeta = 0;
         estado.ervarioConstruido = false;
         estado.clinicaConstruida = false;
+        estado.escolaConstruida = false;
         estado.bancoColoniaConstruido = false;
         estado.oficinaArmasMadeiraConstruida = false;
         estado.arsenalMadeiraConstruido = false;
@@ -3183,6 +3459,8 @@
         estado.tempoNecessidadesColonia = 0;
         estado.colonosComFome = 0;
         estado.populacaoColonia = 0;
+        estado.familiasColonia = [];
+        estado.criancasColonia = [];
         estado.quantidadeCasasColonia = 0;
         estado.quantidadeAdministradoresMigracao = 0;
         estado.cargasMigracaoDisponiveis = 0;
@@ -3237,6 +3515,7 @@
         const empregos = {
           administracao: 0,
           migracao: 0,
+          professor: 0,
           lavoura: 0,
           horta: 0,
           feijao: 0,
@@ -3282,6 +3561,12 @@
           return empregos;
         }
 
+        if (
+          estado.escolaConstruida &&
+          estado.criancasColonia.length > 0
+        ) {
+          ocupar("professor", 1);
+        }
         ocupar("administracao", 2);
         ocupar("migracao", estado.quantidadeAdministradoresMigracao);
         if (estado.celeiroConstruido) ocupar("celeiro", 2);
@@ -3351,11 +3636,11 @@
         ];
         const multiplicadorReserva =
           estado.colonosComFome > 0 ||
-          valorAlimentarTotalColonia() < estado.populacaoColonia
+          valorAlimentarTotalColonia() < necessidadeAlimentosColonia()
             ? 1.4
             : 1;
         const metaAlimentar = Math.ceil(
-          estado.populacaoColonia * multiplicadorReserva,
+          necessidadeAlimentosColonia() * multiplicadorReserva,
         );
         let adicionouTrabalhoAlimentar = true;
         while (
@@ -3492,8 +3777,8 @@
         const distribuicao = empregos || redistribuirTrabalhadoresColonia();
         const alimentacaoEstavel =
           producaoAlimentarPorCiclo(distribuicao) >=
-            estado.populacaoColonia * consumoAlimentoPorColono ||
-          valorAlimentarTotalColonia() >= estado.populacaoColonia * 2;
+            necessidadeAlimentosColonia() ||
+          valorAlimentarTotalColonia() >= necessidadeAlimentosColonia() * 2;
         return alimentacaoEstavel;
       }
 
@@ -3508,6 +3793,7 @@
           estado.quantidadeAdministradoresMigracao > 0 ? 1 : 0;
         return Math.ceil(
           (estado.populacaoColonia +
+            estado.criancasColonia.length +
             estado.migracoesPendentes.length +
             reservaMigratoria) /
             capacidadeCasaColonia,
@@ -3518,7 +3804,7 @@
         return Math.max(
           0,
           capacidadeMoradiasColonia() -
-            estado.populacaoColonia -
+            totalMoradoresColonia() -
             estado.migracoesPendentes.length,
         );
       }
@@ -3557,6 +3843,7 @@
         }
         if (tipo === "ervario") return "ervário medicinal";
         if (tipo === "clinica") return "clínica e farmácia";
+        if (tipo === "escola") return "escola";
         if (tipo === "banco") return "banco e abóbada";
         if (tipo === "oficinaArmasMadeira") {
           return "oficina de armas de madeira";
@@ -3597,6 +3884,7 @@
           cabanaColeta: custoCabanaColetaColonia,
           ervario: custoErvarioColonia,
           clinica: custoClinicaColonia,
+          escola: custoEscolaColonia,
           banco: custoBancoColonia,
           oficinaArmasMadeira: custoOficinaArmasMadeiraColonia,
           arsenalMadeira: custoArsenalMadeiraColonia,
@@ -3620,6 +3908,10 @@
           estado.quantidadeCasasColonia < casasNecessariasColonia() &&
           estado.quantidadeCasasColonia < maximoCasasColonia
         ) return "moradia";
+        if (
+          estado.criancasColonia.length > 0 &&
+          !estado.escolaConstruida
+        ) return "escola";
         if (!estado.pastagemConstruida) return "pastagem";
         if (!estado.celeiroConstruido) return "celeiro";
         if (!estado.hortaConstruida) return "horta";
@@ -3721,10 +4013,10 @@
             `${nomeObraAutomaticaColonia(estado.obraAutomaticaColonia)} · ${percentual}%`;
         } else {
           coloniaStatusEl.textContent = estado.etapaConstrucaoColonia < 4
-            ? `${estado.populacaoColonia} colonos · fundação automática`
+            ? `${totalMoradoresColonia()} moradores · fundação automática`
             : estado.celeiroConstruido
-              ? `${estado.populacaoColonia} moradores · cidade automática`
-              : `${estado.populacaoColonia} colonos · prioridades automáticas`;
+              ? `${totalMoradoresColonia()} moradores · cidade automática`
+              : `${totalMoradoresColonia()} moradores · prioridades automáticas`;
         }
       }
 
@@ -3783,6 +4075,7 @@
         patrimonioPessoalEl.textContent =
           `${formatarOuro(estado.ouro)} ouro`;
         tesouroColoniaEl.textContent = formatarOuro(estado.tesouroColonia);
+        sincronizarFamiliasColonia();
         const empregos = redistribuirTrabalhadoresColonia();
         const segundosParaTransferencia = Math.max(
           1,
@@ -3793,16 +4086,26 @@
         transferenciaStatusEl.textContent =
           `${segundosParaTransferencia} s · ${valorTransferenciaPosto} ouro`;
         const capacidadeMoradia = capacidadeMoradiasColonia();
+        const totalMoradores = totalMoradoresColonia();
+        const quantidadeBebes = quantidadeBebesColonia();
+        const quantidadeCriancas = quantidadeCriancasColonia();
+        const chanceNascimento = chanceNascimentoColonia();
+        const chanceNascimentoPercentual =
+          Math.round(chanceNascimento * 1000) / 10;
+        const textoChanceNascimento = condicoesNascimentoAtendidasColonia()
+          ? `${formatarPercentual(chanceNascimentoPercentual)}% / 60 s`
+          : "Pausada · requer saúde, alimento e moradia";
         const colonosAbrigados = Math.min(
-          estado.populacaoColonia,
+          totalMoradores,
           capacidadeMoradia,
         );
-        const necessidadeAlimentos =
-          estado.populacaoColonia * consumoAlimentoPorColono;
+        const necessidadeAlimentos = necessidadeAlimentosColonia();
         const producaoAlimentos = producaoAlimentarPorCiclo(empregos);
         const valorAlimentarDisponivel = valorAlimentarTotalColonia();
         populacaoColoniaStatusEl.textContent =
-          `${estado.populacaoColonia} moradores`;
+          `${estado.populacaoColonia} adultos · ${estado.criancasColonia.length} jovens`;
+        familiasColoniaStatusEl.textContent =
+          `${estado.familiasColonia.length} famílias · ${quantidadeBebes} bebês · ${quantidadeCriancas} crianças`;
         const situacaoSaude = estado.saudeColonia >= 80
           ? "estável"
           : estado.saudeColonia >= saudeMinimaMigracao
@@ -3811,11 +4114,11 @@
         saudeColoniaStatusEl.textContent =
           `${Math.round(estado.saudeColonia)} / ${saudeMaximaColonia} · ${situacaoSaude}`;
         alimentosStatusEl.textContent =
-          `${formatarQuantidade(valorAlimentarDisponivel)} disponíveis · −${necessidadeAlimentos} / 60 s`;
+          `${formatarQuantidade(valorAlimentarDisponivel)} disponíveis · −${formatarQuantidade(necessidadeAlimentos)} / 60 s`;
         moradiaStatusEl.textContent =
-          `${colonosAbrigados} / ${estado.populacaoColonia} · ${estado.quantidadeCasasColonia} casas`;
+          `${colonosAbrigados} / ${totalMoradores} · ${estado.quantidadeCasasColonia} casas`;
         empregosColoniaStatusEl.textContent =
-          `${estado.populacaoColonia} ocupados · +${producaoAlimentos} alimento / 60 s`;
+          `${estado.populacaoColonia} adultos · +${producaoAlimentos} alimento / 60 s`;
         estoquesColoniaStatusEl.textContent =
           `Gr ${formatarQuantidade(estado.estoqueGraos)}/${capacidadeGraosColonia} · Far ${formatarQuantidade(estado.estoqueFarinha)}/${capacidadeFarinhaColonia} · Pão ${formatarQuantidade(estado.estoquePaes)}/${capacidadePaesColonia}`;
         const segundosMigracao = estado.cargasMigracaoDisponiveis <
@@ -3889,18 +4192,27 @@
             ? `Incentivar migração · 100 ouro (${estado.cargasMigracaoDisponiveis})`
             : "Incentivar migração · aguardando";
 
-        painelPopulacaoEl.textContent = String(estado.populacaoColonia);
+        painelPopulacaoEl.textContent = String(totalMoradores);
         painelCasasEl.textContent = String(estado.quantidadeCasasColonia);
         painelCapacidadeCasasEl.textContent = String(capacidadeMoradia);
         painelSemMoradiaEl.textContent = String(
-          Math.max(0, estado.populacaoColonia - capacidadeMoradia),
+          Math.max(0, totalMoradores - capacidadeMoradia),
         );
         painelConstrucaoEl.textContent = estado.obraAutomaticaColonia
           ? nomeObraAutomaticaColonia(estado.obraAutomaticaColonia)
           : "Nenhuma";
+        painelAdultosEl.textContent = String(estado.populacaoColonia);
+        painelFamiliasEl.textContent = String(estado.familiasColonia.length);
+        painelBebesEl.textContent = String(quantidadeBebes);
+        painelCriancasEl.textContent = String(quantidadeCriancas);
+        painelChanceNascimentoEl.textContent = textoChanceNascimento;
+        painelProximaMaturidadeEl.textContent = proximaMaturidadeColonia();
         trabalhoAdministracaoEl.textContent = String(empregos.administracao);
         trabalhoMigracaoEl.textContent =
           `${empregos.migracao} / ${maximoAdministradoresMigracao}`;
+        trabalhoProfessorEl.textContent = estado.criancasColonia.length > 0
+          ? `${empregos.professor} / 1 · ${empregos.professor > 0 ? "em aula" : "essencial"}`
+          : "0 / 1 · sem alunos";
         trabalhoLavouraEl.textContent =
           `${empregos.lavoura} / ${maximoTrabalhadoresLavoura} · +${graosPorAgricultor} grãos cada`;
         trabalhoHortaEl.textContent =
@@ -4041,6 +4353,10 @@
           "clinica",
           estado.clinicaConstruida,
         );
+        edificioEscolaEl.textContent = statusEdificioColonia(
+          "escola",
+          estado.escolaConstruida,
+        );
         edificioBancoEl.textContent = statusEdificioColonia(
           "banco",
           estado.bancoColoniaConstruido,
@@ -4104,7 +4420,7 @@
         registrosEls.repasse.textContent =
           `${segundosParaTransferencia} s · ${valorTransferenciaPosto} ouro`;
         registrosEls.consumo.textContent =
-          `${necessidadeAlimentos} alimento / 60 s`;
+          `${formatarQuantidade(necessidadeAlimentos)} alimento / 60 s`;
         registrosEls["chance-migracao"].textContent =
           `${chanceMigracaoPercentual}% / 60 s`;
         registrosEls["vagas-migracao"].textContent = semEspacoMigracao
@@ -4112,6 +4428,20 @@
           : `${vagasMigracao} disponíveis`;
         registrosEls.fiscalizacao.textContent =
           `${escriturariosFiscais} · +${formatarOuro(adicionalFiscalPorMinuto)} ouro / 60 s`;
+        registrosEls.adultos.textContent = String(estado.populacaoColonia);
+        registrosEls.familias.textContent = String(estado.familiasColonia.length);
+        registrosEls.bebes.textContent = String(quantidadeBebes);
+        registrosEls.criancas.textContent = String(quantidadeCriancas);
+        registrosEls["chance-nascimento"].textContent = textoChanceNascimento;
+        registrosEls["proxima-maturidade"].textContent =
+          proximaMaturidadeColonia();
+        registrosEls.escola.textContent = statusEdificioColonia(
+          "escola",
+          estado.escolaConstruida,
+        );
+        registrosEls.professor.textContent = estado.criancasColonia.length > 0
+          ? `${empregos.professor} / 1 · ${empregos.professor > 0 ? "essencial atendido" : "essencial ausente"}`
+          : "0 / 1 · sem alunos";
         registrosEls["alimento-total"].textContent =
           formatarQuantidade(valorAlimentarDisponivel);
         registrosEls.provisoes.textContent = estoqueAlimentosDetalheEl.textContent;
@@ -5517,6 +5847,10 @@
             x: areaClinicaColonia.x + areaClinicaColonia.largura / 2,
             y: areaClinicaColonia.y + areaClinicaColonia.altura / 2,
           },
+          escola: {
+            x: areaEscolaColonia.x + areaEscolaColonia.largura / 2,
+            y: areaEscolaColonia.y + areaEscolaColonia.altura / 2,
+          },
           mina: {
             x: areaMinaColonia.x + areaMinaColonia.largura / 2,
             y: areaMinaColonia.y + areaMinaColonia.altura / 2,
@@ -5622,6 +5956,8 @@
           estado.ervarioConstruido = true;
         } else if (obraConcluida === "clinica") {
           estado.clinicaConstruida = true;
+        } else if (obraConcluida === "escola") {
+          estado.escolaConstruida = true;
         } else if (obraConcluida === "banco") {
           estado.bancoColoniaConstruido = true;
         } else if (obraConcluida === "oficinaArmasMadeira") {
@@ -5704,6 +6040,8 @@
         let armasProduzidas = 0;
         let mercadoriasProduzidas = 0;
         let receitaBrutaRecursos = 0;
+        let nascimentos = 0;
+        let maioridades = 0;
 
         for (let ciclo = 0; ciclo < ciclos; ciclo += 1) {
           const empregos = redistribuirTrabalhadoresColonia();
@@ -5746,8 +6084,7 @@
             novoFeijao * valorAlimentarFeijao +
             novosPaes * valorAlimentarPao;
 
-          const necessidade =
-            estado.populacaoColonia * consumoAlimentoPorColono;
+          const necessidade = necessidadeAlimentosColonia();
           const consumo = consumirAlimentosColonia(necessidade);
           alimentosConsumidos += consumo;
           estado.colonosComFome = Math.ceil(necessidade - consumo);
@@ -5787,7 +6124,7 @@
           ervasProduzidas += novasErvas;
 
           const pressaoSaude =
-            Math.max(1, Math.ceil(estado.populacaoColonia / 25)) +
+            Math.max(1, Math.ceil(totalMoradoresColonia() / 25)) +
             Math.ceil(estado.colonosComFome / 5);
           pressaoSaudeAcumulada += pressaoSaude;
           estado.saudeColonia = Math.max(
@@ -5987,6 +6324,10 @@
             excessoFerramentas * valorVendaFerramenta +
             excessoArmas * valorVendaArma +
             excessoMercadorias * valorVendaMercadoria;
+
+          const mudancasFamiliares = atualizarFamiliasColonia();
+          nascimentos += mudancasFamiliares.nascimentos;
+          maioridades += mudancasFamiliares.maioridades;
         }
 
         if (receitaBrutaRecursos > 0) {
@@ -6002,6 +6343,20 @@
                 ? `Produção: ${valorAlimentarProduzido} em alimento, ${graosProduzidos} grãos, ${farinhaProduzida} farinhas, ${paesProduzidos} pães; ${madeiraProduzida} madeiras, ${arvoresPlantadas} árvores replantadas, ${ervasProduzidas} ervas, ${medicamentosProduzidos} medicamentos e ${tratamentosRealizados} tratamentos; ${lancasProduzidas} lanças, ${arcosProduzidos} arcos e ${flechasProduzidas} flechas; ${minerioProduzido} minérios, ${pedraProduzida} pedras, ${ferramentasProduzidas} ferramentas, ${armasProduzidas} armas de metal e ${mercadoriasProduzidas} mercadorias. Consumo: ${formatarQuantidade(alimentosConsumidos)}. Saúde: ${Math.round(estado.saudeColonia)}/${saudeMaximaColonia} após pressão ${pressaoSaudeAcumulada}.`
                 : `A cidade produziu ${hortalicasProduzidas} cestas e ${feijaoProduzido} sacas de feijão. Os colonos precisam concluir o celeiro central para organizar os estoques.`,
         );
+        if (nascimentos > 0 || maioridades > 0) {
+          const eventos = [];
+          if (nascimentos > 0) {
+            eventos.push(
+              `${nascimentos} ${nascimentos === 1 ? "bebê nasceu" : "bebês nasceram"}; a escola tornou-se prioridade`,
+            );
+          }
+          if (maioridades > 0) {
+            eventos.push(
+              `${maioridades} ${maioridades === 1 ? "jovem concluiu os estudos e virou colono adulto" : "jovens concluíram os estudos e viraram colonos adultos"}`,
+            );
+          }
+          definirMensagem(`${eventos.join(". ")}.`);
+        }
         atualizarInterface();
         salvarProgresso();
       }
@@ -6984,6 +7339,7 @@
         const empregos = estado.empregosColonia;
         const ordem = [
           "administracao",
+          "professor",
           "migracao",
           "celeiro",
           "horta",
@@ -7157,6 +7513,10 @@
             x: areaClinicaColonia.x + areaClinicaColonia.largura / 2,
             y: areaClinicaColonia.y + areaClinicaColonia.altura / 2,
           },
+          escola: {
+            x: areaEscolaColonia.x + areaEscolaColonia.largura / 2,
+            y: areaEscolaColonia.y + areaEscolaColonia.altura / 2,
+          },
           banco: {
             x: areaBancoColonia.x + areaBancoColonia.largura / 2,
             y: areaBancoColonia.y + areaBancoColonia.altura / 2,
@@ -7226,6 +7586,14 @@
             posicao = posicaoRotinaRuralColonia(emprego.vaga, "pastagem");
           } else if (emprego.tipo === "administracao") {
             posicao = posicaoFormacaoColonos(posicaoAdministrador, emprego.vaga);
+          } else if (emprego.tipo === "professor") {
+            posicao = posicaoFormacaoColonos(
+              {
+                x: areaEscolaColonia.x + areaEscolaColonia.largura / 2,
+                y: areaEscolaColonia.y + areaEscolaColonia.altura + 60,
+              },
+              emprego.vaga,
+            );
           } else if (emprego.tipo === "migracao") {
             posicao = posicaoFormacaoColonos(
               { x: posicaoAdministrador.x + 230, y: posicaoAdministrador.y },
@@ -7437,7 +7805,7 @@
             0,
             Math.min(
               capacidadeCasaColonia,
-              estado.populacaoColonia - indice * capacidadeCasaColonia,
+              totalMoradoresColonia() - indice * capacidadeCasaColonia,
             ),
           );
           contexto.fillText(
@@ -8833,6 +9201,29 @@
         );
 
         desenharEdificioColonia(
+          areaEscolaColonia,
+          "escola",
+          estado.escolaConstruida,
+          `ESCOLA · ${estado.empregosColonia.professor}/1 PROFESSOR`,
+          "#c9aa68",
+        );
+        if (progressoEdificioColonia("escola", estado.escolaConstruida) > 0.72) {
+          const centroX = areaEscolaColonia.x + areaEscolaColonia.largura / 2;
+          const centroY = areaEscolaColonia.y + areaEscolaColonia.altura / 2 + 70;
+          contexto.fillStyle = "#efe2b9";
+          contexto.fillRect(centroX - 105, centroY - 55, 95, 110);
+          contexto.fillRect(centroX + 10, centroY - 55, 95, 110);
+          contexto.strokeStyle = "#5c4027";
+          contexto.lineWidth = 8;
+          contexto.strokeRect(centroX - 105, centroY - 55, 95, 110);
+          contexto.strokeRect(centroX + 10, centroY - 55, 95, 110);
+          contexto.beginPath();
+          contexto.moveTo(centroX, centroY - 48);
+          contexto.lineTo(centroX, centroY + 55);
+          contexto.stroke();
+        }
+
+        desenharEdificioColonia(
           areaBancoColonia,
           "banco",
           estado.bancoColoniaConstruido,
@@ -9040,10 +9431,55 @@
         });
       }
 
+      function posicaoJovemColonia(crianca, indice) {
+        const quantidadeCasas = Math.max(1, estado.quantidadeCasasColonia);
+        const casa = posicaoCasaColonia(
+          indice % quantidadeCasas,
+        );
+        const origem = {
+          x: casa.x + 35 + (indice % 3) * 28,
+          y: casa.y + 128 + (indice % 2) * 24,
+        };
+        if (crianca.idade < duracaoBebeColonia) return origem;
+        if (
+          !estado.escolaConstruida ||
+          estado.empregosColonia.professor < 1
+        ) {
+          return {
+            x: origem.x + Math.sin(tempoRio * 0.7 + indice) * 24,
+            y: origem.y + Math.cos(tempoRio * 0.6 + indice) * 18,
+          };
+        }
+        const destino = {
+          x:
+            areaEscolaColonia.x +
+            areaEscolaColonia.largura / 2 +
+            (indice % 5 - 2) * 28,
+          y: areaEscolaColonia.y + areaEscolaColonia.altura + 70,
+        };
+        const idaEVolta = (Math.sin(tempoRio * 0.35 + indice * 0.8) + 1) / 2;
+        return interpolarPonto(origem, destino, idaEVolta);
+      }
+
+      function desenharJovensColonia() {
+        estado.criancasColonia.forEach((crianca, indice) => {
+          const posicao = posicaoJovemColonia(crianca, indice);
+          const bebe = crianca.idade < duracaoBebeColonia;
+          desenharCirculo(
+            posicao.x,
+            posicao.y,
+            bebe ? 5 : 6,
+            bebe ? "#f3dfbd" : "#f0ca58",
+            "#59462c",
+          );
+        });
+      }
+
       function desenharColonosNovaColonia() {
         redistribuirTrabalhadoresColonia();
         const coresEmprego = {
           administracao: "#e1c27a",
+          professor: "#6f8fd1",
           migracao: "#55d6d1",
           lavoura: "#e2b44f",
           horta: "#62a84f",
@@ -9130,6 +9566,7 @@
         desenharMoradiasColonia();
         desenharInfraestruturaColonia();
         desenharColonosNovaColonia();
+        desenharJovensColonia();
       }
 
       function interpolarPonto(inicio, fim, progresso) {
