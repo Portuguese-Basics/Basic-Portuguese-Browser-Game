@@ -684,12 +684,14 @@
             <li>O posto original continua financiando a colônia com 300 de ouro a cada 60 segundos: 270 para a cidade e 30 para o administrador.</li>
             <li>Os colonos escolhem sozinhos as obras e os empregos prioritários da cidade.</li>
             <li>Cada morador consome 1 alimento por minuto e precisa de moradia. Cada casa abriga 5 pessoas; uma casa de 250 de ouro municipal é construída por vez quando faltar espaço.</li>
-            <li>A torre administrativa, as moradias de prestígio e o celeiro ficam protegidos no recinto interno; os blocos de moradia ficam no recinto externo.</li>
+            <li>A torre administrativa, as moradias de prestígio e o celeiro ocupam o recinto interno planejado; os blocos de moradia ocupam o recinto externo planejado.</li>
             <li>O campo de grãos, a horta e pomar, o feijoal, a pastagem e a mina ficam no extremo oeste. A costa é reservada para pesca, comércio e chegada de migrantes.</li>
             <li>A horta e pomar produz 4 cestas por trabalhador; cada cesta vale 2 alimentos. O feijoal produz 3 sacas; cada saca vale 3 alimentos.</li>
             <li>A pastagem produz 4 provisões por trabalhador. Cada área agrícola aceita até 5 trabalhadores.</li>
             <li>O campo produz 6 grãos por agricultor. O moinho transforma 4 grãos em 3 farinhas e a padaria transforma 3 farinhas em 2 pães; cada pão vale 4 alimentos.</li>
             <li>Custos municipais: pastagem 500; celeiro central 300; horta/pomar 350 + armazém 200; feijoal 350 + armazém 200; campo de grãos 400 + silo 250; moinho 450 + depósito 200; padaria 500 + despensa 250.</li>
+            <li>As muralhas não existem no início. Depois das construções produtivas, a cidade pode erguer a paliçada interna por 4 trechos de 250 e a externa por 4 trechos de 450.</li>
+            <li>A paliçada completa é o estágio 1. Estágios futuros poderão acrescentar torres, muralhas mais espessas com passagem para soldados e, depois, muralhas de pedra.</li>
             <li>O cais de pesca aceita 5 pescadores e produz 5 alimentos por trabalhador a cada 60 segundos.</li>
             <li>O celeiro central armazena até 200 provisões. Celeiros secundários ilustrados armazenam grãos, hortaliças, feijão, farinha e pães no recinto externo.</li>
             <li>A mina produz minério; a ferraria transforma 2 minérios em 1 ferramenta; a forja transforma 3 minérios em 1 arma. Cada atividade aceita até 5 trabalhadores.</li>
@@ -780,6 +782,8 @@
               <li>Cais comercial + armazém <span id="edificio-comercio">Planejados</span></li>
               <li>Ferraria + ferramentas <span id="edificio-ferraria">Planejados</span></li>
               <li>Forja + arsenal <span id="edificio-forja">Planejados</span></li>
+              <li>Paliçada interna — estágio 1 <span id="edificio-palicada-interna">0 / 4 trechos</span></li>
+              <li>Paliçada externa — estágio 1 <span id="edificio-palicada-externa">0 / 4 trechos</span></li>
             </ul>
           </section>
         </div>
@@ -1016,6 +1020,12 @@
       const edificioComercioEl = document.querySelector("#edificio-comercio");
       const edificioFerrariaEl = document.querySelector("#edificio-ferraria");
       const edificioForjaEl = document.querySelector("#edificio-forja");
+      const edificioPalicadaInternaEl = document.querySelector(
+        "#edificio-palicada-interna",
+      );
+      const edificioPalicadaExternaEl = document.querySelector(
+        "#edificio-palicada-externa",
+      );
       const controlesMapaEl = document.querySelector("#controles-mapa");
       const diminuirZoomBotao = document.querySelector("#diminuir-zoom");
       const centralizarMapaBotao = document.querySelector("#centralizar-mapa");
@@ -1071,6 +1081,7 @@
         largura: 3500,
         altura: 3600,
       };
+      const yEstradaCampoColonia = 4150;
       const areaMoradias = {
         x: 5350,
         y: 5650,
@@ -1134,25 +1145,25 @@
       };
       const areaMoinhoColonia = {
         x: 5200,
-        y: 3200,
+        y: 3100,
         largura: 500,
         altura: 340,
       };
       const areaArmazemFarinha = {
         x: 5900,
-        y: 3220,
+        y: 3120,
         largura: 450,
         altura: 300,
       };
       const areaPadariaColonia = {
         x: 5200,
-        y: 4050,
+        y: 4550,
         largura: 500,
         altura: 340,
       };
       const areaArmazemPaes = {
         x: 5900,
-        y: 4070,
+        y: 4570,
         largura: 450,
         altura: 300,
       };
@@ -1247,6 +1258,9 @@
       const custoCaisComercialColonia = 700;
       const custoFerrariaColonia = 500;
       const custoForjaColonia = 600;
+      const custoTrechoPalicadaInternaColonia = 250;
+      const custoTrechoPalicadaExternaColonia = 450;
+      const totalTrechosPalicadaColonia = 4;
       const capacidadeMinerioColonia = 100;
       const capacidadeFerramentasColonia = 60;
       const capacidadeArmasColonia = 40;
@@ -1429,6 +1443,8 @@
         caisComercialConstruido: false,
         ferrariaColoniaConstruida: false,
         forjaColoniaConstruida: false,
+        trechosPalicadaInterna: 0,
+        trechosPalicadaExterna: 0,
         estoqueMinerio: 0,
         estoqueFerramentas: 0,
         estoqueArmas: 0,
@@ -1587,6 +1603,8 @@
         estado.caisComercialConstruido = false;
         estado.ferrariaColoniaConstruida = false;
         estado.forjaColoniaConstruida = false;
+        estado.trechosPalicadaInterna = 0;
+        estado.trechosPalicadaExterna = 0;
         estado.estoqueMinerio = 0;
         estado.estoqueFerramentas = 0;
         estado.estoqueArmas = 0;
@@ -1686,6 +1704,18 @@
               armazemFarinhaConstruido: estado.armazemFarinhaConstruido,
               padariaConstruida: estado.padariaConstruida,
               armazemPaesConstruido: estado.armazemPaesConstruido,
+              defesas: {
+                trechosPalicadaInterna: estado.trechosPalicadaInterna,
+                trechosPalicadaExterna: estado.trechosPalicadaExterna,
+                estagioInterno:
+                  estado.trechosPalicadaInterna === totalTrechosPalicadaColonia
+                    ? 1
+                    : 0,
+                estagioExterno:
+                  estado.trechosPalicadaExterna === totalTrechosPalicadaColonia
+                    ? 1
+                    : 0,
+              },
               obraAutomatica: estado.obraAutomaticaColonia,
               tempoObraAutomatica: estado.tempoObraAutomaticaColonia,
               estoqueAlimentos: estado.estoqueAlimentos,
@@ -2199,6 +2229,22 @@
             salvo.expansao?.economia?.padariaConstruida === true;
           estado.armazemPaesConstruido =
             salvo.expansao?.economia?.armazemPaesConstruido === true;
+          estado.trechosPalicadaInterna = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.defesas?.trechosPalicadaInterna,
+              0,
+              totalTrechosPalicadaColonia,
+              0,
+            ),
+          );
+          estado.trechosPalicadaExterna = Math.round(
+            numeroValido(
+              salvo.expansao?.economia?.defesas?.trechosPalicadaExterna,
+              0,
+              totalTrechosPalicadaColonia,
+              0,
+            ),
+          );
           estado.obraAutomaticaColonia =
             salvo.expansao?.economia?.obraAutomatica === "lavoura" ||
             salvo.expansao?.economia?.obraAutomatica === "armazemGraos" ||
@@ -2217,7 +2263,9 @@
             salvo.expansao?.economia?.obraAutomatica === "caisPesca" ||
             salvo.expansao?.economia?.obraAutomatica === "caisComercial" ||
             salvo.expansao?.economia?.obraAutomatica === "ferraria" ||
-            salvo.expansao?.economia?.obraAutomatica === "forja"
+            salvo.expansao?.economia?.obraAutomatica === "forja" ||
+            salvo.expansao?.economia?.obraAutomatica === "palicadaInterna" ||
+            salvo.expansao?.economia?.obraAutomatica === "palicadaExterna"
               ? salvo.expansao.economia.obraAutomatica
               : null;
           estado.tempoObraAutomaticaColonia =
@@ -2536,6 +2584,8 @@
         estado.caisComercialConstruido = false;
         estado.ferrariaColoniaConstruida = false;
         estado.forjaColoniaConstruida = false;
+        estado.trechosPalicadaInterna = 0;
+        estado.trechosPalicadaExterna = 0;
         estado.estoqueMinerio = 0;
         estado.estoqueFerramentas = 0;
         estado.estoqueArmas = 0;
@@ -2706,7 +2756,11 @@
         if (tipo === "caisPesca") return "cais de pesca";
         if (tipo === "caisComercial") return "cais e armazém comercial";
         if (tipo === "ferraria") return "ferraria e armazém de ferramentas";
-        return "forja e arsenal";
+        if (tipo === "forja") return "forja e arsenal";
+        if (tipo === "palicadaInterna") {
+          return `trecho ${estado.trechosPalicadaInterna + 1}/${totalTrechosPalicadaColonia} da paliçada interna`;
+        }
+        return `trecho ${estado.trechosPalicadaExterna + 1}/${totalTrechosPalicadaColonia} da paliçada externa`;
       }
 
       function custoObraAutomaticaColonia(tipo) {
@@ -2729,6 +2783,8 @@
           caisComercial: custoCaisComercialColonia,
           ferraria: custoFerrariaColonia,
           forja: custoForjaColonia,
+          palicadaInterna: custoTrechoPalicadaInternaColonia,
+          palicadaExterna: custoTrechoPalicadaExternaColonia,
         };
         return custos[tipo];
       }
@@ -2755,6 +2811,12 @@
         if (!estado.caisComercialConstruido) return "caisComercial";
         if (!estado.ferrariaColoniaConstruida) return "ferraria";
         if (!estado.forjaColoniaConstruida) return "forja";
+        if (
+          estado.trechosPalicadaInterna < totalTrechosPalicadaColonia
+        ) return "palicadaInterna";
+        if (
+          estado.trechosPalicadaExterna < totalTrechosPalicadaColonia
+        ) return "palicadaExterna";
         return null;
       }
 
@@ -2823,6 +2885,21 @@
         return estado.obraAutomaticaColonia === tipo
           ? `${Math.round((estado.tempoObraAutomaticaColonia / duracaoObraAutomaticaColonia) * 100)}%`
           : "Planejado";
+      }
+
+      function statusPalicadaColonia(tipo, trechos) {
+        if (trechos === totalTrechosPalicadaColonia) {
+          return "Estágio 1 concluído";
+        }
+        if (estado.obraAutomaticaColonia === tipo) {
+          const percentual = Math.round(
+            (estado.tempoObraAutomaticaColonia /
+              duracaoObraAutomaticaColonia) *
+              100,
+          );
+          return `Trecho ${trechos + 1}/${totalTrechosPalicadaColonia} · ${percentual}%`;
+        }
+        return `${trechos} / ${totalTrechosPalicadaColonia} trechos`;
       }
 
       function atualizarInterface() {
@@ -3025,6 +3102,14 @@
           statusEdificioColonia("ferraria", estado.ferrariaColoniaConstruida);
         edificioForjaEl.textContent =
           statusEdificioColonia("forja", estado.forjaColoniaConstruida);
+        edificioPalicadaInternaEl.textContent = statusPalicadaColonia(
+          "palicadaInterna",
+          estado.trechosPalicadaInterna,
+        );
+        edificioPalicadaExternaEl.textContent = statusPalicadaColonia(
+          "palicadaExterna",
+          estado.trechosPalicadaExterna,
+        );
         combateStatusEl.textContent = `ATQ ${estado.ataque} · ARM ${estado.armadura}`;
         cacarBotao.disabled = !noAssentamento || estado.vida <= 0;
         voltarBotao.disabled = !naFloresta;
@@ -4336,7 +4421,10 @@
             y: areaForjaColonia.y + areaForjaColonia.altura / 2,
           },
         };
-        focarCameraExpansao(alvos[tipo], tipo === "moradia" ? 0.8 : 0.6);
+        focarCameraExpansao(
+          alvos[tipo] || centroObraColonia(tipo),
+          tipo === "moradia" ? 0.8 : 0.6,
+        );
         definirMensagem(
           `Os colonos iniciaram ${nomeObraAutomaticaColonia(tipo)} e reservaram ${custo} do cofre municipal.`,
         );
@@ -4368,6 +4456,7 @@
         }
 
         const obraConcluida = estado.obraAutomaticaColonia;
+        const nomeObraConcluida = nomeObraAutomaticaColonia(obraConcluida);
         if (obraConcluida === "lavoura") {
           estado.lavouraConstruida = true;
         } else if (obraConcluida === "armazemGraos") {
@@ -4407,11 +4496,21 @@
           estado.ferrariaColoniaConstruida = true;
         } else if (obraConcluida === "forja") {
           estado.forjaColoniaConstruida = true;
+        } else if (obraConcluida === "palicadaInterna") {
+          estado.trechosPalicadaInterna = Math.min(
+            totalTrechosPalicadaColonia,
+            estado.trechosPalicadaInterna + 1,
+          );
+        } else if (obraConcluida === "palicadaExterna") {
+          estado.trechosPalicadaExterna = Math.min(
+            totalTrechosPalicadaColonia,
+            estado.trechosPalicadaExterna + 1,
+          );
         }
         estado.obraAutomaticaColonia = null;
         estado.tempoObraAutomaticaColonia = 0;
         definirMensagem(
-          `Obra concluída: ${nomeObraAutomaticaColonia(obraConcluida)}. Os colonos reavaliaram as necessidades da cidade.`,
+          `Obra concluída: ${nomeObraConcluida}. Os colonos reavaliaram as necessidades da cidade.`,
         );
         atualizarInterface();
         salvarProgresso();
@@ -5473,7 +5572,7 @@
         const area = areas[tipo];
         const casa = posicaoCasaColonia(vaga);
         const centroCasa = { x: casa.x + 65, y: casa.y + 55 };
-        const yEstrada = areaLavoura.y + areaLavoura.altura / 2;
+        const yEstrada = yEstradaCampoColonia;
         const portao = { x: recintoExterno.x, y: yEstrada };
         const estradaExterior = {
           x: areaPastagem.x + areaPastagem.largura + 80,
@@ -5540,6 +5639,28 @@
           inicio = fim;
         }
         return { tipo: "geral", vaga: indice };
+      }
+
+      function centroTrechoPalicadaColonia(recinto, indiceTrecho) {
+        const centros = [
+          {
+            x: recinto.x + recinto.largura / 2,
+            y: recinto.y,
+          },
+          {
+            x: recinto.x + recinto.largura,
+            y: recinto.y + recinto.altura / 2,
+          },
+          {
+            x: recinto.x + recinto.largura / 2,
+            y: recinto.y + recinto.altura,
+          },
+          {
+            x: recinto.x,
+            y: yEstradaCampoColonia,
+          },
+        ];
+        return centros[Math.min(centros.length - 1, indiceTrecho)];
       }
 
       function centroObraColonia(tipo) {
@@ -5618,6 +5739,14 @@
             x: areaArmazemPaes.x + areaArmazemPaes.largura / 2,
             y: areaArmazemPaes.y + areaArmazemPaes.altura / 2,
           },
+          palicadaInterna: centroTrechoPalicadaColonia(
+            recintoInterno,
+            estado.trechosPalicadaInterna,
+          ),
+          palicadaExterna: centroTrechoPalicadaColonia(
+            recintoExterno,
+            estado.trechosPalicadaExterna,
+          ),
         };
         return centros[tipo] || posicaoAdministrador;
       }
@@ -5842,11 +5971,10 @@
         contexto.textBaseline = "alphabetic";
       }
 
-      function desenharDefesasColonia() {
+      function desenharDefesasColoniaLegado() {
         if (estado.etapaConstrucaoColonia < 4) return;
 
-        const yEstradaCampo =
-          areaLavoura.y + areaLavoura.altura / 2;
+        const yEstradaCampo = yEstradaCampoColonia;
 
         contexto.fillStyle = "#b7a36c";
         contexto.fillRect(
@@ -5969,6 +6097,220 @@
           "PORTÃO DO CAMPO",
           recintoExterno.x + 135,
           yEstradaCampo - 105,
+        );
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
+      }
+
+      function desenharLinhaPlanejadaPalicada(x1, y1, x2, y2) {
+        contexto.strokeStyle = "rgba(75, 82, 62, 0.72)";
+        contexto.lineWidth = 9;
+        contexto.beginPath();
+        contexto.moveTo(x1, y1);
+        contexto.lineTo(x2, y2);
+        contexto.stroke();
+      }
+
+      function desenharLinhaPalicada(x1, y1, x2, y2, progresso, cor) {
+        const parte = limitarProgresso(progresso);
+        if (parte <= 0) return;
+        const fimX = x1 + (x2 - x1) * parte;
+        const fimY = y1 + (y2 - y1) * parte;
+        contexto.strokeStyle = cor;
+        contexto.lineWidth = 18;
+        contexto.beginPath();
+        contexto.moveTo(x1, y1);
+        contexto.lineTo(fimX, fimY);
+        contexto.stroke();
+
+        const distancia = Math.hypot(x2 - x1, y2 - y1);
+        const quantidadePostes = Math.max(1, Math.floor(distancia / 58));
+        for (let indice = 0; indice <= quantidadePostes; indice += 1) {
+          const posicao = indice / quantidadePostes;
+          if (posicao > parte) break;
+          desenharCirculo(
+            x1 + (x2 - x1) * posicao,
+            y1 + (y2 - y1) * posicao,
+            13,
+            cor,
+            "#3e2d1d",
+          );
+        }
+      }
+
+      function desenharPlanoRecintoColonia(recinto) {
+        const abertura = 105;
+        desenharLinhaPlanejadaPalicada(
+          recinto.x,
+          recinto.y,
+          recinto.x + recinto.largura,
+          recinto.y,
+        );
+        desenharLinhaPlanejadaPalicada(
+          recinto.x + recinto.largura,
+          recinto.y,
+          recinto.x + recinto.largura,
+          recinto.y + recinto.altura,
+        );
+        desenharLinhaPlanejadaPalicada(
+          recinto.x + recinto.largura,
+          recinto.y + recinto.altura,
+          recinto.x,
+          recinto.y + recinto.altura,
+        );
+        desenharLinhaPlanejadaPalicada(
+          recinto.x,
+          recinto.y + recinto.altura,
+          recinto.x,
+          yEstradaCampoColonia + abertura,
+        );
+        desenharLinhaPlanejadaPalicada(
+          recinto.x,
+          yEstradaCampoColonia - abertura,
+          recinto.x,
+          recinto.y,
+        );
+      }
+
+      function desenharTrechoPalicadaColonia(
+        recinto,
+        indiceTrecho,
+        progresso,
+        cor,
+      ) {
+        if (indiceTrecho === 0) {
+          desenharLinhaPalicada(
+            recinto.x,
+            recinto.y,
+            recinto.x + recinto.largura,
+            recinto.y,
+            progresso,
+            cor,
+          );
+        } else if (indiceTrecho === 1) {
+          desenharLinhaPalicada(
+            recinto.x + recinto.largura,
+            recinto.y,
+            recinto.x + recinto.largura,
+            recinto.y + recinto.altura,
+            progresso,
+            cor,
+          );
+        } else if (indiceTrecho === 2) {
+          desenharLinhaPalicada(
+            recinto.x + recinto.largura,
+            recinto.y + recinto.altura,
+            recinto.x,
+            recinto.y + recinto.altura,
+            progresso,
+            cor,
+          );
+        } else {
+          const abertura = 105;
+          desenharLinhaPalicada(
+            recinto.x,
+            recinto.y + recinto.altura,
+            recinto.x,
+            yEstradaCampoColonia + abertura,
+            progresso,
+            cor,
+          );
+          desenharLinhaPalicada(
+            recinto.x,
+            recinto.y,
+            recinto.x,
+            yEstradaCampoColonia - abertura,
+            progresso,
+            cor,
+          );
+          if (progresso > 0) {
+            contexto.fillStyle = cor;
+            contexto.fillRect(
+              recinto.x - 34,
+              yEstradaCampoColonia - 110,
+              34,
+              82 * limitarProgresso(progresso),
+            );
+            contexto.fillRect(
+              recinto.x - 34,
+              yEstradaCampoColonia + 28,
+              34,
+              82 * limitarProgresso(progresso),
+            );
+          }
+        }
+      }
+
+      function desenharPalisadaColonia(recinto, tipo, trechos, cor, nome) {
+        desenharPlanoRecintoColonia(recinto);
+        const progressoObra = estado.obraAutomaticaColonia === tipo
+          ? estado.tempoObraAutomaticaColonia / duracaoObraAutomaticaColonia
+          : 0;
+        const progressoTotal = trechos + limitarProgresso(progressoObra);
+        for (
+          let indice = 0;
+          indice < totalTrechosPalicadaColonia;
+          indice += 1
+        ) {
+          desenharTrechoPalicadaColonia(
+            recinto,
+            indice,
+            progressoTotal - indice,
+            cor,
+          );
+        }
+
+        contexto.fillStyle = "#3f3020";
+        contexto.font = "bold 27px sans-serif";
+        contexto.textAlign = "center";
+        contexto.textBaseline = "middle";
+        contexto.fillText(
+          trechos === totalTrechosPalicadaColonia
+            ? `${nome} · PALIÇADA ESTÁGIO 1`
+            : `${nome} · PLANO DE PALIÇADA ${trechos}/${totalTrechosPalicadaColonia}`,
+          recinto.x + recinto.largura / 2,
+          recinto.y - 62,
+        );
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
+      }
+
+      function desenharDefesasColonia() {
+        if (estado.etapaConstrucaoColonia < 4) return;
+
+        contexto.fillStyle = "#b7a36c";
+        contexto.fillRect(
+          areaPastagem.x + areaPastagem.largura,
+          yEstradaCampoColonia - 60,
+          recintoInterno.x -
+            (areaPastagem.x + areaPastagem.largura) +
+            130,
+          120,
+        );
+
+        desenharPalisadaColonia(
+          recintoExterno,
+          "palicadaExterna",
+          estado.trechosPalicadaExterna,
+          "#70583a",
+          "RECINTO EXTERNO",
+        );
+        desenharPalisadaColonia(
+          recintoInterno,
+          "palicadaInterna",
+          estado.trechosPalicadaInterna,
+          "#8b7048",
+          "RECINTO INTERNO",
+        );
+
+        contexto.fillStyle = "#3f3020";
+        contexto.font = "bold 18px sans-serif";
+        contexto.textAlign = "center";
+        contexto.textBaseline = "middle";
+        contexto.fillText(
+          "PORTÕES PLANEJADOS DO CAMPO",
+          recintoExterno.x + 240,
+          yEstradaCampoColonia - 105,
         );
         contexto.textAlign = "start";
         contexto.textBaseline = "alphabetic";
