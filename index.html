@@ -543,6 +543,7 @@
         <div class="indicador indicador-colonia">Cofre municipal<span id="tesouro-colonia">0</span></div>
         <div class="indicador indicador-colonia">Próximo repasse<span id="transferencia-status">60 s · 300 ouro</span></div>
         <div class="indicador indicador-colonia">População<span id="populacao-colonia-status">20 moradores</span></div>
+        <div class="indicador indicador-colonia">Saúde colonial<span id="saude-colonia-status">100 / 100</span></div>
         <div class="indicador indicador-colonia">Alimentos<span id="alimentos-status">0 em estoque</span></div>
         <div class="indicador indicador-colonia">Moradia<span id="moradia-status">0 / 20 abrigados</span></div>
         <div class="indicador indicador-colonia">Empregos<span id="empregos-colonia-status">Aguardando</span></div>
@@ -711,8 +712,10 @@
             <li>A pedreira e seu depósito custam 650 de ouro municipal. Até 5 trabalhadores extraem 5 pedras cada por minuto; o excedente vale 2 de ouro por pedra.</li>
             <li>A floresta do noroeste começa com 120 de 200 árvores. Cada lenhador corta 2 árvores e entrega 10 madeiras; cada reflorestador planta 6 árvores por minuto.</li>
             <li>Há duas cabanas de lenhadores com 3 vagas cada, uma cabana de reflorestamento com 2 vagas e duas cabanas de coleta com 3 vagas cada. Cada coletor entrega 3 ervas medicinais.</li>
+            <li>A clínica e sua farmácia ficam no recinto interno. Cada profissional transforma 2 ervas em 1 medicamento; cada medicamento recupera 2 pontos de saúde colonial. Sem tratamento, população e fome aumentam a pressão sanitária.</li>
+            <li>O banco fica no recinto interno e representa, em cofres separados, o ouro municipal e o patrimônio pessoal.</li>
             <li>Armas de madeira: 4 madeiras por lança, 6 por arco. A flecharia usa 2 madeiras para fazer 12 flechas; uma aljava completa leva 20 flechas.</li>
-            <li>Minério, ferramentas, armas e mercadorias possuem depósitos próprios. Quando um depósito enche, somente o excedente é vendido.</li>
+            <li>Arsenais, munição, ferramentas, ervas e medicamentos ficam protegidos no recinto interno. Minério, pedra, madeira, alimentos e mercadorias permanecem junto às zonas produtivas. Quando um depósito enche, somente o excedente é vendido.</li>
             <li>Toda venda colonial é dividida: 90% para o tesouro da cidade e 10% para o patrimônio pessoal do administrador.</li>
             <li>Um escriturário de migração custa 100 de ouro pessoal, consome alimento, ocupa moradia e libera um incentivo a cada 60 segundos.</li>
             <li>A cada 60 segundos existe 5% de chance de migração espontânea; cada escriturário acrescenta 1 ponto percentual, até 15% com 10 profissionais.</li>
@@ -764,6 +767,7 @@
               <li>Lenhadores <span id="trabalho-lenhador">0 / 6 · árvores → madeira</span></li>
               <li>Reflorestadores <span id="trabalho-reflorestador">0 / 2 · +6 árvores cada</span></li>
               <li>Coletores de ervas <span id="trabalho-coletor">0 / 6 · +3 ervas cada</span></li>
+              <li>Profissionais da clínica <span id="trabalho-clinica">0 / 5 · ervas → medicamentos</span></li>
               <li>Armeiros de madeira <span id="trabalho-armeiro-madeira">0 / 5 · lanças e arcos</span></li>
               <li>Flecheiros <span id="trabalho-flecheiro">0 / 5 · +12 flechas cada</span></li>
               <li>Pescadores <span id="trabalho-pesca">0 / 5 · +5 alimento cada</span></li>
@@ -787,7 +791,8 @@
               <li>Despensa — pães (valor 4) <span id="estoque-paes">0 / 100</span></li>
               <li>Reserva florestal — árvores <span id="estoque-arvores">0 / 200</span></li>
               <li>Depósito de madeira <span id="estoque-madeira">0 / 180</span></li>
-              <li>Ervário — ervas medicinais <span id="estoque-ervas">0 / 100</span></li>
+              <li>Ervário interno — ervas medicinais (valor 3) <span id="estoque-ervas">0 / 100</span></li>
+              <li>Farmácia interna — medicamentos (valor 8) <span id="estoque-medicamentos">0 / 80</span></li>
               <li>Depósito de minério <span id="estoque-minerio">0 / 100</span></li>
               <li>Depósito de pedra <span id="estoque-pedra">0 / 120</span></li>
               <li>Armazém de ferramentas <span id="estoque-ferramentas">0 / 60</span></li>
@@ -813,6 +818,8 @@
               <li>Cabana de reflorestamento <span id="edificio-reflorestamento">Planejada</span></li>
               <li>Cabanas de coleta <span id="edificio-coleta">0 / 2</span></li>
               <li>Depósitos de madeira e ervas <span id="edificio-floresta-estoques">Planejados</span></li>
+              <li>Clínica + farmácia <span id="edificio-clinica">Planejadas</span></li>
+              <li>Banco + cofre municipal e pessoal <span id="edificio-banco">Planejados</span></li>
               <li>Oficina + arsenal de madeira <span id="edificio-armas-madeira">Planejados</span></li>
               <li>Flecharia + depósito de munição <span id="edificio-flecharia">Planejados</span></li>
               <li>Mina + depósito <span id="edificio-mina">Planejados</span></li>
@@ -848,6 +855,7 @@
             <ul class="lista-colonia">
               <li>Cofre municipal <span id="registro-tesouro">0 ouro</span></li>
               <li>Patrimônio pessoal <span id="registro-patrimonio">0 ouro</span></li>
+              <li>Banco e abóbada do recinto interno <span id="registro-banco">Planejados</span></li>
               <li>Próximo repasse do posto <span id="registro-repasse">60 s · 300 ouro</span></li>
               <li>Consumo da população <span id="registro-consumo">0 alimento / 60 s</span></li>
               <li>Chance migratória espontânea <span id="registro-chance-migracao">5% / 60 s</span></li>
@@ -875,6 +883,8 @@
               <li>Árvores em pé <span id="registro-arvores">0 / 200</span></li>
               <li>Madeira cortada <span id="registro-madeira">0 / 180</span></li>
               <li>Ervas medicinais <span id="registro-ervas">0 / 100</span></li>
+              <li>Medicamentos <span id="registro-medicamentos">0 / 80</span></li>
+              <li>Saúde da população <span id="registro-saude">100 / 100</span></li>
               <li>Minério <span id="registro-minerio">0 / 100</span></li>
               <li>Pedra <span id="registro-pedra">0 / 120</span></li>
               <li>Ferramentas <span id="registro-ferramentas">0 / 60</span></li>
@@ -900,6 +910,7 @@
               <li>Lenhadores <span id="registro-producao-madeira">0 árvore · 0 madeira</span></li>
               <li>Reflorestadores <span id="registro-producao-arvores">+0 árvores</span></li>
               <li>Coletores <span id="registro-producao-ervas">+0 ervas</span></li>
+              <li>Clínica <span id="registro-producao-medicamentos">0 medicamentos · 0 tratamentos</span></li>
               <li>Armeiros de madeira <span id="registro-producao-armas-madeira">0 trabalhadores</span></li>
               <li>Flecheiros <span id="registro-producao-flechas">0 flechas possíveis</span></li>
               <li>Mineiros <span id="registro-producao-minerio">+0 minério</span></li>
@@ -915,6 +926,33 @@
               <li>90% da receita entra no cofre municipal e 10% no patrimônio pessoal.</li>
               <li>Sem árvores suficientes, o corte para; o reflorestamento recupera a reserva.</li>
               <li>Arcos só contam como abastecidos quando há uma aljava de 20 flechas disponível.</li>
+              <li>Ervas são insumo da clínica: 2 ervas produzem 1 medicamento. Cada medicamento recupera 2 pontos de saúde colonial.</li>
+              <li>Sem tratamento, a pressão sanitária aumenta com a população e com a fome. Saúde abaixo de 60 suspende a migração.</li>
+              <li>O banco, a farmácia, os medicamentos, os arsenais, as ferramentas e a munição ficam protegidos no recinto interno.</li>
+            </ul>
+          </section>
+
+          <section class="economia" aria-labelledby="titulo-registro-catalogo">
+            <h3 id="titulo-registro-catalogo">Catálogo de recursos</h3>
+            <ul>
+              <li>Provisões — celeiro central 200; venda 1; alimentação imediata.</li>
+              <li>Grãos — silo 150; venda 1; insumo do moinho.</li>
+              <li>Frutas e verduras — armazém 100; venda 2; valem 2 alimentos.</li>
+              <li>Feijão — armazém 100; venda 3; vale 3 alimentos.</li>
+              <li>Farinha — depósito 120; venda 2; insumo da padaria.</li>
+              <li>Pães — despensa 100; venda 5; valem 4 alimentos.</li>
+              <li>Árvores — reserva florestal 200; não são vendidas em pé; renovam a madeira.</li>
+              <li>Madeira — depósito 180; venda 1; produz lanças, arcos e flechas.</li>
+              <li>Ervas — ervário interno 100; venda 3; produzem medicamentos.</li>
+              <li>Medicamentos — farmácia interna 80; venda 8; recuperam 2 de saúde cada.</li>
+              <li>Minério — depósito 100; venda 2; produz ferramentas e armas.</li>
+              <li>Pedra — depósito 120; venda 2; reserva para construções e muralhas de pedra.</li>
+              <li>Ferramentas — cofre interno 60; venda 8; equipam obras e ofícios.</li>
+              <li>Armas de metal — arsenal interno 40; venda 12; reserva de defesa.</li>
+              <li>Lanças — arsenal interno 60; venda 8; armamento da milícia.</li>
+              <li>Arcos — arsenal interno 40; venda 12; armamento de arqueiros.</li>
+              <li>Flechas — depósito interno 600; venda 1; 20 formam uma aljava.</li>
+              <li>Mercadorias — armazém do cais 50; venda 5; receita comercial.</li>
             </ul>
           </section>
         </div>
@@ -1019,6 +1057,9 @@
       );
       const populacaoColoniaStatusEl = document.querySelector(
         "#populacao-colonia-status",
+      );
+      const saudeColoniaStatusEl = document.querySelector(
+        "#saude-colonia-status",
       );
       const alimentosStatusEl = document.querySelector("#alimentos-status");
       const moradiaStatusEl = document.querySelector("#moradia-status");
@@ -1125,6 +1166,7 @@
         "#trabalho-reflorestador",
       );
       const trabalhoColetorEl = document.querySelector("#trabalho-coletor");
+      const trabalhoClinicaEl = document.querySelector("#trabalho-clinica");
       const trabalhoArmeiroMadeiraEl = document.querySelector(
         "#trabalho-armeiro-madeira",
       );
@@ -1149,6 +1191,9 @@
       const estoqueArvoresEl = document.querySelector("#estoque-arvores");
       const estoqueMadeiraEl = document.querySelector("#estoque-madeira");
       const estoqueErvasEl = document.querySelector("#estoque-ervas");
+      const estoqueMedicamentosEl = document.querySelector(
+        "#estoque-medicamentos",
+      );
       const estoqueMinerioEl = document.querySelector("#estoque-minerio");
       const estoquePedraEl = document.querySelector("#estoque-pedra");
       const estoqueFerramentasEl = document.querySelector(
@@ -1180,6 +1225,8 @@
       const edificioFlorestaEstoquesEl = document.querySelector(
         "#edificio-floresta-estoques",
       );
+      const edificioClinicaEl = document.querySelector("#edificio-clinica");
+      const edificioBancoEl = document.querySelector("#edificio-banco");
       const edificioArmasMadeiraEl = document.querySelector(
         "#edificio-armas-madeira",
       );
@@ -1226,6 +1273,7 @@
           "resumo",
           "tesouro",
           "patrimonio",
+          "banco",
           "repasse",
           "consumo",
           "chance-migracao",
@@ -1241,6 +1289,8 @@
           "arvores",
           "madeira",
           "ervas",
+          "medicamentos",
+          "saude",
           "minerio",
           "pedra",
           "ferramentas",
@@ -1254,6 +1304,7 @@
           "producao-madeira",
           "producao-arvores",
           "producao-ervas",
+          "producao-medicamentos",
           "producao-armas-madeira",
           "producao-flechas",
           "producao-minerio",
@@ -1367,10 +1418,10 @@
         altura: 260,
       };
       const areaErvario = {
-        x: 5600,
-        y: 1700,
+        x: 7000,
+        y: 5480,
         largura: 440,
-        altura: 260,
+        altura: 280,
       };
       const areaOficinaArmasMadeira = {
         x: 6500,
@@ -1379,10 +1430,10 @@
         altura: 300,
       };
       const areaArsenalMadeira = {
-        x: 7100,
-        y: 1700,
-        largura: 440,
-        altura: 260,
+        x: 7050,
+        y: 2920,
+        largura: 500,
+        altura: 280,
       };
       const areaFlecharia = {
         x: 7700,
@@ -1391,10 +1442,28 @@
         altura: 300,
       };
       const areaDepositoFlechas = {
+        x: 7650,
+        y: 2920,
+        largura: 500,
+        altura: 280,
+      };
+      const areaClinicaColonia = {
+        x: 7550,
+        y: 5400,
+        largura: 650,
+        altura: 440,
+      };
+      const areaFarmaciaColonia = {
         x: 8300,
-        y: 1700,
+        y: 5480,
         largura: 440,
-        altura: 260,
+        altura: 280,
+      };
+      const areaBancoColonia = {
+        x: 8850,
+        y: 5400,
+        largura: 560,
+        altura: 440,
       };
       const areaArmazemGraos = {
         x: 5150,
@@ -1487,10 +1556,10 @@
         altura: 360,
       };
       const areaArmazemFerramentas = {
-        x: 10430,
-        y: 3420,
-        largura: 520,
-        altura: 300,
+        x: 8250,
+        y: 2920,
+        largura: 500,
+        altura: 280,
       };
       const areaForjaColonia = {
         x: 10430,
@@ -1499,10 +1568,10 @@
         altura: 360,
       };
       const areaArsenalColonia = {
-        x: 10430,
-        y: 5180,
-        largura: 520,
-        altura: 300,
+        x: 8850,
+        y: 2920,
+        largura: 500,
+        altura: 280,
       };
       const quantidadeColonosExpansao = 20;
       const versaoColonia = 5;
@@ -1532,6 +1601,8 @@
       const custoCabanaReflorestamentoColonia = 300;
       const custoCabanaColetaColonia = 300;
       const custoErvarioColonia = 200;
+      const custoClinicaColonia = 600;
+      const custoBancoColonia = 700;
       const custoOficinaArmasMadeiraColonia = 600;
       const custoArsenalMadeiraColonia = 250;
       const custoFlechariaColonia = 450;
@@ -1546,6 +1617,7 @@
       const estoqueInicialArvoresColonia = 120;
       const capacidadeMadeiraColonia = 180;
       const capacidadeErvasColonia = 100;
+      const capacidadeMedicamentosColonia = 80;
       const capacidadeLancasMadeiraColonia = 60;
       const capacidadeArcosColonia = 40;
       const capacidadeFlechasColonia = 600;
@@ -1576,6 +1648,7 @@
       const maximoTrabalhadoresReflorestamento = 2;
       const trabalhadoresPorCabanaColeta = 3;
       const maximoTrabalhadoresArmasMadeira = 5;
+      const maximoTrabalhadoresClinica = 5;
       const maximoTrabalhadoresFlecharia = 5;
       const maximoTrabalhadoresPesca = 5;
       const maximoTrabalhadoresMina = 5;
@@ -1596,6 +1669,9 @@
       const madeiraPorLenhador = 10;
       const arvoresPlantadasPorReflorestador = 6;
       const ervasPorColetor = 3;
+      const ervasPorMedicamento = 2;
+      const medicamentosPorProfissionalClinica = 1;
+      const saudePorMedicamento = 2;
       const madeiraPorLanca = 4;
       const madeiraPorArco = 6;
       const madeiraPorLoteFlechas = 2;
@@ -1622,6 +1698,7 @@
       const valorVendaPao = 5;
       const valorVendaMadeira = 1;
       const valorVendaErva = 3;
+      const valorVendaMedicamento = 8;
       const valorVendaLancaMadeira = 8;
       const valorVendaArco = 12;
       const valorVendaFlecha = 1;
@@ -1638,6 +1715,8 @@
       const reservaAlimentosColonia = 80;
       const valorVendaAlimento = 1;
       const intervaloNecessidadesColonia = 60;
+      const saudeMaximaColonia = 100;
+      const saudeMinimaMigracao = 60;
       const custoDescanso = 3;
       const custoDerrota = 15;
       const custoFazendeiro = 100;
@@ -1753,6 +1832,8 @@
         cabanaReflorestamentoConstruida: false,
         quantidadeCabanasColeta: 0,
         ervarioConstruido: false,
+        clinicaConstruida: false,
+        bancoColoniaConstruido: false,
         oficinaArmasMadeiraConstruida: false,
         arsenalMadeiraConstruido: false,
         flechariaConstruida: false,
@@ -1768,6 +1849,8 @@
         estoqueArvores: 0,
         estoqueMadeira: 0,
         estoqueErvas: 0,
+        estoqueMedicamentos: 0,
+        saudeColonia: saudeMaximaColonia,
         estoqueLancasMadeira: 0,
         estoqueArcos: 0,
         estoqueFlechas: 0,
@@ -1806,6 +1889,7 @@
           lenhador: 0,
           reflorestador: 0,
           coletor: 0,
+          clinica: 0,
           armeiroMadeira: 0,
           flecheiro: 0,
           pesca: 0,
@@ -1937,6 +2021,8 @@
         estado.cabanaReflorestamentoConstruida = false;
         estado.quantidadeCabanasColeta = 0;
         estado.ervarioConstruido = false;
+        estado.clinicaConstruida = false;
+        estado.bancoColoniaConstruido = false;
         estado.oficinaArmasMadeiraConstruida = false;
         estado.arsenalMadeiraConstruido = false;
         estado.flechariaConstruida = false;
@@ -1952,6 +2038,8 @@
         estado.estoqueArvores = estoqueInicialArvoresColonia;
         estado.estoqueMadeira = 0;
         estado.estoqueErvas = 0;
+        estado.estoqueMedicamentos = 0;
+        estado.saudeColonia = saudeMaximaColonia;
         estado.estoqueLancasMadeira = 0;
         estado.estoqueArcos = 0;
         estado.estoqueFlechas = 0;
@@ -2102,6 +2190,7 @@
               estoqueAlimentos: estado.estoqueAlimentos,
               tempoNecessidades: estado.tempoNecessidadesColonia,
               colonosComFome: estado.colonosComFome,
+              saude: estado.saudeColonia,
               populacao: estado.populacaoColonia,
               casas: estado.quantidadeCasasColonia,
               administradoresMigracao:
@@ -2117,6 +2206,8 @@
                 caisComercial: estado.caisComercialConstruido,
                 ferraria: estado.ferrariaColoniaConstruida,
                 forja: estado.forjaColoniaConstruida,
+                clinica: estado.clinicaConstruida,
+                banco: estado.bancoColoniaConstruido,
               },
               estoques: {
                 graos: estado.estoqueGraos,
@@ -2127,6 +2218,7 @@
                 arvores: estado.estoqueArvores,
                 madeira: estado.estoqueMadeira,
                 ervas: estado.estoqueErvas,
+                medicamentos: estado.estoqueMedicamentos,
                 lancasMadeira: estado.estoqueLancasMadeira,
                 arcos: estado.estoqueArcos,
                 flechas: estado.estoqueFlechas,
@@ -2683,6 +2775,8 @@
             salvo.expansao?.economia?.obraAutomatica === "cabanaReflorestamento" ||
             salvo.expansao?.economia?.obraAutomatica === "cabanaColeta" ||
             salvo.expansao?.economia?.obraAutomatica === "ervario" ||
+            salvo.expansao?.economia?.obraAutomatica === "clinica" ||
+            salvo.expansao?.economia?.obraAutomatica === "banco" ||
             salvo.expansao?.economia?.obraAutomatica === "oficinaArmasMadeira" ||
             salvo.expansao?.economia?.obraAutomatica === "arsenalMadeira" ||
             salvo.expansao?.economia?.obraAutomatica === "flecharia" ||
@@ -2761,6 +2855,12 @@
             capacidadeErvasColonia,
             0,
           );
+          estado.estoqueMedicamentos = numeroValido(
+            salvo.expansao?.economia?.estoques?.medicamentos,
+            0,
+            capacidadeMedicamentosColonia,
+            0,
+          );
           estado.estoqueLancasMadeira = numeroValido(
             salvo.expansao?.economia?.estoques?.lancasMadeira,
             0,
@@ -2794,6 +2894,12 @@
               9999,
               0,
             ),
+          );
+          estado.saudeColonia = numeroValido(
+            salvo.expansao?.economia?.saude,
+            0,
+            saudeMaximaColonia,
+            saudeMaximaColonia,
           );
           estado.populacaoColonia = Math.round(
             numeroValido(
@@ -2860,6 +2966,10 @@
             salvo.expansao?.economia?.edificios?.ferraria === true;
           estado.forjaColoniaConstruida =
             salvo.expansao?.economia?.edificios?.forja === true;
+          estado.clinicaConstruida =
+            salvo.expansao?.economia?.edificios?.clinica === true;
+          estado.bancoColoniaConstruido =
+            salvo.expansao?.economia?.edificios?.banco === true;
           estado.estoqueMinerio = numeroValido(
             salvo.expansao?.economia?.estoques?.minerio,
             0,
@@ -3048,6 +3158,8 @@
         estado.cabanaReflorestamentoConstruida = false;
         estado.quantidadeCabanasColeta = 0;
         estado.ervarioConstruido = false;
+        estado.clinicaConstruida = false;
+        estado.bancoColoniaConstruido = false;
         estado.oficinaArmasMadeiraConstruida = false;
         estado.arsenalMadeiraConstruido = false;
         estado.flechariaConstruida = false;
@@ -3063,6 +3175,8 @@
         estado.estoqueArvores = 0;
         estado.estoqueMadeira = 0;
         estado.estoqueErvas = 0;
+        estado.estoqueMedicamentos = 0;
+        estado.saudeColonia = saudeMaximaColonia;
         estado.estoqueLancasMadeira = 0;
         estado.estoqueArcos = 0;
         estado.estoqueFlechas = 0;
@@ -3133,6 +3247,7 @@
           lenhador: 0,
           reflorestador: 0,
           coletor: 0,
+          clinica: 0,
           armeiroMadeira: 0,
           flecheiro: 0,
           pesca: 0,
@@ -3170,6 +3285,21 @@
         ocupar("administracao", 2);
         ocupar("migracao", estado.quantidadeAdministradoresMigracao);
         if (estado.celeiroConstruido) ocupar("celeiro", 2);
+        if (estado.clinicaConstruida) {
+          ocupar(
+            "clinica",
+            Math.min(
+              maximoTrabalhadoresClinica,
+              Math.max(
+                2,
+                Math.ceil(
+                  (saudeMaximaColonia - estado.saudeColonia) /
+                    saudePorMedicamento,
+                ),
+              ),
+            ),
+          );
+        }
 
         const cadeiaPaoCompleta =
           estado.lavouraConstruida &&
@@ -3354,7 +3484,8 @@
           !estado.coloniaIniciada ||
           estado.etapaConstrucaoColonia < 4 ||
           vagasMigracaoColonia() <= 0 ||
-          estado.colonosComFome > 0
+          estado.colonosComFome > 0 ||
+          estado.saudeColonia < saudeMinimaMigracao
         ) {
           return false;
         }
@@ -3425,6 +3556,8 @@
           return `cabana de coleta ${estado.quantidadeCabanasColeta + 1}/2`;
         }
         if (tipo === "ervario") return "ervário medicinal";
+        if (tipo === "clinica") return "clínica e farmácia";
+        if (tipo === "banco") return "banco e abóbada";
         if (tipo === "oficinaArmasMadeira") {
           return "oficina de armas de madeira";
         }
@@ -3463,6 +3596,8 @@
           cabanaReflorestamento: custoCabanaReflorestamentoColonia,
           cabanaColeta: custoCabanaColetaColonia,
           ervario: custoErvarioColonia,
+          clinica: custoClinicaColonia,
+          banco: custoBancoColonia,
           oficinaArmasMadeira: custoOficinaArmasMadeiraColonia,
           arsenalMadeira: custoArsenalMadeiraColonia,
           flecharia: custoFlechariaColonia,
@@ -3497,6 +3632,7 @@
         if (!estado.armazemFarinhaConstruido) return "armazemFarinha";
         if (!estado.padariaConstruida) return "padaria";
         if (!estado.armazemPaesConstruido) return "armazemPaes";
+        if (!estado.bancoColoniaConstruido) return "banco";
         if (!estado.caisPescaConstruido) return "caisPesca";
         if (estado.quantidadeCabanasLenhadores < 1) {
           return "cabanaLenhadores";
@@ -3512,6 +3648,7 @@
         if (!estado.forjaColoniaConstruida) return "forja";
         if (estado.quantidadeCabanasColeta < 1) return "cabanaColeta";
         if (!estado.ervarioConstruido) return "ervario";
+        if (!estado.clinicaConstruida) return "clinica";
         if (estado.quantidadeCabanasLenhadores < 2) {
           return "cabanaLenhadores";
         }
@@ -3666,6 +3803,13 @@
         const valorAlimentarDisponivel = valorAlimentarTotalColonia();
         populacaoColoniaStatusEl.textContent =
           `${estado.populacaoColonia} moradores`;
+        const situacaoSaude = estado.saudeColonia >= 80
+          ? "estável"
+          : estado.saudeColonia >= saudeMinimaMigracao
+            ? "atenção"
+            : "crítica";
+        saudeColoniaStatusEl.textContent =
+          `${Math.round(estado.saudeColonia)} / ${saudeMaximaColonia} · ${situacaoSaude}`;
         alimentosStatusEl.textContent =
           `${formatarQuantidade(valorAlimentarDisponivel)} disponíveis · −${necessidadeAlimentos} / 60 s`;
         moradiaStatusEl.textContent =
@@ -3699,7 +3843,10 @@
             taxaFiscalizacaoPorEscriturario *
             escriturariosFiscais,
         );
-        migracaoStatusEl.textContent = semEspacoMigracao
+        migracaoStatusEl.textContent =
+          naNovaColonia && estado.saudeColonia < saudeMinimaMigracao
+          ? `Saúde baixa · ${escriturariosFiscais} fiscalizando · +${formatarOuro(adicionalFiscalPorMinuto)} ouro / 60 s`
+          : semEspacoMigracao
           ? `Sem espaço · ${escriturariosFiscais} fiscalizando · +${formatarOuro(adicionalFiscalPorMinuto)} ouro / 60 s`
           : !migracaoNecessaria && escriturariosFiscais > 0
             ? `Migração não necessária · ${escriturariosFiscais} fiscalizando · +${formatarOuro(adicionalFiscalPorMinuto)} ouro / 60 s`
@@ -3773,6 +3920,8 @@
           `${empregos.reflorestador} / ${maximoTrabalhadoresReflorestamento} · +${arvoresPlantadasPorReflorestador} árvores cada`;
         trabalhoColetorEl.textContent =
           `${empregos.coletor} / ${2 * trabalhadoresPorCabanaColeta} · +${ervasPorColetor} ervas cada`;
+        trabalhoClinicaEl.textContent =
+          `${empregos.clinica} / ${maximoTrabalhadoresClinica} · ${ervasPorMedicamento} ervas → ${medicamentosPorProfissionalClinica} medicamento`;
         trabalhoArmeiroMadeiraEl.textContent =
           `${empregos.armeiroMadeira} / ${maximoTrabalhadoresArmasMadeira} · lanças e arcos`;
         trabalhoFlecheiroEl.textContent =
@@ -3808,6 +3957,8 @@
           `${Math.floor(estado.estoqueMadeira)} / ${capacidadeMadeiraColonia}`;
         estoqueErvasEl.textContent =
           `${Math.floor(estado.estoqueErvas)} / ${capacidadeErvasColonia}`;
+        estoqueMedicamentosEl.textContent =
+          `${Math.floor(estado.estoqueMedicamentos)} / ${capacidadeMedicamentosColonia}`;
         estoqueMinerioEl.textContent =
           `${Math.floor(estado.estoqueMinerio)} / ${capacidadeMinerioColonia}`;
         estoquePedraEl.textContent =
@@ -3886,6 +4037,14 @@
                   : "depositoMadeira",
                 false,
               );
+        edificioClinicaEl.textContent = statusEdificioColonia(
+          "clinica",
+          estado.clinicaConstruida,
+        );
+        edificioBancoEl.textContent = statusEdificioColonia(
+          "banco",
+          estado.bancoColoniaConstruido,
+        );
         edificioArmasMadeiraEl.textContent =
           estado.oficinaArmasMadeiraConstruida &&
           estado.arsenalMadeiraConstruido
@@ -3939,6 +4098,9 @@
           `${formatarOuro(estado.tesouroColonia)} ouro`;
         registrosEls.patrimonio.textContent =
           `${formatarOuro(estado.ouro)} ouro`;
+        registrosEls.banco.textContent = estado.bancoColoniaConstruido
+          ? `${formatarOuro(estado.tesouroColonia)} municipal · ${formatarOuro(estado.ouro)} pessoal`
+          : statusEdificioColonia("banco", false);
         registrosEls.repasse.textContent =
           `${segundosParaTransferencia} s · ${valorTransferenciaPosto} ouro`;
         registrosEls.consumo.textContent =
@@ -3961,6 +4123,10 @@
         registrosEls.arvores.textContent = estoqueArvoresEl.textContent;
         registrosEls.madeira.textContent = estoqueMadeiraEl.textContent;
         registrosEls.ervas.textContent = estoqueErvasEl.textContent;
+        registrosEls.medicamentos.textContent =
+          estoqueMedicamentosEl.textContent;
+        registrosEls.saude.textContent =
+          `${Math.round(estado.saudeColonia)} / ${saudeMaximaColonia} · ${situacaoSaude}`;
         registrosEls.minerio.textContent = estoqueMinerioEl.textContent;
         registrosEls.pedra.textContent = estoquePedraEl.textContent;
         registrosEls.ferramentas.textContent = estoqueFerramentasEl.textContent;
@@ -3978,6 +4144,8 @@
           `+${empregos.reflorestador * arvoresPlantadasPorReflorestador} árvores`;
         registrosEls["producao-ervas"].textContent =
           `+${empregos.coletor * ervasPorColetor} ervas`;
+        registrosEls["producao-medicamentos"].textContent =
+          `${empregos.clinica * medicamentosPorProfissionalClinica} possíveis · ${ervasPorMedicamento} ervas/unidade · +${saudePorMedicamento} saúde`;
         registrosEls["producao-armas-madeira"].textContent =
           `${empregos.armeiroMadeira} trabalhadores · 4 madeira/lança · 6/arco`;
         registrosEls["producao-flechas"].textContent =
@@ -5341,6 +5509,14 @@
             x: areaArmazemPaes.x + areaArmazemPaes.largura / 2,
             y: areaArmazemPaes.y + areaArmazemPaes.altura / 2,
           },
+          banco: {
+            x: areaBancoColonia.x + areaBancoColonia.largura / 2,
+            y: areaBancoColonia.y + areaBancoColonia.altura / 2,
+          },
+          clinica: {
+            x: areaClinicaColonia.x + areaClinicaColonia.largura / 2,
+            y: areaClinicaColonia.y + areaClinicaColonia.altura / 2,
+          },
           mina: {
             x: areaMinaColonia.x + areaMinaColonia.largura / 2,
             y: areaMinaColonia.y + areaMinaColonia.altura / 2,
@@ -5444,6 +5620,10 @@
           );
         } else if (obraConcluida === "ervario") {
           estado.ervarioConstruido = true;
+        } else if (obraConcluida === "clinica") {
+          estado.clinicaConstruida = true;
+        } else if (obraConcluida === "banco") {
+          estado.bancoColoniaConstruido = true;
         } else if (obraConcluida === "oficinaArmasMadeira") {
           estado.oficinaArmasMadeiraConstruida = true;
         } else if (obraConcluida === "arsenalMadeira") {
@@ -5512,6 +5692,9 @@
         let madeiraProduzida = 0;
         let arvoresPlantadas = 0;
         let ervasProduzidas = 0;
+        let medicamentosProduzidos = 0;
+        let tratamentosRealizados = 0;
+        let pressaoSaudeAcumulada = 0;
         let lancasProduzidas = 0;
         let arcosProduzidos = 0;
         let flechasProduzidas = 0;
@@ -5602,6 +5785,42 @@
           const novasErvas = empregos.coletor * ervasPorColetor;
           estado.estoqueErvas += novasErvas;
           ervasProduzidas += novasErvas;
+
+          const pressaoSaude =
+            Math.max(1, Math.ceil(estado.populacaoColonia / 25)) +
+            Math.ceil(estado.colonosComFome / 5);
+          pressaoSaudeAcumulada += pressaoSaude;
+          estado.saudeColonia = Math.max(
+            0,
+            estado.saudeColonia - pressaoSaude,
+          );
+          const medicamentosPossiveis = Math.min(
+            empregos.clinica * medicamentosPorProfissionalClinica,
+            Math.floor(estado.estoqueErvas / ervasPorMedicamento),
+            Math.max(
+              0,
+              capacidadeMedicamentosColonia -
+                Math.floor(estado.estoqueMedicamentos),
+            ),
+          );
+          estado.estoqueErvas -=
+            medicamentosPossiveis * ervasPorMedicamento;
+          estado.estoqueMedicamentos += medicamentosPossiveis;
+          medicamentosProduzidos += medicamentosPossiveis;
+          const tratamentos = Math.min(
+            Math.floor(estado.estoqueMedicamentos),
+            empregos.clinica,
+            Math.ceil(
+              (saudeMaximaColonia - estado.saudeColonia) /
+                saudePorMedicamento,
+            ),
+          );
+          estado.estoqueMedicamentos -= tratamentos;
+          estado.saudeColonia = Math.min(
+            saudeMaximaColonia,
+            estado.saudeColonia + tratamentos * saudePorMedicamento,
+          );
+          tratamentosRealizados += tratamentos;
 
           for (
             let trabalhador = 0;
@@ -5719,6 +5938,10 @@
             0,
             estado.estoqueErvas - capacidadeErvasColonia,
           );
+          const excessoMedicamentos = Math.max(
+            0,
+            estado.estoqueMedicamentos - capacidadeMedicamentosColonia,
+          );
           const excessoLancas = Math.max(
             0,
             estado.estoqueLancasMadeira - capacidadeLancasMadeiraColonia,
@@ -5743,6 +5966,7 @@
           estado.estoquePaes -= excessoPaes;
           estado.estoqueMadeira -= excessoMadeira;
           estado.estoqueErvas -= excessoErvas;
+          estado.estoqueMedicamentos -= excessoMedicamentos;
           estado.estoqueLancasMadeira -= excessoLancas;
           estado.estoqueArcos -= excessoArcos;
           estado.estoqueFlechas -= excessoFlechas;
@@ -5754,6 +5978,7 @@
             excessoPaes * valorVendaPao +
             excessoMadeira * valorVendaMadeira +
             excessoErvas * valorVendaErva +
+            excessoMedicamentos * valorVendaMedicamento +
             excessoLancas * valorVendaLancaMadeira +
             excessoArcos * valorVendaArco +
             excessoFlechas * valorVendaFlecha +
@@ -5774,7 +5999,7 @@
             : estado.colonosComFome > 0
               ? `${estado.colonosComFome} colonos ficaram sem alimento neste ciclo.`
               : estado.celeiroConstruido
-                ? `Produção: ${valorAlimentarProduzido} em alimento, ${graosProduzidos} grãos, ${farinhaProduzida} farinhas, ${paesProduzidos} pães; ${madeiraProduzida} madeiras, ${arvoresPlantadas} árvores replantadas, ${ervasProduzidas} ervas, ${lancasProduzidas} lanças, ${arcosProduzidos} arcos e ${flechasProduzidas} flechas; ${minerioProduzido} minérios, ${pedraProduzida} pedras, ${ferramentasProduzidas} ferramentas, ${armasProduzidas} armas de metal e ${mercadoriasProduzidas} mercadorias. Consumo: ${formatarQuantidade(alimentosConsumidos)}.`
+                ? `Produção: ${valorAlimentarProduzido} em alimento, ${graosProduzidos} grãos, ${farinhaProduzida} farinhas, ${paesProduzidos} pães; ${madeiraProduzida} madeiras, ${arvoresPlantadas} árvores replantadas, ${ervasProduzidas} ervas, ${medicamentosProduzidos} medicamentos e ${tratamentosRealizados} tratamentos; ${lancasProduzidas} lanças, ${arcosProduzidos} arcos e ${flechasProduzidas} flechas; ${minerioProduzido} minérios, ${pedraProduzida} pedras, ${ferramentasProduzidas} ferramentas, ${armasProduzidas} armas de metal e ${mercadoriasProduzidas} mercadorias. Consumo: ${formatarQuantidade(alimentosConsumidos)}. Saúde: ${Math.round(estado.saudeColonia)}/${saudeMaximaColonia} após pressão ${pressaoSaudeAcumulada}.`
                 : `A cidade produziu ${hortalicasProduzidas} cestas e ${feijaoProduzido} sacas de feijão. Os colonos precisam concluir o celeiro central para organizar os estoques.`,
         );
         atualizarInterface();
@@ -6771,6 +6996,7 @@
           "lenhador",
           "reflorestador",
           "coletor",
+          "clinica",
           "armeiroMadeira",
           "flecheiro",
           "mina",
@@ -6927,6 +7153,14 @@
             x: areaErvario.x + areaErvario.largura / 2,
             y: areaErvario.y + areaErvario.altura / 2,
           },
+          clinica: {
+            x: areaClinicaColonia.x + areaClinicaColonia.largura / 2,
+            y: areaClinicaColonia.y + areaClinicaColonia.altura / 2,
+          },
+          banco: {
+            x: areaBancoColonia.x + areaBancoColonia.largura / 2,
+            y: areaBancoColonia.y + areaBancoColonia.altura / 2,
+          },
           oficinaArmasMadeira: {
             x:
               areaOficinaArmasMadeira.x +
@@ -7025,6 +7259,14 @@
             posicao = posicaoRotinaFlorestalColonia(
               emprego.vaga,
               emprego.tipo,
+            );
+          } else if (emprego.tipo === "clinica") {
+            posicao = posicaoFormacaoColonos(
+              {
+                x: areaClinicaColonia.x + areaClinicaColonia.largura / 2,
+                y: areaClinicaColonia.y + areaClinicaColonia.altura + 60,
+              },
+              emprego.vaga,
             );
           } else if (emprego.tipo === "armeiroMadeira") {
             posicao = posicaoFormacaoColonos(
@@ -7569,7 +7811,7 @@
           [9600, 3400],
           [9600, 5250],
         ];
-        casas.forEach(([x, y]) => {
+        casas.forEach(([x, y], indice) => {
           contexto.strokeStyle = "#5a4028";
           contexto.lineWidth = 10;
           contexto.strokeRect(x, y, 180, 125);
@@ -7582,6 +7824,17 @@
           contexto.lineTo(x + 194, y + 18);
           contexto.closePath();
           contexto.fill();
+          contexto.fillStyle = "#f1dfad";
+          contexto.fillRect(x + 18, y + 38, 144, 38);
+          contexto.fillStyle = "#3f2d20";
+          contexto.font = "bold 13px sans-serif";
+          contexto.textAlign = "center";
+          contexto.textBaseline = "middle";
+          contexto.fillText(
+            `CASA DE PRESTÍGIO ${indice + 1}`,
+            x + 90,
+            y + 57,
+          );
         });
 
         contexto.fillStyle = "#3f2d20";
@@ -8551,11 +8804,87 @@
         );
       }
 
+      function desenharSaudeEBancoColonia() {
+        desenharEdificioColonia(
+          areaClinicaColonia,
+          "clinica",
+          estado.clinicaConstruida,
+          `CLÍNICA · ${estado.empregosColonia.clinica}/${maximoTrabalhadoresClinica}`,
+          "#d6c6a0",
+        );
+        if (progressoEdificioColonia("clinica", estado.clinicaConstruida) > 0.72) {
+          const centroX = areaClinicaColonia.x + areaClinicaColonia.largura / 2;
+          const centroY = areaClinicaColonia.y + areaClinicaColonia.altura / 2 + 75;
+          contexto.fillStyle = "#efe7d1";
+          contexto.fillRect(centroX - 22, centroY - 68, 44, 136);
+          contexto.fillRect(centroX - 68, centroY - 22, 136, 44);
+          contexto.fillStyle = "#7b2929";
+          contexto.fillRect(centroX - 13, centroY - 50, 26, 100);
+          contexto.fillRect(centroX - 50, centroY - 13, 100, 26);
+        }
+        desenharArmazemAlimentoColonia(
+          areaFarmaciaColonia,
+          "clinica",
+          estado.clinicaConstruida,
+          "MEDICAMENTOS",
+          estado.estoqueMedicamentos,
+          capacidadeMedicamentosColonia,
+          "ervas",
+        );
+
+        desenharEdificioColonia(
+          areaBancoColonia,
+          "banco",
+          estado.bancoColoniaConstruido,
+          "BANCO · COFRES",
+          "#8d7a52",
+        );
+        if (progressoEdificioColonia("banco", estado.bancoColoniaConstruido) > 0.72) {
+          const centroX = areaBancoColonia.x + areaBancoColonia.largura / 2;
+          const centroY = areaBancoColonia.y + areaBancoColonia.altura / 2 + 70;
+          contexto.fillStyle = "#555d5f";
+          contexto.fillRect(centroX - 90, centroY - 60, 180, 120);
+          contexto.strokeStyle = "#2f3435";
+          contexto.lineWidth = 12;
+          contexto.strokeRect(centroX - 90, centroY - 60, 180, 120);
+          desenharCirculo(centroX, centroY, 27, "#c7a24d", "#5e4a1e");
+          contexto.fillStyle = "#fff1bd";
+          contexto.font = "bold 16px sans-serif";
+          contexto.textAlign = "center";
+          contexto.textBaseline = "middle";
+          contexto.fillText(
+            `MUNICIPAL ${formatarOuro(estado.tesouroColonia)}`,
+            centroX,
+            centroY + 90,
+          );
+          contexto.fillText(
+            `PESSOAL ${formatarOuro(estado.ouro)}`,
+            centroX,
+            centroY + 116,
+          );
+          contexto.textAlign = "start";
+          contexto.textBaseline = "alphabetic";
+        }
+      }
+
       function desenharInfraestruturaColonia() {
         if (estado.etapaConstrucaoColonia < 4) return;
 
         desenharCadeiaAlimentarColonia();
         desenharInfraestruturaFlorestalColonia();
+        desenharSaudeEBancoColonia();
+
+        contexto.fillStyle = "#3f3020";
+        contexto.font = "bold 18px sans-serif";
+        contexto.textAlign = "center";
+        contexto.textBaseline = "middle";
+        contexto.fillText(
+          "RECINTO INTERNO · ESTOQUES DE ALTO VALOR",
+          recintoInterno.x + recintoInterno.largura / 2,
+          recintoInterno.y + 120,
+        );
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
 
         desenharEdificioColonia(
           areaMinaColonia,
@@ -8726,6 +9055,7 @@
           lenhador: "#795137",
           reflorestador: "#3f9d58",
           coletor: "#9c6fc0",
+          clinica: "#f1f2e8",
           armeiroMadeira: "#c9924d",
           flecheiro: "#d5b863",
           pesca: "#62b8e8",
