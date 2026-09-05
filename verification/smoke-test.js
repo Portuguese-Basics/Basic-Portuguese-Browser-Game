@@ -89,6 +89,7 @@ function createHarness(storage) {
     },
     closePath() {},
     bezierCurveTo() {},
+    setLineDash() {},
     clearRect() {},
     setTransform() {},
     save() {},
@@ -175,7 +176,7 @@ function createHarness(storage) {
   };
 
   vm.runInNewContext(
-    `${source}\nglobalThis.__testeJogo = { estado, atualizarInterface, atualizarFazendeiro, atualizarFruticultor, atualizarPescador, atualizarComerciante, atualizarFerreiro, atualizarMineiro, atualizarBanqueiro, atualizarEscriturario, atualizarTransferenciaPosto, atualizarOrcamentoMunicipalColonia, atualizarPrioridadesColonia, atualizarNecessidadesColonia, atualizarDefesaColonia, atualizarConstrucaoColonia, atualizarMigracaoColonia, atualizarEnvelhecimentoEObitosColonia, redistribuirTrabalhadoresColonia, migracaoNecessariaColonia, migracaoIncentivadaPermitidaColonia, motivoBloqueioIncentivoMigracaoColonia, folhaCivilColonia, limiteFolhaCivilColonia, manutencaoMunicipalColonia, despesasEssenciaisMunicipaisColonia, saldoOperacionalMunicipalColonia, reservaMunicipalDinamicaColonia, folhaSoldosColonia, limiteSoldosColonia, segurancaCivilColonia, forcaMilitarColonia, posicaoColonoNovaColonia, posicaoCasaColonia, quantidadeColonosExpansao, totalMoradoresColonia, quantidadeBebesColonia, quantidadeCriancasColonia, chanceNascimentoColonia, idadeMediaAdultosColonia, duracaoBebeColonia, duracaoInfanciaColonia, barcoComercialAtracado, proximaObraAutomaticaColonia, custoObraAutomaticaColonia, casasNecessariasColonia, reservaPlanejadaMoradiaColonia, maximoCasasDisponiveisColonia, capacidadeMoradiasColonia, vagasMigracaoColonia, vagasFisicasMigracaoColonia, necessidadeAlimentosColonia, producaoAlimentarPorCiclo, valorAlimentarTotalColonia, consumirAlimentosColonia, capacidadesEmpregoColonia, totalCapacidadeEmpregosColonia, totalEmpregosOcupadosColonia, tipoArmaduraPrioritariaColonia, tipoArmaduraProduzivelColonia, escolherArmaduraDefesaColonia, totalArmadurasEstoqueColonia, proximoTrechoEstradaColonia, quantidadeTrechosEstradaNoNivelColonia, multiplicadorProducaoEstradasColonia, multiplicadorMovimentoEstradasColonia, multiplicadorConstrucaoEstradasColonia, multiplicadorConstrucaoColonia, catalogoArmazenamentoAlimentosColonia, capacidadeArmazemInternoColonia, trabalhadoresComFerramentasColonia, bonusFerramentasColonia, bonusLogisticaColonia, bonusEducacaoColonia, nivelFerramentasAtivoColonia, protecaoIncendioColonia, satisfacaoFeColonia, festivalAtivoColonia, materiaisObraColonia, trechosEstradaColonia, caminhosTrechoEstradaColonia, arestasRedeViariaColonia, rotaMaisRapidaColonia, destinoEmpregoColonia, acessoCasaColonia, areasMoradia: { recintoExterno, recintoInterno, areaMoradias, areaSegundoBlocoMoradias, areaTerceiroBlocoMoradias }, areasHotfixCozinhas: { recintoExterno, recintoInterno, areaCozinhaCarneColonia, areaCozinhaHortalicasColonia, areaCozinhaFeijaoColonia, areaCofreCortesColonia, areaDespensaRefeicoesColonia, areaAdegaFriaColonia, areaDefumadorioColonia, areaCemiterioColonia, areaPatioTreinoColonia }, defesasAuditadas: { recintoExterno, recintoInterno, portoesMuralhaColonia, cantosTorresMuralhaColonia, areasPostosGuardaColonia, totalTorresMuralhaColonia, totalPortoesFortificadosColonia, meiaAberturaPortaoColonia }, definirTempoRio(valor) { tempoRio = valor; } };`,
+    `${source}\nglobalThis.__testeJogo = { estado, atualizarInterface, atualizarFazendeiro, atualizarFruticultor, atualizarPescador, atualizarComerciante, atualizarFerreiro, atualizarMineiro, atualizarBanqueiro, atualizarEscriturario, atualizarTransferenciaPosto, atualizarOrcamentoMunicipalColonia, atualizarPrioridadesColonia, atualizarNecessidadesColonia, atualizarDefesaColonia, atualizarConstrucaoColonia, atualizarMigracaoColonia, atualizarEnvelhecimentoEObitosColonia, redistribuirTrabalhadoresColonia, migracaoNecessariaColonia, migracaoIncentivadaPermitidaColonia, motivoBloqueioIncentivoMigracaoColonia, folhaCivilColonia, limiteFolhaCivilColonia, manutencaoMunicipalColonia, despesasEssenciaisMunicipaisColonia, saldoOperacionalMunicipalColonia, reservaMunicipalDinamicaColonia, folhaSoldosColonia, limiteSoldosColonia, segurancaCivilColonia, forcaMilitarColonia, posicaoColonoNovaColonia, posicaoCasaColonia, quantidadeColonosExpansao, totalMoradoresColonia, quantidadeBebesColonia, quantidadeCriancasColonia, chanceNascimentoColonia, idadeMediaAdultosColonia, duracaoBebeColonia, duracaoInfanciaColonia, barcoComercialAtracado, proximaObraAutomaticaColonia, custoObraAutomaticaColonia, casasNecessariasColonia, reservaPlanejadaMoradiaColonia, maximoCasasDisponiveisColonia, capacidadeMoradiasColonia, vagasMigracaoColonia, vagasFisicasMigracaoColonia, necessidadeAlimentosColonia, producaoAlimentarPorCiclo, valorAlimentarTotalColonia, consumirAlimentosColonia, capacidadesEmpregoColonia, totalCapacidadeEmpregosColonia, totalEmpregosOcupadosColonia, tipoArmaduraPrioritariaColonia, tipoArmaduraProduzivelColonia, escolherArmaduraDefesaColonia, totalArmadurasEstoqueColonia, proximoTrechoEstradaColonia, quantidadeTrechosEstradaNoNivelColonia, multiplicadorProducaoEstradasColonia, multiplicadorMovimentoEstradasColonia, multiplicadorConstrucaoEstradasColonia, multiplicadorConstrucaoColonia, catalogoArmazenamentoAlimentosColonia, capacidadeArmazemInternoColonia, trabalhadoresComFerramentasColonia, bonusFerramentasColonia, bonusLogisticaColonia, bonusEducacaoColonia, nivelFerramentasAtivoColonia, protecaoIncendioColonia, satisfacaoFeColonia, festivalAtivoColonia, materiaisObraColonia, trechosEstradaColonia, caminhosTrechoEstradaColonia, arestasRedeViariaColonia, rotaMaisRapidaColonia, destinoEmpregoColonia, acessoCasaColonia, areasMoradia: { recintoExterno, recintoInterno, areaMoradias, areaSegundoBlocoMoradias, areaTerceiroBlocoMoradias }, areasHotfixCozinhas: { recintoExterno, recintoInterno, areaCozinhaCarneColonia, areaCozinhaHortalicasColonia, areaCozinhaFeijaoColonia, areaCofreCortesColonia, areaDespensaRefeicoesColonia, areaAdegaFriaColonia, areaDefumadorioColonia, areaCemiterioColonia, areaPatioTreinoColonia }, defesasAuditadas: { recintoExterno, recintoInterno, portoesMuralhaColonia, cantosTorresMuralhaColonia, areasPostosGuardaColonia, totalTorresMuralhaColonia, totalPortoesFortificadosColonia, meiaAberturaPortaoColonia }, infraestruturaHidricaAuditada: { recintoExterno, recintoInterno, areaCisternaColonia, posicoesPocosPublicosColonia, raioPocoPublicoColonia, redeHidricaBasicaColonia, redeHidricaAvancadaColonia, portoesMuralhaColonia, areasPostosGuardaColonia, areasEdificadas: [areaAdministracao, areaCeleiro, areaAcougueColonia, areaCofreCortesColonia, areaCozinhaCarneColonia, areaDespensaRefeicoesColonia, areaDepositoMadeira, areaErvario, areaOficinaArmasMadeira, areaArsenalMadeira, areaFlecharia, areaDepositoFlechas, areaClinicaColonia, areaFarmaciaColonia, areaBancoColonia, areaEscolaColonia, areaArmazemGraos, areaArmazemHortalicas, areaArmazemFeijao, areaMoinhoColonia, areaArmazemFarinha, areaPadariaColonia, areaArmazemPaes, areaMinaColonia, areaDepositoMinerio, areaPedreiraColonia, areaDepositoPedra, areaCaisPescaColonia, areaSegundoCaisPescaColonia, areaMercadoPeixesColonia, areaCaisComercialColonia, areaArmazemComercial, areaFeitoriaColonia, areaEstaleiroColonia, areaFerrariaColonia, areaArmazemFerramentas, areaForjaColonia, areaArsenalColonia, areaPatioTreinoColonia, areaQuartelMilitarColonia, areaCozinhaHortalicasColonia, areaCozinhaFeijaoColonia, areaBibliotecaColonia, areaIgrejaColonia, areaDefumadorioColonia, areaAdegaFriaColonia, areaTransportadoresColonia, areaConstrutoresColonia, areaOficinaFerramentasColonia, areaBombeirosColonia, areaMercadoPublicoColonia, areaArmeiroColonia, areaCemiterioColonia, ...areasCabanasLenhadores, areaCabanaReflorestamento, ...areasCabanasColeta, areaCabanaCacadores, ...areasPostosGuardaColonia, ...casasAgricultores.map(({ x, y }) => ({ x, y, largura: 150, altura: 105 })), { x: 9600, y: 3400, largura: 180, altura: 125 }, { x: 9600, y: 5250, largura: 180, altura: 125 }] }, definirTempoRio(valor) { tempoRio = valor; } };`,
     context,
   );
   return {
@@ -189,6 +190,8 @@ function createHarness(storage) {
     areasMoradia: context.__testeJogo.areasMoradia,
     areasHotfixCozinhas: context.__testeJogo.areasHotfixCozinhas,
     defesasAuditadas: context.__testeJogo.defesasAuditadas,
+    infraestruturaHidricaAuditada:
+      context.__testeJogo.infraestruturaHidricaAuditada,
     estado: context.__testeJogo.estado,
     quantidadeColonosExpansao: context.__testeJogo.quantidadeColonosExpansao,
     resetDrawCalls() {
@@ -3655,7 +3658,10 @@ budgetGame.resetDrawCalls();
 budgetGame.step(100);
 if (
   !budgetGame.fillTexts.some(([texto]) => texto === "POÇO E CISTERNA") ||
-  !budgetGame.fillTexts.some(([texto]) => texto === "SANEAMENTO") ||
+  !budgetGame.fillTexts.some(
+    ([texto]) =>
+      texto === "LINHAS AZUIS · REDE SUBTERRÂNEA DE ÁGUA E ESGOTO",
+  ) ||
   !budgetGame.fillTexts.some(([texto]) => texto === "POSTO 1")
 ) {
   throw new Error("As obras públicas concluídas não apareceram no mapa colonial.");
@@ -3940,6 +3946,239 @@ if (
   html.indexOf("desenharPortoesETorresColonia();")
 ) {
   throw new Error("Os portões precisam ser desenhados sobre as estradas, sem desaparecer sob elas.");
+}
+
+const hydraulicAuditGame = createHarness(new Map());
+const {
+  areaCisternaColonia: auditedCistern,
+  posicoesPocosPublicosColonia: auditedWells,
+  raioPocoPublicoColonia: auditedWellRadius,
+  redeHidricaBasicaColonia: basicHydraulicNetwork,
+  redeHidricaAvancadaColonia: advancedHydraulicNetwork,
+  areasEdificadas: hydraulicBuildingAreas,
+} = hydraulicAuditGame.infraestruturaHidricaAuditada;
+const hydraulicPaths = [
+  ...basicHydraulicNetwork.map((path) => ({ ...path, type: "basic" })),
+  ...advancedHydraulicNetwork.map((path) => ({ ...path, type: "advanced" })),
+];
+const hydraulicSegments = hydraulicPaths.flatMap((path) =>
+  path.pontos.slice(1).map((end, index) => ({
+    inicio: path.pontos[index],
+    fim: end,
+    path,
+    index,
+  })),
+);
+if (
+  auditedWells.length !== 4 ||
+  JSON.stringify(auditedWells.map(({ id }) => id)) !==
+    JSON.stringify(["oeste", "sul", "norte", "leste"]) ||
+  hydraulicSegments.some(
+    ({ inicio, fim }) =>
+      (inicio.x !== fim.x && inicio.y !== fim.y) ||
+      (inicio.x === fim.x && inicio.y === fim.y),
+  )
+) {
+  throw new Error("A rede hidrossanitária não preservou quatro setores e traçado ortogonal.");
+}
+
+const distancePointToSegment = (point, edge) => {
+  if (edge.inicio.x === edge.fim.x) {
+    return Math.hypot(
+      point.x - edge.inicio.x,
+      point.y - Math.max(
+        Math.min(point.y, Math.max(edge.inicio.y, edge.fim.y)),
+        Math.min(edge.inicio.y, edge.fim.y),
+      ),
+    );
+  }
+  return Math.hypot(
+    point.x - Math.max(
+      Math.min(point.x, Math.max(edge.inicio.x, edge.fim.x)),
+      Math.min(edge.inicio.x, edge.fim.x),
+    ),
+    point.y - edge.inicio.y,
+  );
+};
+const distancePointToArea = (point, area) => {
+  const nearestX = Math.max(area.x, Math.min(point.x, area.x + area.largura));
+  const nearestY = Math.max(area.y, Math.min(point.y, area.y + area.altura));
+  return Math.hypot(point.x - nearestX, point.y - nearestY);
+};
+const housingAreas = Array.from({ length: 90 }, (_, index) => {
+  const position = hydraulicAuditGame.posicaoCasa(index);
+  return { ...position, largura: 130, altura: 105 };
+});
+const allOccupiedAreas = [
+  ...hydraulicBuildingAreas,
+  ...housingAreas,
+  auditedCistern,
+];
+if (
+  auditedWells.some((well) =>
+    !(
+      well.x - auditedWellRadius > outerWard.x &&
+      well.x + auditedWellRadius < outerWard.x + outerWard.largura &&
+      well.y - auditedWellRadius > outerWard.y &&
+      well.y + auditedWellRadius < outerWard.y + outerWard.altura
+    ) ||
+    distancePointToArea(well, innerWard) <= auditedWellRadius + 20 ||
+    allOccupiedAreas.some(
+      (area) => distancePointToArea(well, area) <= auditedWellRadius + 20,
+    ) ||
+    auditedRoadEdges.some(
+      (edge) => distancePointToSegment(well, edge) <= auditedWellRadius + 60,
+    ) ||
+    normalizedWallSegments.some(
+      (edge) => distancePointToSegment(well, edge) <= auditedWellRadius + 20,
+    ),
+  )
+) {
+  throw new Error("Um poço ainda ocupa estrada, muralha, recinto interno ou área edificada.");
+}
+for (let firstIndex = 0; firstIndex < auditedWells.length; firstIndex += 1) {
+  for (let secondIndex = firstIndex + 1; secondIndex < auditedWells.length; secondIndex += 1) {
+    if (
+      Math.hypot(
+        auditedWells[firstIndex].x - auditedWells[secondIndex].x,
+        auditedWells[firstIndex].y - auditedWells[secondIndex].y,
+      ) <= auditedWellRadius * 2 + 40
+    ) {
+      throw new Error("Dois poços públicos ainda se sobrepõem.");
+    }
+  }
+}
+
+advancedHydraulicNetwork.forEach((branch) => {
+  const well = auditedWells.find(({ id }) => id === branch.poco);
+  const terminal = branch.pontos.at(-1);
+  if (
+    !well ||
+    Math.abs(Math.hypot(terminal.x - well.x, terminal.y - well.y) - auditedWellRadius) > 0.001
+  ) {
+    throw new Error(`O ramal ${branch.id} não termina na borda do poço correspondente.`);
+  }
+});
+auditedWells.forEach((well) => {
+  const connectedBranch = advancedHydraulicNetwork.find(
+    ({ poco }) => poco === well.id,
+  );
+  hydraulicSegments.forEach((segment) => {
+    const isOwnTerminal =
+      segment.path.id === connectedBranch.id &&
+      segment.index === connectedBranch.pontos.length - 2;
+    const distance = distancePointToSegment(well, segment);
+    if (
+      (isOwnTerminal && Math.abs(distance - auditedWellRadius) > 0.001) ||
+      (!isOwnTerminal && distance < auditedWellRadius + 12)
+    ) {
+      throw new Error(`Uma tubulação ainda atravessa o poço ${well.id}.`);
+    }
+  });
+});
+
+const hydraulicWallCrossings = new Set();
+hydraulicSegments.forEach((edge) => {
+  wards.forEach((ward) => {
+    const left = ward.x;
+    const right = ward.x + ward.largura;
+    const top = ward.y;
+    const bottom = ward.y + ward.altura;
+    if (edge.inicio.y === edge.fim.y && betweenInclusive(edge.inicio.y, top, bottom)) {
+      [left, right].forEach((x) => {
+        if (betweenInclusive(x, edge.inicio.x, edge.fim.x)) {
+          hydraulicWallCrossings.add(`${x},${edge.inicio.y}`);
+        }
+      });
+    }
+    if (edge.inicio.x === edge.fim.x && betweenInclusive(edge.inicio.x, left, right)) {
+      [top, bottom].forEach((y) => {
+        if (betweenInclusive(y, edge.inicio.y, edge.fim.y)) {
+          hydraulicWallCrossings.add(`${edge.inicio.x},${y}`);
+        }
+      });
+    }
+  });
+});
+const expectedHydraulicGateCrossings = new Set(["6800,4150", "10300,4150"]);
+if (
+  hydraulicWallCrossings.size !== expectedHydraulicGateCrossings.size ||
+  [...hydraulicWallCrossings].some(
+    (crossing) =>
+      !expectedHydraulicGateCrossings.has(crossing) ||
+      !gateCrossings.has(crossing),
+  )
+) {
+  throw new Error("Uma tubulação ainda cruza muralha fora de um portão auditado.");
+}
+
+const pipelineOccupiedAreas = [...hydraulicBuildingAreas, ...housingAreas];
+if (
+  hydraulicSegments.some((segment) =>
+    pipelineOccupiedAreas.some((area) =>
+      segmentIntersectsArea(segment, area, 12),
+    ),
+  ) ||
+  !basicHydraulicNetwork.some(({ pontos }) =>
+    pontos.some(
+      (point) =>
+        point.x === auditedCistern.x + auditedCistern.largura &&
+        point.y === auditedCistern.y + auditedCistern.altura / 2,
+    ),
+  )
+) {
+  throw new Error("A rede hidrossanitária ainda invade um edifício ou perdeu a cisterna.");
+}
+
+Object.assign(hydraulicAuditGame.estado, {
+  coloniaIniciada: true,
+  mapaExpansaoComprado: true,
+  mapaAtual: "expansao",
+  revisaoColonia: 5,
+  etapaConstrucaoColonia: 4,
+  niveisEstradasColonia: Array(8).fill(3),
+  cisternaConstruida: true,
+  saneamentoConstruido: true,
+  quantidadePocosPublicos: 4,
+  saneamentoAvancadoConstruido: true,
+  quartelBombeirosConstruido: true,
+  empregosColonia: {
+    ...hydraulicAuditGame.estado.empregosColonia,
+    bombeiro: 4,
+  },
+});
+const auditedFullFireProtection = hydraulicAuditGame.protecaoIncendio();
+hydraulicAuditGame.resetDrawCalls();
+hydraulicAuditGame.step(100);
+hydraulicAuditGame.atualizarInterface();
+if (
+  hydraulicAuditGame.lineSegments.filter(
+    (segment) => segment[4] === "#4d7370" && segment[5] === 12,
+  ).length !== basicHydraulicNetwork.reduce(
+    (total, path) => total + path.pontos.length - 1,
+    0,
+  ) ||
+  hydraulicAuditGame.lineSegments.filter(
+    (segment) => segment[4] === "#326d82" && segment[5] === 10,
+  ).length !== advancedHydraulicNetwork.reduce(
+    (total, path) => total + path.pontos.length - 1,
+    0,
+  ) ||
+  auditedWells.some(
+    ({ nome }, index) =>
+      !hydraulicAuditGame.fillTexts.some(
+        ([text]) => text === `POÇO ${index + 1} · ${nome}`,
+      ),
+  ) ||
+  !hydraulicAuditGame.fillTexts.some(
+    ([text]) => text === "LINHAS AZUIS · REDE SUBTERRÂNEA DE ÁGUA E ESGOTO",
+  ) ||
+  !hydraulicAuditGame.elements
+    .get("registro-saneamento-ampliado")
+    .textContent.includes("3 bairros + setor leste") ||
+  auditedFullFireProtection !== 100
+) {
+  throw new Error("Poços, tubulações, legenda ou proteção contra incêndio não reconciliaram no mapa.");
 }
 
 const legacyFortificationStorage = new Map([
@@ -4751,5 +4990,5 @@ if (process.argv[2]) {
 }
 
 console.log(
-  "Orthogonal fastest-path roads, proactive housing, balanced food jobs, protected meat production, municipal budget, sustainable work, public works, armor qualities, bounded mortality, defense economy, families, saves, migration, and hunting: OK",
+  "Orthogonal fastest-path roads, proactive housing, balanced food jobs, protected meat production, municipal budget, sustainable work, public works, audited wells and hydraulic network, armor qualities, bounded mortality, defense economy, families, saves, migration, and hunting: OK",
 );
