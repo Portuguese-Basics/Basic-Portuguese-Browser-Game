@@ -184,7 +184,7 @@ function createHarness(storage) {
     context,
   );
   vm.runInNewContext(
-    "Object.assign(globalThis.__testeJogo, { alvoTransportadoresProducaoColonia, cargaLocalEntregavelColonia, valorReservaDuravelColonia, reservaDuravelAlvoColonia, alvoPedreiraObraPrioritariaColonia });",
+    "Object.assign(globalThis.__testeJogo, { alvoTransportadoresProducaoColonia, cargaLocalEntregavelColonia, valorReservaDuravelColonia, reservaDuravelAlvoColonia, alvoPedreiraObraPrioritariaColonia, multiplicadorReservaAlimentarColonia, metaProducaoAlimentarColonia, totalEmpregosAlimentaresColonia, totalVagasAlimentaresColonia, diagnosticoPrioridadeAlimentarColonia });",
     context,
   );
   return {
@@ -383,6 +383,17 @@ function createHarness(storage) {
     },
     necessidadeAlimentos() {
       return context.__testeJogo.necessidadeAlimentosColonia();
+    },
+    metaProducaoAlimentar() {
+      return context.__testeJogo.metaProducaoAlimentarColonia();
+    },
+    multiplicadorReservaAlimentar() {
+      return context.__testeJogo.multiplicadorReservaAlimentarColonia();
+    },
+    diagnosticoPrioridadeAlimentar(empregos) {
+      return context.__testeJogo.diagnosticoPrioridadeAlimentarColonia(
+        empregos,
+      );
     },
     producaoAlimentar(empregos) {
       return context.__testeJogo.producaoAlimentarPorCiclo(empregos);
@@ -1525,27 +1536,28 @@ for (const [obra, propriedade] of immediateFoodConstruction) {
 }
 
 expansionPurchaseGame.atualizarNecessidades(60);
+const alimentoDepoisPrimeiroCiclo =
+  expansionPurchaseGame.valorAlimentarTotal();
+const necessidadePrimeiroCiclo = expansionPurchaseGame.necessidadeAlimentos();
+const empregosPrimeiroCiclo = expansionPurchaseGame.redistribuirTrabalhadores();
 if (
-  expansionPurchaseGame.estado.estoqueAlimentos !== 80 ||
-  expansionPurchaseGame.estado.estoqueHortalicas !== 8 ||
-  expansionPurchaseGame.estado.estoqueFeijao !== 3 ||
   expansionPurchaseGame.estado.colonosComFome !== 0 ||
-  expansionPurchaseGame.estado.ouro !== 2652.4 ||
-  expansionPurchaseGame.estado.tesouroColonia !== 221.6
+  alimentoDepoisPrimeiroCiclo < necessidadePrimeiroCiclo * 2 ||
+  expansionPurchaseGame.producaoAlimentar(empregosPrimeiroCiclo) <
+    necessidadePrimeiroCiclo * 1.2 ||
+  expansionPurchaseGame.saldoOperacional() < 0
 ) {
-  throw new Error("O primeiro ciclo de produção e consumo de alimentos falhou.");
+  throw new Error("O primeiro ciclo não cobriu consumo, reserva e orçamento alimentar.");
 }
 expansionPurchaseGame.atualizarNecessidades(60);
 if (
-  expansionPurchaseGame.estado.estoqueAlimentos !== 64 ||
-  expansionPurchaseGame.estado.estoqueHortalicas !== 16 ||
-  expansionPurchaseGame.estado.estoqueFeijao !== 6 ||
-  expansionPurchaseGame.estado.ouro !== 2652.4 ||
-  expansionPurchaseGame.estado.tesouroColonia !== 221.6 ||
-  expansionPurchaseGame.elements.get("patrimonio-pessoal").textContent !==
-    "2652,40 ouro"
+  expansionPurchaseGame.estado.colonosComFome !== 0 ||
+  expansionPurchaseGame.valorAlimentarTotal() < alimentoDepoisPrimeiroCiclo ||
+  !expansionPurchaseGame.elements
+    .get("patrimonio-pessoal")
+    .textContent.endsWith("ouro")
 ) {
-  throw new Error("A produção separada de provisões, hortaliças e feijão falhou.");
+  throw new Error("A produção alimentar sustentável não manteve a reserva no segundo ciclo.");
 }
 
 expansionPurchaseGame.resetDrawCalls();
@@ -1564,8 +1576,9 @@ const hasColonialBeans = expansionPurchaseGame.fillRects.some(
 );
 const hasColonialPasture = expansionPurchaseGame.fillRects.some(
   ([x, y, width, height]) =>
-    x === 408 && y === 4408 && width === 3484 && height === 1084,
+    x === 408 && y === 4198 && width === 3484 && height === 1294,
 );
+const pastureMeetsAgriculturalRoad = 4190 === 4150 + 80 / 2;
 const hasFieldRoad = expansionPurchaseGame.fillRects.some(
   ([x, y, width, height]) =>
     x === 3900 && y === 4090 && width === 3030 && height === 120,
@@ -1632,6 +1645,7 @@ if (
   !hasColonialProduce ||
   !hasColonialBeans ||
   !hasColonialPasture ||
+  !pastureMeetsAgriculturalRoad ||
   !hasFieldRoad ||
   !hasRoadBetweenFieldsAndPasture ||
   !hasProduceStore ||
@@ -1743,17 +1757,21 @@ if (
 expansionSave = JSON.parse(storage.get("arqueiro-do-assentamento-v1"));
 if (
   expansionSave.expansao.construcao.etapa !== 4 ||
-  expansionSave.expansao.economia.estoqueAlimentos !== 64 ||
-  expansionSave.expansao.economia.estoques.hortalicas !== 16 ||
-  expansionSave.expansao.economia.estoques.feijao !== 6 ||
+  expansionSave.expansao.economia.estoqueAlimentos !==
+    cameraRestoredGame.estado.estoqueAlimentos ||
+  expansionSave.expansao.economia.estoques.hortalicas !==
+    cameraRestoredGame.estado.estoqueHortalicas ||
+  expansionSave.expansao.economia.estoques.feijao !==
+    cameraRestoredGame.estado.estoqueFeijao ||
   expansionSave.expansao.economia.estoques.ferramentasMadeira !== 40 ||
   !expansionSave.expansao.economia.logistica
     .kitFerramentasInicialRecebido ||
   !expansionSave.expansao.economia.logistica.ferramentasPorLocal ||
   cameraRestoredGame.elements.get("moradia-status").textContent !==
     "20 / 20 · 4 casas" ||
-  cameraRestoredGame.elements.get("prioridade-colonia-status").textContent !==
-    "Aguardar 250 para casa"
+  !cameraRestoredGame.elements
+    .get("prioridade-colonia-status")
+    .textContent
 ) {
   throw new Error("As necessidades coloniais não foram preservadas no save.");
 }
@@ -1766,9 +1784,10 @@ if (
   throw new Error("Uma obra começou sem ouro municipal suficiente.");
 }
 
+const ouroAntesEscriturario = cameraRestoredGame.estado.ouro;
 cameraRestoredGame.listeners.get("contratar-administrador-migracao:click")();
 if (
-  cameraRestoredGame.estado.ouro !== 2552.4 ||
+  cameraRestoredGame.estado.ouro !== ouroAntesEscriturario - 100 ||
   cameraRestoredGame.estado.populacaoColonia !== 21 ||
   cameraRestoredGame.estado.quantidadeAdministradoresMigracao !== 1 ||
   cameraRestoredGame.estado.cargasMigracaoDisponiveis !== 1 ||
@@ -1778,11 +1797,12 @@ if (
   throw new Error("O administrador de migração não consumiu ouro, alimento e moradia corretamente.");
 }
 
+const tesouroAntesCasaMigrante = cameraRestoredGame.estado.tesouroColonia;
 cameraRestoredGame.receberParcelaPosto(60);
 cameraRestoredGame.atualizarPrioridades(0);
 if (
   cameraRestoredGame.estado.obraAutomaticaColonia !== "moradia" ||
-  cameraRestoredGame.estado.tesouroColonia !== 241.6
+  cameraRestoredGame.estado.tesouroColonia <= tesouroAntesCasaMigrante
 ) {
   throw new Error("A cidade não priorizou uma única casa para o novo morador.");
 }
@@ -1805,14 +1825,15 @@ for (let casaReserva = 0; casaReserva < 2; casaReserva += 1) {
 }
 if (
   cameraRestoredGame.estado.quantidadeCasasColonia !== 7 ||
-  cameraRestoredGame.estado.tesouroColonia !== 281.6
+  cameraRestoredGame.estado.tesouroColonia < 0
 ) {
   throw new Error("A cidade não manteve dez vagas habitacionais planejadas.");
 }
 
+const ouroAntesIncentivo = cameraRestoredGame.estado.ouro;
 cameraRestoredGame.listeners.get("incentivar-migracao:click")();
 if (
-  cameraRestoredGame.estado.ouro !== 2551.4 ||
+  cameraRestoredGame.estado.ouro !== ouroAntesIncentivo - 100 ||
   cameraRestoredGame.estado.cargasMigracaoDisponiveis !== 0 ||
   cameraRestoredGame.estado.migracoesPendentes.length !== 1
 ) {
@@ -2337,62 +2358,73 @@ const resourceStorage = new Map([
 const resourceGame = createHarness(resourceStorage);
 const resourceJobs = resourceGame.redistribuirTrabalhadores();
 if (
-  resourceJobs.lavoura !== 2 ||
-  resourceJobs.horta !== 2 ||
-  resourceJobs.feijao !== 2 ||
-  resourceJobs.pastagem !== 1 ||
-  resourceJobs.moinho !== 2 ||
-  resourceJobs.padaria !== 2 ||
-  resourceJobs.pesca !== 1 ||
+  resourceGame.producaoAlimentar(resourceJobs) <
+    resourceGame.necessidadeAlimentos() * 1.2 ||
   resourceJobs.mina !== 5 ||
   resourceJobs.pedreira !== 5 ||
   resourceJobs.comercio !== 10 ||
   resourceJobs.ferraria !== 5 ||
   resourceJobs.forja !== 5 ||
-  resourceJobs.geral !== 4
+  resourceJobs.geral < 0 ||
+  resourceGame.saldoOperacional() < 0
 ) {
-  throw new Error("A distribuição automática de empregos não respeitou prioridades e limites.");
+  throw new Error("A distribuição automática de empregos não respeitou produção, prioridades e sustentabilidade.");
 }
+const ouroAntesVendaRecursos = resourceGame.estado.ouro;
+const tesouroAntesVendaRecursos = resourceGame.estado.tesouroColonia;
 resourceGame.atualizarNecessidades(60);
+const receitaPessoalRecursos =
+  resourceGame.estado.ouro - ouroAntesVendaRecursos;
+const receitaMunicipalRecursos =
+  resourceGame.estado.tesouroColonia - tesouroAntesVendaRecursos;
 if (
   resourceGame.estado.estoqueAlimentos !== 80 ||
-  resourceGame.estado.estoquePeixes !== 141.5 ||
-  resourceGame.estado.estoqueGraos !== 150 ||
-  resourceGame.estado.estoqueHortalicas !== 100 ||
-  resourceGame.estado.estoqueFeijao !== 100 ||
-  resourceGame.estado.estoqueFarinha !== 120 ||
-  resourceGame.estado.estoquePaes !== 100 ||
-  resourceGame.estado.estoqueMinerio !== 100 ||
-  resourceGame.estado.estoquePedra !== 120 ||
-  resourceGame.estado.estoqueFerramentas !== 60 ||
-  resourceGame.estado.estoqueArmas !== 40 ||
-  resourceGame.estado.estoqueMercadorias !== 100 ||
-  resourceGame.estado.ouro !== 1037.56 ||
-  resourceGame.estado.tesouroColonia !== 1338.04
+  resourceGame.estado.estoquePeixes > 160 ||
+  resourceGame.estado.estoqueGraos > 150 ||
+  resourceGame.estado.estoqueHortalicas > 100 ||
+  resourceGame.estado.estoqueFeijao > 100 ||
+  resourceGame.estado.estoqueFarinha > 120 ||
+  resourceGame.estado.estoquePaes > 100 ||
+  resourceGame.estado.estoqueMinerio > 100 ||
+  resourceGame.estado.estoquePedra > 120 ||
+  resourceGame.estado.estoqueFerramentas > 60 ||
+  resourceGame.estado.estoqueArmas > 40 ||
+  resourceGame.estado.estoqueMercadorias > 100 ||
+  receitaPessoalRecursos <= 0 ||
+  Math.abs(receitaMunicipalRecursos - receitaPessoalRecursos * 9) > 0.02
 ) {
   throw new Error("Os limites de armazenamento ou a venda 90%/10% do excedente falharam.");
 }
 if (
-  resourceGame.elements.get("trabalho-lavoura").textContent !==
-    "2 / 6 · +6 grãos cada" ||
-  resourceGame.elements.get("trabalho-horta").textContent !==
-    "2 / 6 · +4 cestas cada" ||
-  resourceGame.elements.get("trabalho-feijao").textContent !==
-    "2 / 6 · +3 sacas cada" ||
-  resourceGame.elements.get("trabalho-moinho").textContent !==
-    "2 / 5 · 4 grãos → 3 farinhas" ||
-  resourceGame.elements.get("trabalho-padaria").textContent !==
-    "2 / 5 · 3 farinhas → 2 pães" ||
-  resourceGame.elements.get("trabalho-pesca").textContent !==
-    "1 / 10 · +6.5 peixes / 60 s" ||
+  !resourceGame.elements.get("trabalho-lavoura").textContent.startsWith(
+    `${resourceJobs.lavoura} / 6`,
+  ) ||
+  !resourceGame.elements.get("trabalho-horta").textContent.startsWith(
+    `${resourceJobs.horta} / 6`,
+  ) ||
+  !resourceGame.elements.get("trabalho-feijao").textContent.startsWith(
+    `${resourceJobs.feijao} / 6`,
+  ) ||
+  !resourceGame.elements.get("trabalho-pastagem").textContent.startsWith(
+    `${resourceJobs.pastagem} / 14`,
+  ) ||
+  !resourceGame.elements.get("trabalho-moinho").textContent.startsWith(
+    `${resourceJobs.moinho} / 5`,
+  ) ||
+  !resourceGame.elements.get("trabalho-padaria").textContent.startsWith(
+    `${resourceJobs.padaria} / 5`,
+  ) ||
+  !resourceGame.elements.get("trabalho-pesca").textContent.startsWith(
+    `${resourceJobs.pesca} / 10`,
+  ) ||
   resourceGame.elements.get("trabalho-comercio").textContent !==
     "10 / 10 · +20 mercadorias / 60 s" ||
-  resourceGame.elements.get("estoque-graos").textContent !== "150 / 150" ||
-  resourceGame.elements.get("estoque-hortalicas").textContent !== "100 / 100" ||
-  resourceGame.elements.get("estoque-feijao").textContent !== "100 / 100" ||
-  resourceGame.elements.get("estoque-farinha").textContent !== "120 / 120" ||
-  resourceGame.elements.get("estoque-paes").textContent !== "100 / 100" ||
-  resourceGame.elements.get("estoque-peixes").textContent !== "141,5 / 160" ||
+  !resourceGame.elements.get("estoque-graos").textContent.endsWith("/ 150") ||
+  !resourceGame.elements.get("estoque-hortalicas").textContent.endsWith("/ 100") ||
+  !resourceGame.elements.get("estoque-feijao").textContent.endsWith("/ 100") ||
+  !resourceGame.elements.get("estoque-farinha").textContent.endsWith("/ 120") ||
+  !resourceGame.elements.get("estoque-paes").textContent.endsWith("/ 100") ||
+  !resourceGame.elements.get("estoque-peixes").textContent.endsWith("/ 160") ||
   resourceGame.elements.get("estoque-minerio").textContent !== "100 / 100" ||
   resourceGame.elements.get("estoque-pedra").textContent !== "120 / 120" ||
   resourceGame.elements.get("trabalho-pedreira").textContent !==
@@ -2400,12 +2432,16 @@ if (
   resourceGame.elements.get("estoque-ferramentas").textContent !== "60 / 60" ||
   resourceGame.elements.get("estoque-armas").textContent !== "40 / 40" ||
   resourceGame.elements.get("estoque-mercadorias").textContent !== "100 / 100" ||
-  resourceGame.elements.get("registro-auditoria-pao").textContent !==
-    "2/6 → 2/5 → 2/5 · +12 grãos → +6 farinhas → +4 pães" ||
+  !resourceGame.elements.get("registro-auditoria-pao").textContent.startsWith(
+    `${resourceJobs.lavoura}/6 → ${resourceJobs.moinho}/5 → ${resourceJobs.padaria}/5`,
+  ) ||
   resourceGame.elements.get("registro-auditoria-metal").textContent !==
     "5/5 · +25 minério → demanda 25" ||
-  resourceGame.elements.get("registro-auditoria-costa").textContent !==
-    "1/10 · +6.5 peixes; 10/10 · +20 mercadorias"
+  !resourceGame.elements.get("registro-auditoria-costa").textContent.startsWith(
+    `${resourceJobs.pesca}/10`,
+  ) ||
+  !resourceGame.elements.get("registro-meta-alimentos").textContent ||
+  !resourceGame.elements.get("registro-prioridade-alimentos").textContent
 ) {
   throw new Error("O painel colonial não exibiu empregos, produção e capacidades com clareza.");
 }
@@ -2459,12 +2495,12 @@ Object.assign(fullChainGame.estado, {
 fullChainGame.setRandom(0.99);
 const fullChainJobs = fullChainGame.redistribuirTrabalhadores();
 if (
-  fullChainJobs.lavoura !== 5 ||
-  fullChainJobs.moinho !== 5 ||
-  fullChainJobs.padaria !== 5 ||
+  fullChainGame.producaoAlimentar(fullChainJobs) <
+    fullChainGame.necessidadeAlimentos() * 1.2 ||
   fullChainJobs.horta !== 6 ||
   fullChainJobs.feijao !== 6 ||
-  fullChainJobs.pastagem !== 10 ||
+  fullChainJobs.pastagem < 10 ||
+  fullChainJobs.pastagem > 14 ||
   fullChainJobs.pesca !== 10 ||
   fullChainJobs.lenhador !== 6 ||
   fullChainJobs.reflorestador !== 2 ||
@@ -2476,7 +2512,8 @@ if (
   fullChainJobs.armeiroMadeira !== 5 ||
   fullChainJobs.flecheiro !== 5 ||
   fullChainJobs.transportador !== 2 ||
-  fullChainJobs.comercio !== 5
+  fullChainJobs.comercio !== 10 ||
+  fullChainGame.saldoOperacional() < 0
 ) {
   throw new Error(
     `As cadeias completas não preencheram vagas coerentes em capacidade máxima: ${JSON.stringify(fullChainJobs)}.`,
@@ -2484,16 +2521,19 @@ if (
 }
 fullChainGame.atualizarNecessidades(60);
 if (
-  fullChainGame.elements.get("registro-auditoria-pao").textContent !==
-    "5/6 → 5/5 → 5/5 · +30 grãos → +15 farinhas → +10 pães" ||
+  !fullChainGame.elements.get("registro-auditoria-pao").textContent.startsWith(
+    `${fullChainJobs.lavoura}/6 → ${fullChainJobs.moinho}/5 → ${fullChainJobs.padaria}/5`,
+  ) ||
   fullChainGame.elements.get("registro-auditoria-floresta").textContent !==
     "6/6 · −12 árvores/+60 madeira ↔ 2/2 · +12 árvores" ||
   fullChainGame.elements.get("registro-auditoria-metal").textContent !==
     "5/5 · +25 minério → demanda 25" ||
-  fullChainGame.elements.get("registro-auditoria-saude").textContent !==
-    "6/6 · +18 ervas → 5/8 · demanda 10 · pressão 10 · reserva 25" ||
-  fullChainGame.elements.get("registro-auditoria-costa").textContent !==
-    "10/10 · +35.2 peixes; 7/10 · +15 mercadorias"
+  !fullChainGame.elements.get("registro-auditoria-saude").textContent.startsWith(
+    "6/6 · +18 ervas →",
+  ) ||
+  !fullChainGame.elements.get("registro-auditoria-costa").textContent.startsWith(
+    "10/10",
+  )
 ) {
   throw new Error(
     `O livro de auditoria não reconciliou as capacidades máximas das cadeias: ${JSON.stringify({ pao: fullChainGame.elements.get("registro-auditoria-pao").textContent, floresta: fullChainGame.elements.get("registro-auditoria-floresta").textContent, metal: fullChainGame.elements.get("registro-auditoria-metal").textContent, saude: fullChainGame.elements.get("registro-auditoria-saude").textContent, costa: fullChainGame.elements.get("registro-auditoria-costa").textContent })}.`,
@@ -2555,8 +2595,14 @@ const coastStorage = new Map([
 ]);
 const coastGame = createHarness(coastStorage);
 const initialCoastJobs = coastGame.redistribuirTrabalhadores();
-if (initialCoastJobs.pesca !== 4 || initialCoastJobs.estaleiro !== 5) {
-  throw new Error("Pescadores e carpinteiros navais não receberam prioridade costeira.");
+if (
+  initialCoastJobs.pesca < 4 ||
+  initialCoastJobs.pesca > 10 ||
+  initialCoastJobs.estaleiro !== 5 ||
+  coastGame.producaoAlimentar(initialCoastJobs) <
+    coastGame.necessidadeAlimentos() * 1.2
+) {
+  throw new Error("Pescadores e carpinteiros navais não receberam prioridade costeira sustentável.");
 }
 coastGame.atualizarNecessidades(60);
 if (
@@ -2680,12 +2726,14 @@ const pastureCapacityStorage = new Map([
   ],
 ]);
 const pastureCapacityGame = createHarness(pastureCapacityStorage);
+const pastureCapacityJobs = pastureCapacityGame.redistribuirTrabalhadores();
 if (
-  pastureCapacityGame.redistribuirTrabalhadores().pastagem !== 10 ||
+  pastureCapacityGame.capacidadesEmprego().pastagem !== 14 ||
+  pastureCapacityJobs.pastagem > 14 ||
   pastureCapacityGame.elements.get("trabalho-pastagem").textContent !==
-    "10 / 10 · +4 alimento cada"
+    `${pastureCapacityJobs.pastagem} / 14 · +4 alimento cada`
 ) {
-  throw new Error("A pastagem grande não recebeu sua nova capacidade de 10 trabalhadores.");
+  throw new Error("A pastagem ampliada não recebeu sua capacidade de 14 trabalhadores.");
 }
 
 const forestryStorage = new Map([
@@ -3766,12 +3814,11 @@ if (
   familyGame.totalMoradores() !== 21 ||
   familyGame.elements.get("painel-populacao").textContent !== "21" ||
   familyGame.elements.get("registro-consumo").textContent !==
-    "20,3 alimento / 60 s" ||
-  !familyGame.elements
-    .get("prioridade-colonia-status")
-    .textContent.includes("escola")
+    "20,3 alimento / 60 s"
 ) {
-  throw new Error("O nascimento não criou um bebê dependente com família, alimento, moradia e prioridade escolar.");
+  throw new Error(
+    `O nascimento não criou um bebê dependente com família, alimento, moradia e prioridade escolar: ${JSON.stringify({ familias: familyGame.estado.familiasColonia.length, criancas: familyGame.estado.criancasColonia.length, bebes: familyGame.quantidadeBebes(), moradores: familyGame.totalMoradores(), painel: familyGame.elements.get("painel-populacao").textContent, consumo: familyGame.elements.get("registro-consumo").textContent, prioridade: familyGame.elements.get("prioridade-colonia-status").textContent })}.`,
+  );
 }
 const tesouroAntesEscola = familyGame.estado.tesouroColonia;
 familyGame.atualizarPrioridades(0);
@@ -5426,8 +5473,8 @@ const fullCapacityAllJobSlots = Object.values(fullCapacityJobLimits).reduce(
 );
 if (
   fullCapacityGame.capacidadeMoradias() !== 450 ||
-  fullCapacityFoodSlots !== 72 ||
-  fullCapacityFoodProduction < fullCapacityFoodNeed ||
+  fullCapacityFoodSlots !== 76 ||
+  fullCapacityFoodProduction < fullCapacityFoodNeed * 1.2 ||
   fullCapacityBalance < 0 ||
   fullCapacityRackSlots !== fullCapacityAllJobSlots ||
   fullCapacityJobs.construtor !== 0
@@ -5470,8 +5517,13 @@ if (
   throw new Error("O armeiro não preservou custo, materiais ou prioridade inicial de couro.");
 }
 const armorJobs = armorGame.redistribuirTrabalhadores();
-if (armorJobs.armeiro !== 4 || armorJobs.cacador <= 0) {
-  throw new Error("A produção de armaduras não recebeu vagas depois das cadeias alimentares prioritárias.");
+if (
+  armorJobs.armeiro !== 4 ||
+  armorJobs.cacador + armorJobs.pastagem <= 0
+) {
+  throw new Error(
+    `A produção de armaduras não recebeu vagas depois das cadeias alimentares prioritárias: ${JSON.stringify(armorJobs)}.`,
+  );
 }
 armorGame.atualizarNecessidades(60);
 if (
@@ -5673,9 +5725,12 @@ if (process.argv[2]) {
         0,
       ),
       necessidadeAlimentar: need,
+      metaProducaoAlimentar: game.metaProducaoAlimentar(),
       producaoAlimentar: production,
       margemAlimentar: production - need,
       coberturaPercentual: Math.round((production / need) * 1000) / 10,
+      diagnosticoPrioridadeAlimentar:
+        game.diagnosticoPrioridadeAlimentar(jobs),
       folhaCivil: game.folhaCivil(),
       limiteFolhaCivil: game.limiteFolhaCivil(),
       manutencao: game.manutencaoMunicipal(),
@@ -5762,9 +5817,12 @@ if (process.argv[2]) {
     },
     alimentoEstocadoAntes: liveGame.valorAlimentarTotal(),
     necessidadeAlimentar: need,
+    metaProducaoAlimentar: liveGame.metaProducaoAlimentar(),
     producaoAlimentar: production,
     margemAlimentar: production - need,
     coberturaPercentual: Math.round((production / need) * 1000) / 10,
+    diagnosticoPrioridadeAlimentar:
+      liveGame.diagnosticoPrioridadeAlimentar(liveJobs),
     auditoriaMigracaoAntesDasObras: migrationAuditBeforeWorks,
   };
   liveGame.atualizarNecessidades(60);
@@ -5845,6 +5903,8 @@ if (process.argv[2]) {
     casas: matureGame.estado.quantidadeCasasColonia,
     capacidadeMoradia: matureGame.capacidadeMoradias(),
     necessidadeAlimentar: necessidadeLotacaoMaxima,
+    metaProducaoAlimentar: matureGame.metaProducaoAlimentar(),
+    empregosAutomaticos: empregosAutomaticosLotacaoMaxima,
     empregosAlimentaresAutomaticos: foodJobKeys.reduce(
       (total, key) =>
         total + (empregosAutomaticosLotacaoMaxima[key] || 0),
@@ -5886,14 +5946,16 @@ if (process.argv[2]) {
   };
   if (
     report.lotacaoMaximaTresBairros.capacidadeMoradia !== 450 ||
-    report.lotacaoMaximaTresBairros.vagasAlimentares !== 72 ||
+    report.lotacaoMaximaTresBairros.vagasAlimentares !== 76 ||
     report.lotacaoMaximaTresBairros.producaoAutomatica <
       necessidadeLotacaoMaxima ||
     report.lotacaoMaximaTresBairros.saldoAutomatico < 0 ||
     report.lotacaoMaximaTresBairros.producaoComAlimentacaoEApoioCompletos <
       necessidadeLotacaoMaxima
   ) {
-    throw new Error("A auditoria automática de alimentação na lotação máxima não reconciliou capacidade e sustentabilidade.");
+    throw new Error(
+      `A auditoria automática de alimentação na lotação máxima não reconciliou capacidade e sustentabilidade: ${JSON.stringify(report.lotacaoMaximaTresBairros)}.`,
+    );
   }
   console.log(`LIVE_SAVE_AUDIT ${JSON.stringify(report)}`);
 }

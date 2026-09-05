@@ -17,6 +17,17 @@ operating crew and scales up to 12 dedicated horse-and-wagon teams. Full
 destinations no longer create phantom logistics jobs. Mixed loads move under the
 sustainable essential-payroll limit.
 
+Food staffing is based on measured end-to-end output rather than nominal field
+headcount. The allocator compares the marginal production of crops, pasture,
+fishing, kitchens, preservation, bread and meat chains with their actual tool,
+road, boat, processing and wagon constraints. It fills the most productive
+sustainable combination until the colony has a 20% operating buffer, or until
+the essential-payroll ceiling is reached; unused food slots then remain visible
+as reserve capacity. During hunger or a sub-cycle food reserve, the target rises
+to 40%. The expanded pasture now reaches the agricultural road, retains its
+southern boundary, animates the whole plot, and supports 14 herders instead of
+10.
+
 Mature construction is performed only by a four-to-twelve-person guild crew.
 Established specialists retain their jobs, and idle builders return to the
 general labor reserve. Every productive worksite has one tool rack position per
@@ -49,10 +60,10 @@ before publishing:
 node verification/smoke-test.js
 ```
 
-The ordinary run includes the 450-resident housing, food-job, food-output,
-payroll, maintenance, and operating-balance audit. Supplying an exported save as
-the first argument additionally prints a `LIVE_SAVE_AUDIT` report for that exact
-colony.
+The ordinary run includes the 450-resident housing, 76-position food-capacity,
+food-output, payroll, maintenance, pasture/road geometry, and operating-balance
+audit. Supplying an exported save as the first argument additionally prints a
+`LIVE_SAVE_AUDIT` report for that exact colony.
 
 GitHub `main` is canonical. The existing Google Drive ZIP is updated in place
 only after the GitHub Pages release has been verified. Existing browser and

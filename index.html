@@ -750,7 +750,7 @@
             <li>A torre administrativa, as moradias de prestígio e o celeiro ocupam o recinto interno planejado; os blocos de moradia ocupam o recinto externo planejado.</li>
             <li>O campo de grãos, a horta e pomar, o feijoal, a pastagem, a mina e a pedreira ficam no extremo oeste. Uma estrada agrícola atravessa o corredor entre os três campos ampliados e a pastagem. A costa é reservada para pesca, comércio e chegada de migrantes.</li>
             <li>A horta e pomar produz 4 cestas por trabalhador; cada cesta vale 2 alimentos. O feijoal produz 3 sacas; cada saca vale 3 alimentos.</li>
-            <li>A pastagem maior aceita até 10 trabalhadores e produz 4 provisões por trabalhador. Os três campos agrícolas ampliados aceitam até 6 trabalhadores cada.</li>
+            <li>A pastagem ampliada até a estrada agrícola aceita até 14 trabalhadores e produz 4 provisões por trabalhador. Os três campos agrícolas ampliados aceitam até 6 trabalhadores cada.</li>
             <li>O campo produz 6 grãos por agricultor. O moinho transforma 4 grãos em 3 farinhas e a padaria transforma 3 farinhas em 2 pães; cada pão vale 4 alimentos.</li>
             <li>A cabana dos caçadores fica no alto da floresta e aceita 4 caçadores, com 3 carnes selvagens por trabalhador. A pastagem também entrega 1 carne de criação por pastor quando o açougue existe.</li>
             <li>O açougue transforma 3 carnes cruas em 2 cortes; a cozinha transforma 2 cortes em 3 refeições, cada uma valendo 4 alimentos. Cada etapa aceita 4 trabalhadores.</li>
@@ -758,7 +758,7 @@
             <li>As três cozinhas produtivas ficam no recinto externo. As cozinhas de hortaliças e de feijão transformam 2 unidades frescas em 3 refeições; a adega fria interna recebe somente cortes e refeições preparadas.</li>
             <li>O defumadório transforma 2 cortes em 2 carnes defumadas e 3 peixes em 2 peixes secos. A despensa seca interna recebe somente esses alimentos duráveis.</li>
             <li>Refeições frescas e alimentos comuns são consumidos antes das reservas duráveis. Carne defumada e peixe seco são sempre as últimas fontes de comida usadas.</li>
-            <li>Os empregos alimentares são preenchidos antes dos demais até cobrir consumo +20%; se o estoque cair abaixo de um ciclo ou houver fome, a meta sobe para +40%. Enquanto faltar comida, campos, cozinhas, conservação, transporte e biblioteca podem usar somente a parcela do orçamento que ainda restar depois de manutenção e soldos.</li>
+            <li>Os empregos alimentares são escolhidos pela produção marginal real de toda a cadeia — incluindo ferramentas, estradas, barcos, transporte e processamento — até cobrir consumo +20%; se o estoque cair abaixo de um ciclo ou houver fome, a meta sobe para +40%. Enquanto faltar comida, esses empregos usam somente a parcela sustentável do orçamento restante depois de manutenção e soldos.</li>
             <li>Custos municipais: pastagem 500; celeiro central 300; horta/pomar 350 + armazém 200; feijoal 350 + armazém 200; campo de grãos 400 + silo 250; moinho 450 + depósito 200; padaria 500 + despensa 250.</li>
             <li>As muralhas não existem no início. Depois das construções produtivas, a cidade pode erguer a paliçada interna por 4 trechos de 250 e a externa por 4 trechos de 450.</li>
             <li>A paliçada completa é o estágio 1. Depois, os dois recintos recebem muralhas de pedra, oito torres de canto e os sete portões das estradas ganham gatehouses de pedra.</li>
@@ -864,7 +864,7 @@
               <li>Agricultores de grãos <span id="trabalho-lavoura">0 / 6 · +6 grãos cada</span></li>
               <li>Horticultores <span id="trabalho-horta">0 / 6 · +4 cestas cada</span></li>
               <li>Produtores de feijão <span id="trabalho-feijao">0 / 6 · +3 sacas cada</span></li>
-              <li>Pastores <span id="trabalho-pastagem">0 / 10 · +4 alimento cada</span></li>
+              <li>Pastores <span id="trabalho-pastagem">0 / 14 · +4 alimento cada</span></li>
               <li>Celeireiros <span id="trabalho-celeiro">0 / 2</span></li>
               <li>Moleiros <span id="trabalho-moinho">0 / 5 · grãos → farinha</span></li>
               <li>Padeiros <span id="trabalho-padaria">0 / 5 · farinha → pão</span></li>
@@ -1079,6 +1079,8 @@
               <li>Valor alimentar disponível <span id="registro-alimento-total">0</span></li>
               <li>Produção planejada <span id="registro-producao-alimentos">0 / 60 s</span></li>
               <li>Consumo e margem <span id="registro-margem-alimentos">0 − 0 = 0</span></li>
+              <li>Meta automática <span id="registro-meta-alimentos">0 · reserva +20%</span></li>
+              <li>Prioridade de vagas <span id="registro-prioridade-alimentos">Aguardando colônia</span></li>
               <li>Provisões · valor 1 <span id="registro-provisoes">0 / 200</span></li>
               <li>Grãos · ingrediente <span id="registro-graos">0 / 150</span></li>
               <li>Frutas e verduras · valor 2 <span id="registro-hortalicas">0 / 100</span></li>
@@ -1840,6 +1842,8 @@
           "alimento-total",
           "producao-alimentos",
           "margem-alimentos",
+          "meta-alimentos",
+          "prioridade-alimentos",
           "provisoes",
           "graos",
           "hortalicas",
@@ -2095,9 +2099,9 @@
       };
       const areaPastagem = {
         x: 400,
-        y: 4400,
+        y: 4190,
         largura: 3500,
-        altura: 1100,
+        altura: 1310,
       };
       const areaFlorestaColonia = {
         x: 350,
@@ -2893,7 +2897,7 @@
       const maximoTrabalhadoresLavoura = 6;
       const maximoTrabalhadoresHorta = 6;
       const maximoTrabalhadoresFeijao = 6;
-      const maximoTrabalhadoresPastagem = 10;
+      const maximoTrabalhadoresPastagem = 14;
       const maximoTrabalhadoresMoinho = 5;
       const maximoTrabalhadoresPadaria = 5;
       const trabalhadoresPorCabanaLenhadores = 3;
@@ -4427,6 +4431,20 @@
           estado.populacaoColonia * consumoAlimentoPorColono +
           quantidadeBebesColonia() * consumoAlimentoPorBebe +
           quantidadeCriancasColonia() * consumoAlimentoPorCrianca
+        );
+      }
+
+      function multiplicadorReservaAlimentarColonia() {
+        return estado.colonosComFome > 0 ||
+          valorAlimentarTotalColonia() < necessidadeAlimentosColonia()
+          ? 1.4
+          : 1.2;
+      }
+
+      function metaProducaoAlimentarColonia() {
+        return Math.ceil(
+          necessidadeAlimentosColonia() *
+            multiplicadorReservaAlimentarColonia(),
         );
       }
 
@@ -7011,30 +7029,6 @@
           }
           return adicionados;
         };
-        const adicionarCadeiaCarne = (limiteFolha) => {
-          const ativa =
-            estado.cabanaCacadoresConstruida &&
-            estado.acougueConstruido &&
-            estado.cozinhaCarneConstruida;
-          if (
-            !ativa ||
-            disponiveis < 3 ||
-            empregos.cacador >= maximoTrabalhadoresCacadores ||
-            empregos.acougue >= maximoTrabalhadoresAcougue ||
-            empregos.cozinhaCarne >= maximoTrabalhadoresCozinhaCarne
-          ) return false;
-          empregos.cacador += 1;
-          empregos.acougue += 1;
-          empregos.cozinhaCarne += 1;
-          if (folhaCivilColonia(empregos) > limiteFolha) {
-            empregos.cacador -= 1;
-            empregos.acougue -= 1;
-            empregos.cozinhaCarne -= 1;
-            return false;
-          }
-          disponiveis -= 3;
-          return true;
-        };
         const alocarSaudeEssencial = () => {
           const alvoClinica = alvoProfissionaisClinicaColonia();
           const alvoColetores = alvoColetoresSaudeColonia(alvoClinica);
@@ -7113,119 +7107,13 @@
           estado.armazemFarinhaConstruido &&
           estado.padariaConstruida &&
           estado.armazemPaesConstruido;
-        let producaoAlimentarPlanejada = 0;
-
-        const trabalhosAlimentares = [
-          {
-            chave: "horta",
-            ativo:
-              estado.hortaConstruida &&
-              estado.armazemHortalicasConstruido,
-            maximo: maximoTrabalhadoresHorta,
-            valor:
-              hortalicasPorHorticultor * valorAlimentarHortalica,
-          },
-          {
-            chave: "feijao",
-            ativo:
-              estado.feijaoConstruido &&
-              estado.armazemFeijaoConstruido,
-            maximo: maximoTrabalhadoresFeijao,
-            valor: feijaoPorProdutor * valorAlimentarFeijao,
-          },
-          {
-            chave: "pastagem",
-            ativo:
-              estado.pastagemConstruida && estado.celeiroConstruido,
-            maximo: maximoTrabalhadoresPastagem,
-            valor: alimentoPorPastor * valorAlimentarProvisao,
-          },
-          {
-            chave: "pesca",
-            ativo:
-              estado.caisPescaConstruido &&
-              estado.mercadoPeixesConstruido,
-            maximo: capacidadePescadoresColonia(),
-            valor: peixesPorPescador * valorAlimentarPeixe,
-          },
-        ];
-        const multiplicadorReserva =
-          estado.colonosComFome > 0 ||
-          valorAlimentarTotalColonia() < necessidadeAlimentosColonia()
-            ? 1.4
-            : 1.2;
-        const metaAlimentar = Math.ceil(
-          necessidadeAlimentosColonia() * multiplicadorReserva,
-        );
+        const cadeiaCarneCompleta =
+          estado.cabanaCacadoresConstruida &&
+          estado.acougueConstruido &&
+          estado.cozinhaCarneConstruida &&
+          estado.companhiaTransportadoresConstruida;
+        const metaAlimentar = metaProducaoAlimentarColonia();
         const limiteFolhaAlimentar = limiteFolhaAlimentarColonia();
-        let adicionouTrabalhoAlimentar = true;
-        while (
-          disponiveis > 0 &&
-          producaoAlimentarPlanejada < metaAlimentar &&
-          adicionouTrabalhoAlimentar
-        ) {
-          adicionouTrabalhoAlimentar = false;
-          const cadeiaPaoPodeCrescer =
-            cadeiaPaoCompleta &&
-            disponiveis >= 3 &&
-            empregos.lavoura < maximoTrabalhadoresLavoura &&
-            empregos.moinho < maximoTrabalhadoresMoinho &&
-            empregos.padaria < maximoTrabalhadoresPadaria;
-          if (
-            cadeiaPaoPodeCrescer &&
-            producaoAlimentarPlanejada < metaAlimentar
-          ) {
-            adicionarComLimite(
-              "lavoura",
-              maximoTrabalhadoresLavoura,
-              1,
-              limiteFolhaAlimentar,
-            );
-            adicionarComLimite(
-              "moinho",
-              maximoTrabalhadoresMoinho,
-              1,
-              limiteFolhaAlimentar,
-            );
-            adicionarComLimite(
-              "padaria",
-              maximoTrabalhadoresPadaria,
-              1,
-              limiteFolhaAlimentar,
-            );
-            producaoAlimentarPlanejada +=
-              paesProduzidosPorPadeiro * valorAlimentarPao;
-            adicionouTrabalhoAlimentar = true;
-          }
-          for (const trabalho of trabalhosAlimentares) {
-            if (
-              !trabalho.ativo ||
-              empregos[trabalho.chave] >= trabalho.maximo ||
-              disponiveis <= 0 ||
-              producaoAlimentarPlanejada >= metaAlimentar
-            ) continue;
-            if (
-              adicionarComLimite(
-                trabalho.chave,
-                trabalho.maximo,
-                1,
-                limiteFolhaAlimentar,
-              ) > 0
-            ) {
-              producaoAlimentarPlanejada += trabalho.valor;
-              adicionouTrabalhoAlimentar = true;
-            }
-          }
-          if (
-            producaoAlimentarPlanejada < metaAlimentar &&
-            adicionarCadeiaCarne(limiteFolhaAlimentar)
-          ) {
-            producaoAlimentarPlanejada +=
-              refeicoesPorCozinheiro * valorAlimentarRefeicaoCarne;
-            adicionouTrabalhoAlimentar = true;
-          }
-        }
-
         const alvoConstrutoresAtivos = alvoConstrutoresObraColonia();
         adicionarComLimite(
           "construtor",
@@ -7233,7 +7121,6 @@
           Math.max(0, alvoConstrutoresAtivos - empregos.construtor),
           limiteFolhaAlimentar,
         );
-        const alvoLogistica = alvoTransportadoresProducaoColonia(empregos);
         adicionarComLimite(
           "bombeiro",
           alvoBombeirosOperacionaisColonia(),
@@ -7242,6 +7129,139 @@
             alvoBombeirosOperacionaisColonia() - empregos.bombeiro,
           ),
           limiteFolhaAlimentar,
+        );
+        const alvoLogisticaAlimentar = cadeiaCarneCompleta
+          ? minimoTransportadoresOperacionaisColonia
+          : alvoTransportadoresSaudeColonia(empregos.coletor || 0);
+        adicionarComLimite(
+          "transportador",
+          alvoLogisticaAlimentar,
+          Math.max(
+            0,
+            alvoLogisticaAlimentar - empregos.transportador,
+          ),
+          limiteFolhaAlimentar,
+        );
+        adicionarComLimite(
+          "conserveiro",
+          alvoConserveirosReservaColonia(),
+          Math.max(
+            0,
+            alvoConserveirosReservaColonia() - empregos.conserveiro,
+          ),
+          limiteFolhaAlimentar,
+        );
+
+        const produzirComFerramentasProjetadas = (distribuicao) => {
+          const ferramentasAnteriores = estado.ferramentasLocaisColonia;
+          sincronizarFerramentasLocaisColonia(distribuicao);
+          const producao = producaoAlimentarPorCiclo(distribuicao);
+          estado.ferramentasLocaisColonia = ferramentasAnteriores;
+          return producao;
+        };
+        const candidatosAlimentares = [
+          {
+            nome: "feijao",
+            ativo: estado.feijaoConstruido && estado.armazemFeijaoConstruido,
+            vagas: [["feijao", maximoTrabalhadoresFeijao]],
+          },
+          {
+            nome: "horta",
+            ativo: estado.hortaConstruida && estado.armazemHortalicasConstruido,
+            vagas: [["horta", maximoTrabalhadoresHorta]],
+          },
+          {
+            nome: "pesca",
+            ativo: estado.caisPescaConstruido && estado.mercadoPeixesConstruido,
+            vagas: [["pesca", capacidadePescadoresColonia()]],
+          },
+          {
+            nome: "pastagem",
+            ativo: estado.pastagemConstruida && estado.celeiroConstruido,
+            vagas: [["pastagem", maximoTrabalhadoresPastagem]],
+          },
+          {
+            nome: "cozinhaFeijao",
+            ativo: estado.cozinhaFeijaoConstruida && estado.adegaFriaConstruida,
+            vagas: [["cozinhaFeijao", maximoTrabalhadoresCozinhaFeijao]],
+          },
+          {
+            nome: "cozinhaHortalicas",
+            ativo:
+              estado.cozinhaHortalicasConstruida && estado.adegaFriaConstruida,
+            vagas: [[
+              "cozinhaHortalicas",
+              maximoTrabalhadoresCozinhaHortalicas,
+            ]],
+          },
+          {
+            nome: "carne",
+            ativo: cadeiaCarneCompleta,
+            vagas: [
+              ["cacador", maximoTrabalhadoresCacadores],
+              ["acougue", maximoTrabalhadoresAcougue],
+              ["cozinhaCarne", maximoTrabalhadoresCozinhaCarne],
+            ],
+          },
+          {
+            nome: "pao",
+            ativo: cadeiaPaoCompleta,
+            vagas: [
+              ["lavoura", maximoTrabalhadoresLavoura],
+              ["moinho", maximoTrabalhadoresMoinho],
+              ["padaria", maximoTrabalhadoresPadaria],
+            ],
+          },
+          {
+            nome: "conservacao",
+            ativo: estado.defumadorioConstruido && estado.adegaFriaConstruida,
+            vagas: [["conserveiro", maximoTrabalhadoresConservacao]],
+          },
+        ];
+        let producaoAlimentarPlanejada =
+          produzirComFerramentasProjetadas(empregos);
+        while (
+          disponiveis > 0 &&
+          producaoAlimentarPlanejada < metaAlimentar
+        ) {
+          let melhor = null;
+          for (const candidato of candidatosAlimentares) {
+            if (!candidato.ativo || candidato.vagas.length > disponiveis) {
+              continue;
+            }
+            if (
+              candidato.vagas.some(
+                ([chave, maximo]) => empregos[chave] >= maximo,
+              )
+            ) continue;
+            const teste = { ...empregos };
+            candidato.vagas.forEach(([chave]) => {
+              teste[chave] += 1;
+            });
+            if (folhaCivilColonia(teste) > limiteFolhaAlimentar) continue;
+            const producaoTeste = produzirComFerramentasProjetadas(teste);
+            const ganho = producaoTeste - producaoAlimentarPlanejada;
+            const custoFolha = Math.max(
+              0.01,
+              folhaCivilColonia(teste) - folhaCivilColonia(empregos),
+            );
+            const eficiencia = ganho / custoFolha;
+            if (
+              ganho > 0.001 &&
+              (!melhor || eficiencia > melhor.eficiencia + 0.001)
+            ) {
+              melhor = { teste, producaoTeste, eficiencia, candidato };
+            }
+          }
+          if (!melhor) break;
+          Object.assign(empregos, melhor.teste);
+          disponiveis -= melhor.candidato.vagas.length;
+          producaoAlimentarPlanejada = melhor.producaoTeste;
+        }
+
+        const alvoLogistica = Math.max(
+          alvoLogisticaAlimentar,
+          alvoTransportadoresProducaoColonia(empregos),
         );
         adicionarComLimite(
           "transportador",
@@ -7255,13 +7275,6 @@
           "pedreira",
           alvoPedreiraPrioritaria,
           Math.max(0, alvoPedreiraPrioritaria - empregos.pedreira),
-          limiteFolhaAlimentar,
-        );
-        const alvoConserveiros = alvoConserveirosReservaColonia();
-        adicionarComLimite(
-          "conserveiro",
-          alvoConserveiros,
-          Math.max(0, alvoConserveiros - empregos.conserveiro),
           limiteFolhaAlimentar,
         );
         ocupar("migracao", estado.quantidadeAdministradoresMigracao);
@@ -7676,6 +7689,60 @@
             (peixeSecoPorOperacao * valorAlimentarPeixeSeco -
               peixesPorOperacaoSecagem * valorAlimentarPeixe)
         );
+      }
+
+      const chavesEmpregosAlimentaresColonia = Object.freeze([
+        "lavoura",
+        "horta",
+        "feijao",
+        "pastagem",
+        "celeiro",
+        "moinho",
+        "padaria",
+        "cacador",
+        "acougue",
+        "cozinhaCarne",
+        "cozinhaHortalicas",
+        "cozinhaFeijao",
+        "conserveiro",
+        "pesca",
+      ]);
+
+      function totalEmpregosAlimentaresColonia(
+        empregos = estado.empregosColonia,
+      ) {
+        return chavesEmpregosAlimentaresColonia.reduce(
+          (total, chave) => total + (empregos[chave] || 0),
+          0,
+        );
+      }
+
+      function totalVagasAlimentaresColonia() {
+        const capacidades = capacidadesEmpregoColonia();
+        return chavesEmpregosAlimentaresColonia.reduce(
+          (total, chave) => total + (capacidades[chave] || 0),
+          0,
+        );
+      }
+
+      function diagnosticoPrioridadeAlimentarColonia(
+        empregos = estado.empregosColonia,
+      ) {
+        const producao = producaoAlimentarPorCiclo(empregos);
+        const consumo = necessidadeAlimentosColonia();
+        const meta = metaProducaoAlimentarColonia();
+        const ocupados = totalEmpregosAlimentaresColonia(empregos);
+        const vagas = totalVagasAlimentaresColonia();
+        const restantes = Math.max(0, vagas - ocupados);
+        if (producao + 0.001 >= meta) {
+          return `Meta atendida · ${ocupados}/${vagas} empregos · ${restantes} vagas de reserva`;
+        }
+        if (folhaCivilColonia(empregos) >= limiteFolhaAlimentarColonia()) {
+          return `Meta curta · ${ocupados}/${vagas} empregos · limite sustentável atingido`;
+        }
+        return producao + 0.001 < consumo
+          ? `Emergência · ${ocupados}/${vagas} empregos · preencher cadeia útil`
+          : `Reserva curta · ${ocupados}/${vagas} empregos · preencher cadeia útil`;
       }
 
       function alimentacaoEstavelParaMigracaoColonia(empregos = null) {
@@ -9232,6 +9299,16 @@
           }
           return `Emergência sanitária: ${alvoColetoresSaudeColonia()}/6 coletores + ${alvoProfissionaisClinicaColonia()}/${maximoTrabalhadoresClinica} profissionais`;
         }
+        const producaoAlimentarAtual = producaoAlimentarPorCiclo(
+          estado.empregosColonia,
+        );
+        const necessidadeAlimentarAtual = necessidadeAlimentosColonia();
+        if (producaoAlimentarAtual < necessidadeAlimentarAtual) {
+          return `Emergência alimentar: ${formatarQuantidade(producaoAlimentarAtual)}/${formatarQuantidade(necessidadeAlimentarAtual)} por ciclo`;
+        }
+        if (producaoAlimentarAtual < metaProducaoAlimentarColonia()) {
+          return `Reforçar reserva alimentar: ${formatarQuantidade(producaoAlimentarAtual)}/${formatarQuantidade(metaProducaoAlimentarColonia())}`;
+        }
         if (estado.obraAutomaticaColonia) {
           if (
             estado.guildaConstrutoresConstruida &&
@@ -10140,6 +10217,10 @@
           `${formatarQuantidade(producaoAlimentos)} alimento / 60 s`;
         registrosEls["margem-alimentos"].textContent =
           `${formatarQuantidade(producaoAlimentos)} − ${formatarQuantidade(necessidadeAlimentos)} = ${margemAlimentos >= 0 ? "+" : ""}${formatarQuantidade(margemAlimentos)} / 60 s`;
+        registrosEls["meta-alimentos"].textContent =
+          `${formatarQuantidade(metaProducaoAlimentarColonia())} · reserva +${Math.round((multiplicadorReservaAlimentarColonia() - 1) * 100)}%`;
+        registrosEls["prioridade-alimentos"].textContent =
+          diagnosticoPrioridadeAlimentarColonia(empregos);
         registrosEls.provisoes.textContent = estoqueAlimentosDetalheEl.textContent;
         registrosEls.graos.textContent = estoqueGraosEl.textContent;
         registrosEls.hortalicas.textContent = estoqueHortalicasEl.textContent;
@@ -15947,9 +16028,22 @@
         }
 
         if (progresso >= 0.75) {
-          for (let indice = 0; indice < 8; indice += 1) {
-            const x = area.x + 120 + (indice % 4) * 220;
-            const y = area.y + 210 + Math.floor(indice / 4) * 320;
+          const quantidadeMarcadores = tipo === "pastagem"
+            ? maximoTrabalhadoresPastagem
+            : 8;
+          const colunasMarcadores = tipo === "pastagem" ? 5 : 4;
+          const linhasMarcadores = Math.ceil(
+            quantidadeMarcadores / colunasMarcadores,
+          );
+          for (let indice = 0; indice < quantidadeMarcadores; indice += 1) {
+            const coluna = indice % colunasMarcadores;
+            const linha = Math.floor(indice / colunasMarcadores);
+            const x = area.x +
+              ((coluna + 1) * area.largura) / (colunasMarcadores + 1);
+            const y = linhasMarcadores === 1
+              ? area.y + area.altura / 2
+              : area.y + 210 +
+                (linha * (area.altura - 350)) / (linhasMarcadores - 1);
             if (tipo === "horta") {
               desenharCirculo(x, y, 24, indice % 2 ? "#c85f3b" : "#4f8539", "#365328");
               desenharCirculo(x + 18, y - 24, 10, "#548d3d");
