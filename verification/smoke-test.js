@@ -27,9 +27,9 @@ const auditedResources = [
   "Medicamentos — farmácia interna 80; venda 8; recuperam 2 de saúde cada.",
   "Minério — depósito 100; venda 2; produz ferramentas e armas.",
   "Pedra — depósito 120; venda 2; reserva para construções e muralhas de pedra.",
-  "Ferramentas — cofre interno 60; venda 8; equipam obras, ofícios e navios.",
-  "Ferramentas de madeira — oficina interna 40; equipam 4 trabalhadores cada; bônus de 4%.",
-  "Ferramentas de pedra — oficina interna 40; equipam 4 trabalhadores cada; bônus de 8%.",
+  "Ferramentas de metal — cofre interno 60; venda 8; equipam uma vaga cada com 130% de produtividade.",
+  "Ferramentas de madeira — oficina interna 40; equipam uma vaga cada com 100% de produtividade.",
+  "Ferramentas de pedra — oficina interna 40; equipam uma vaga cada com 115% de produtividade.",
   "Armas de metal — arsenal interno 40; venda 12; reserva de defesa.",
   "Lanças — arsenal interno 60; venda 8; armamento da milícia.",
   "Arcos — arsenal interno 40; venda 12; armamento de arqueiros.",
@@ -176,7 +176,11 @@ function createHarness(storage) {
   };
 
   vm.runInNewContext(
-    `${source}\nglobalThis.__testeJogo = { estado, atualizarInterface, atualizarFazendeiro, atualizarFruticultor, atualizarPescador, atualizarComerciante, atualizarFerreiro, atualizarMineiro, atualizarBanqueiro, atualizarEscriturario, atualizarTransferenciaPosto, atualizarOrcamentoMunicipalColonia, atualizarPrioridadesColonia, atualizarNecessidadesColonia, atualizarDefesaColonia, atualizarConstrucaoColonia, atualizarMigracaoColonia, atualizarEnvelhecimentoEObitosColonia, redistribuirTrabalhadoresColonia, migracaoNecessariaColonia, migracaoIncentivadaPermitidaColonia, motivoBloqueioIncentivoMigracaoColonia, folhaCivilColonia, limiteFolhaCivilColonia, manutencaoMunicipalColonia, despesasEssenciaisMunicipaisColonia, saldoOperacionalMunicipalColonia, reservaMunicipalDinamicaColonia, folhaSoldosColonia, limiteSoldosColonia, segurancaCivilColonia, forcaMilitarColonia, posicaoColonoNovaColonia, posicaoCasaColonia, quantidadeColonosExpansao, totalMoradoresColonia, quantidadeBebesColonia, quantidadeCriancasColonia, chanceNascimentoColonia, idadeMediaAdultosColonia, duracaoBebeColonia, duracaoInfanciaColonia, barcoComercialAtracado, proximaObraAutomaticaColonia, custoObraAutomaticaColonia, casasNecessariasColonia, reservaPlanejadaMoradiaColonia, maximoCasasDisponiveisColonia, capacidadeMoradiasColonia, vagasMigracaoColonia, vagasFisicasMigracaoColonia, necessidadeAlimentosColonia, producaoAlimentarPorCiclo, valorAlimentarTotalColonia, consumirAlimentosColonia, capacidadesEmpregoColonia, totalCapacidadeEmpregosColonia, totalEmpregosOcupadosColonia, tipoArmaduraPrioritariaColonia, tipoArmaduraProduzivelColonia, escolherArmaduraDefesaColonia, totalArmadurasEstoqueColonia, proximoTrechoEstradaColonia, quantidadeTrechosEstradaNoNivelColonia, multiplicadorProducaoEstradasColonia, multiplicadorMovimentoEstradasColonia, multiplicadorConstrucaoEstradasColonia, multiplicadorConstrucaoColonia, catalogoArmazenamentoAlimentosColonia, capacidadeArmazemInternoColonia, trabalhadoresComFerramentasColonia, bonusFerramentasColonia, bonusLogisticaColonia, bonusEducacaoColonia, nivelFerramentasAtivoColonia, protecaoIncendioColonia, satisfacaoFeColonia, festivalAtivoColonia, materiaisObraColonia, trechosEstradaColonia, caminhosTrechoEstradaColonia, arestasRedeViariaColonia, rotaMaisRapidaColonia, destinoEmpregoColonia, acessoCasaColonia, areasMoradia: { recintoExterno, recintoInterno, areaMoradias, areaSegundoBlocoMoradias, areaTerceiroBlocoMoradias }, areasHotfixCozinhas: { recintoExterno, recintoInterno, areaCozinhaCarneColonia, areaCozinhaHortalicasColonia, areaCozinhaFeijaoColonia, areaCofreCortesColonia, areaDespensaRefeicoesColonia, areaAdegaFriaColonia, areaDefumadorioColonia, areaCemiterioColonia, areaPatioTreinoColonia }, defesasAuditadas: { recintoExterno, recintoInterno, portoesMuralhaColonia, cantosTorresMuralhaColonia, areasPostosGuardaColonia, totalTorresMuralhaColonia, totalPortoesFortificadosColonia, meiaAberturaPortaoColonia }, infraestruturaHidricaAuditada: { recintoExterno, recintoInterno, areaCisternaColonia, posicoesPocosPublicosColonia, raioPocoPublicoColonia, redeHidricaBasicaColonia, redeHidricaAvancadaColonia, portoesMuralhaColonia, areasPostosGuardaColonia, areasEdificadas: [areaAdministracao, areaCeleiro, areaAcougueColonia, areaCofreCortesColonia, areaCozinhaCarneColonia, areaDespensaRefeicoesColonia, areaDepositoMadeira, areaErvario, areaOficinaArmasMadeira, areaArsenalMadeira, areaFlecharia, areaDepositoFlechas, areaClinicaColonia, areaFarmaciaColonia, areaBancoColonia, areaEscolaColonia, areaArmazemGraos, areaArmazemHortalicas, areaArmazemFeijao, areaMoinhoColonia, areaArmazemFarinha, areaPadariaColonia, areaArmazemPaes, areaMinaColonia, areaDepositoMinerio, areaPedreiraColonia, areaDepositoPedra, areaCaisPescaColonia, areaSegundoCaisPescaColonia, areaMercadoPeixesColonia, areaCaisComercialColonia, areaArmazemComercial, areaFeitoriaColonia, areaEstaleiroColonia, areaFerrariaColonia, areaArmazemFerramentas, areaForjaColonia, areaArsenalColonia, areaPatioTreinoColonia, areaQuartelMilitarColonia, areaCozinhaHortalicasColonia, areaCozinhaFeijaoColonia, areaBibliotecaColonia, areaIgrejaColonia, areaDefumadorioColonia, areaAdegaFriaColonia, areaTransportadoresColonia, areaConstrutoresColonia, areaOficinaFerramentasColonia, areaBombeirosColonia, areaMercadoPublicoColonia, areaArmeiroColonia, areaCemiterioColonia, ...areasCabanasLenhadores, areaCabanaReflorestamento, ...areasCabanasColeta, areaCabanaCacadores, ...areasPostosGuardaColonia, ...casasAgricultores.map(({ x, y }) => ({ x, y, largura: 150, altura: 105 })), { x: 9600, y: 3400, largura: 180, altura: 125 }, { x: 9600, y: 5250, largura: 180, altura: 125 }] }, definirTempoRio(valor) { tempoRio = valor; } };`,
+    `${source}\nglobalThis.__testeJogo = { estado, atualizarInterface, atualizarFazendeiro, atualizarFruticultor, atualizarPescador, atualizarComerciante, atualizarFerreiro, atualizarMineiro, atualizarBanqueiro, atualizarEscriturario, atualizarTransferenciaPosto, atualizarOrcamentoMunicipalColonia, atualizarPrioridadesColonia, atualizarNecessidadesColonia, atualizarDefesaColonia, atualizarConstrucaoColonia, atualizarMigracaoColonia, atualizarEnvelhecimentoEObitosColonia, redistribuirTrabalhadoresColonia, migracaoNecessariaColonia, migracaoIncentivadaPermitidaColonia, motivoBloqueioIncentivoMigracaoColonia, folhaCivilColonia, limiteFolhaCivilColonia, manutencaoMunicipalColonia, despesasEssenciaisMunicipaisColonia, saldoOperacionalMunicipalColonia, reservaMunicipalDinamicaColonia, folhaSoldosColonia, limiteSoldosColonia, segurancaCivilColonia, forcaMilitarColonia, posicaoColonoNovaColonia, posicaoCasaColonia, quantidadeColonosExpansao, totalMoradoresColonia, quantidadeBebesColonia, quantidadeCriancasColonia, chanceNascimentoColonia, idadeMediaAdultosColonia, duracaoBebeColonia, duracaoInfanciaColonia, barcoComercialAtracado, proximaObraAutomaticaColonia, prioridadeAtualColonia, custoObraAutomaticaColonia, alvoConstrutoresObraColonia, casasNecessariasColonia, reservaPlanejadaMoradiaColonia, maximoCasasDisponiveisColonia, capacidadeMoradiasColonia, vagasMigracaoColonia, vagasFisicasMigracaoColonia, necessidadeAlimentosColonia, producaoAlimentarPorCiclo, valorAlimentarTotalColonia, consumirAlimentosColonia, pressaoSaudePrevistaColonia, reservaMedicamentosAlvoColonia, alvoProfissionaisClinicaColonia, alvoColetoresSaudeColonia, capacidadesEmpregoColonia, totalCapacidadeEmpregosColonia, totalEmpregosOcupadosColonia, tipoArmaduraPrioritariaColonia, tipoArmaduraProduzivelColonia, escolherArmaduraDefesaColonia, totalArmadurasEstoqueColonia, proximoTrechoEstradaColonia, quantidadeTrechosEstradaNoNivelColonia, multiplicadorProducaoEstradasColonia, multiplicadorMovimentoEstradasColonia, multiplicadorConstrucaoEstradasColonia, multiplicadorConstrucaoColonia, catalogoArmazenamentoAlimentosColonia, capacidadeArmazemInternoColonia, sincronizarFerramentasLocaisColonia, multiplicadorFerramentasLocalColonia, trabalhadoresComFerramentasColonia, bonusFerramentasColonia, bonusLogisticaColonia, capacidadeCargaTransportadoresColonia, cargaLocalPendenteColonia, transportarCargasColonia, bonusEducacaoColonia, nivelFerramentasAtivoColonia, protecaoIncendioColonia, satisfacaoFeColonia, festivalAtivoColonia, materiaisObraColonia, trechosEstradaColonia, caminhosTrechoEstradaColonia, arestasRedeViariaColonia, rotaMaisRapidaColonia, destinoEmpregoColonia, acessoCasaColonia, areasMoradia: { recintoExterno, recintoInterno, areaMoradias, areaSegundoBlocoMoradias, areaTerceiroBlocoMoradias }, areasHotfixCozinhas: { recintoExterno, recintoInterno, areaCozinhaCarneColonia, areaCozinhaHortalicasColonia, areaCozinhaFeijaoColonia, areaCofreCortesColonia, areaDespensaRefeicoesColonia, areaAdegaFriaColonia, areaDefumadorioColonia, areaCemiterioColonia, areaPatioTreinoColonia }, defesasAuditadas: { recintoExterno, recintoInterno, portoesMuralhaColonia, cantosTorresMuralhaColonia, areasPostosGuardaColonia, totalTorresMuralhaColonia, totalPortoesFortificadosColonia, meiaAberturaPortaoColonia }, infraestruturaHidricaAuditada: { recintoExterno, recintoInterno, areaCisternaColonia, posicoesPocosPublicosColonia, raioPocoPublicoColonia, redeHidricaBasicaColonia, redeHidricaAvancadaColonia, portoesMuralhaColonia, areasPostosGuardaColonia, areasEdificadas: [areaAdministracao, areaCeleiro, areaAcougueColonia, areaCofreCortesColonia, areaCozinhaCarneColonia, areaDespensaRefeicoesColonia, areaDepositoMadeira, areaErvario, areaOficinaArmasMadeira, areaArsenalMadeira, areaFlecharia, areaDepositoFlechas, areaClinicaColonia, areaFarmaciaColonia, areaBancoColonia, areaEscolaColonia, areaArmazemGraos, areaArmazemHortalicas, areaArmazemFeijao, areaMoinhoColonia, areaArmazemFarinha, areaPadariaColonia, areaArmazemPaes, areaMinaColonia, areaDepositoMinerio, areaPedreiraColonia, areaDepositoPedra, areaCaisPescaColonia, areaSegundoCaisPescaColonia, areaMercadoPeixesColonia, areaCaisComercialColonia, areaArmazemComercial, areaFeitoriaColonia, areaEstaleiroColonia, areaFerrariaColonia, areaArmazemFerramentas, areaForjaColonia, areaArsenalColonia, areaPatioTreinoColonia, areaQuartelMilitarColonia, areaCozinhaHortalicasColonia, areaCozinhaFeijaoColonia, areaBibliotecaColonia, areaIgrejaColonia, areaDefumadorioColonia, areaAdegaFriaColonia, areaTransportadoresColonia, areaConstrutoresColonia, areaOficinaFerramentasColonia, areaBombeirosColonia, areaMercadoPublicoColonia, areaArmeiroColonia, areaCemiterioColonia, ...areasCabanasLenhadores, areaCabanaReflorestamento, ...areasCabanasColeta, areaCabanaCacadores, ...areasPostosGuardaColonia, ...casasAgricultores.map(({ x, y }) => ({ x, y, largura: 150, altura: 105 })), { x: 9600, y: 3400, largura: 180, altura: 125 }, { x: 9600, y: 5250, largura: 180, altura: 125 }] }, definirTempoRio(valor) { tempoRio = valor; } };`,
+    context,
+  );
+  vm.runInNewContext(
+    "globalThis.__testeJogo.empregoDoColono = empregoDoColono;",
     context,
   );
   return {
@@ -316,14 +320,35 @@ function createHarness(storage) {
     redistribuirTrabalhadores() {
       return context.__testeJogo.redistribuirTrabalhadoresColonia();
     },
+    empregoDoColono(indice) {
+      return context.__testeJogo.empregoDoColono(indice);
+    },
     migracaoNecessaria() {
       return context.__testeJogo.migracaoNecessariaColonia();
     },
     proximaObra() {
       return context.__testeJogo.proximaObraAutomaticaColonia();
     },
+    prioridadeAtual() {
+      return context.__testeJogo.prioridadeAtualColonia();
+    },
+    pressaoSaude() {
+      return context.__testeJogo.pressaoSaudePrevistaColonia();
+    },
+    reservaMedicamentos() {
+      return context.__testeJogo.reservaMedicamentosAlvoColonia();
+    },
+    alvoClinica() {
+      return context.__testeJogo.alvoProfissionaisClinicaColonia();
+    },
+    alvoColetores() {
+      return context.__testeJogo.alvoColetoresSaudeColonia();
+    },
     custoObra(tipo) {
       return context.__testeJogo.custoObraAutomaticaColonia(tipo);
+    },
+    alvoConstrutores(tipo) {
+      return context.__testeJogo.alvoConstrutoresObraColonia(tipo);
     },
     casasNecessarias() {
       return context.__testeJogo.casasNecessariasColonia();
@@ -373,11 +398,31 @@ function createHarness(storage) {
     trabalhadoresComFerramentas(empregos) {
       return context.__testeJogo.trabalhadoresComFerramentasColonia(empregos);
     },
+    sincronizarFerramentas(empregos) {
+      return context.__testeJogo.sincronizarFerramentasLocaisColonia(empregos);
+    },
+    multiplicadorFerramentasLocal(chave, empregos) {
+      return context.__testeJogo.multiplicadorFerramentasLocalColonia(
+        chave,
+        empregos,
+      );
+    },
     bonusFerramentas(empregos) {
       return context.__testeJogo.bonusFerramentasColonia(empregos);
     },
     bonusLogistica(empregos) {
       return context.__testeJogo.bonusLogisticaColonia(empregos);
+    },
+    capacidadeCargaTransportadores(empregos) {
+      return context.__testeJogo.capacidadeCargaTransportadoresColonia(
+        empregos,
+      );
+    },
+    cargaLocalPendente() {
+      return context.__testeJogo.cargaLocalPendenteColonia();
+    },
+    transportarCargas(empregos) {
+      return context.__testeJogo.transportarCargasColonia(empregos);
     },
     bonusEducacao(empregos) {
       return context.__testeJogo.bonusEducacaoColonia(empregos);
@@ -470,6 +515,20 @@ function createHarness(storage) {
       randomValue = value;
     },
   };
+}
+
+function concluirObraAtiva(game, primeiroPasso = 20) {
+  game.atualizarPrioridades(primeiroPasso);
+  let passos = 1;
+  while (game.estado.obraAutomaticaColonia !== null && passos < 20) {
+    game.atualizarPrioridades(20);
+    passos += 1;
+  }
+  if (game.estado.obraAutomaticaColonia !== null) {
+    throw new Error(
+      `A equipe exclusiva não concluiu ${game.estado.obraAutomaticaColonia}.`,
+    );
+  }
 }
 
 const storage = new Map();
@@ -1400,15 +1459,36 @@ if (expansionPurchaseGame.estado.etapaConstrucaoColonia !== 4) {
   throw new Error("Os colonos não concluíram as moradias automaticamente.");
 }
 
+expansionPurchaseGame.atualizarPrioridades(0);
+if (
+  expansionPurchaseGame.estado.obraAutomaticaColonia !==
+    "guildaConstrutores" ||
+  expansionPurchaseGame.estado.tesouroColonia !== 1020
+) {
+  throw new Error("A guilda dos construtores não foi a primeira obra madura.");
+}
+expansionPurchaseGame.atualizarPrioridades(27);
+if (
+  !expansionPurchaseGame.estado.guildaConstrutoresConstruida ||
+  expansionPurchaseGame.estado.estoqueFerramentasMadeira !== 40
+) {
+  throw new Error("A guilda não concluiu nem entregou o kit inicial de ferramentas.");
+}
+
 const immediateFoodConstruction = [
-  ["pastagem", "pastagemConstruida", 1520],
-  ["celeiro", "celeiroConstruido", 1220],
-  ["horta", "hortaConstruida", 870],
-  ["armazemHortalicas", "armazemHortalicasConstruido", 670],
-  ["feijao", "feijaoConstruido", 320],
-  ["armazemFeijao", "armazemFeijaoConstruido", 120],
+  ["pastagem", "pastagemConstruida"],
+  ["celeiro", "celeiroConstruido"],
+  ["horta", "hortaConstruida"],
+  ["armazemHortalicas", "armazemHortalicasConstruido"],
+  ["feijao", "feijaoConstruido"],
+  ["armazemFeijao", "armazemFeijaoConstruido"],
 ];
-for (const [obra, propriedade, saldo] of immediateFoodConstruction) {
+for (const [obra, propriedade] of immediateFoodConstruction) {
+  const custo = expansionPurchaseGame.custoObra(obra);
+  while (expansionPurchaseGame.estado.tesouroColonia < custo) {
+    expansionPurchaseGame.receberParcelaPosto(60);
+  }
+  const saldo = expansionPurchaseGame.estado.tesouroColonia - custo;
   expansionPurchaseGame.atualizarPrioridades(0);
   if (
     expansionPurchaseGame.estado.obraAutomaticaColonia !== obra ||
@@ -1417,7 +1497,7 @@ for (const [obra, propriedade, saldo] of immediateFoodConstruction) {
   ) {
     throw new Error(`A prioridade alimentar ${obra} foi instantânea ou não reservou o custo correto.`);
   }
-  expansionPurchaseGame.atualizarPrioridades(20);
+  concluirObraAtiva(expansionPurchaseGame);
   if (!expansionPurchaseGame.estado[propriedade]) {
     throw new Error(`A prioridade alimentar ${obra} não foi concluída.`);
   }
@@ -1429,8 +1509,8 @@ if (
   expansionPurchaseGame.estado.estoqueHortalicas !== 8 ||
   expansionPurchaseGame.estado.estoqueFeijao !== 3 ||
   expansionPurchaseGame.estado.colonosComFome !== 0 ||
-  expansionPurchaseGame.estado.ouro !== 2532.4 ||
-  expansionPurchaseGame.estado.tesouroColonia !== 141.6
+  expansionPurchaseGame.estado.ouro !== 2652.4 ||
+  expansionPurchaseGame.estado.tesouroColonia !== 221.6
 ) {
   throw new Error("O primeiro ciclo de produção e consumo de alimentos falhou.");
 }
@@ -1439,10 +1519,10 @@ if (
   expansionPurchaseGame.estado.estoqueAlimentos !== 64 ||
   expansionPurchaseGame.estado.estoqueHortalicas !== 16 ||
   expansionPurchaseGame.estado.estoqueFeijao !== 6 ||
-  expansionPurchaseGame.estado.ouro !== 2532.4 ||
-  expansionPurchaseGame.estado.tesouroColonia !== 141.6 ||
+  expansionPurchaseGame.estado.ouro !== 2652.4 ||
+  expansionPurchaseGame.estado.tesouroColonia !== 221.6 ||
   expansionPurchaseGame.elements.get("patrimonio-pessoal").textContent !==
-    "2532,40 ouro"
+    "2652,40 ouro"
 ) {
   throw new Error("A produção separada de provisões, hortaliças e feijão falhou.");
 }
@@ -1645,6 +1725,10 @@ if (
   expansionSave.expansao.economia.estoqueAlimentos !== 64 ||
   expansionSave.expansao.economia.estoques.hortalicas !== 16 ||
   expansionSave.expansao.economia.estoques.feijao !== 6 ||
+  expansionSave.expansao.economia.estoques.ferramentasMadeira !== 40 ||
+  !expansionSave.expansao.economia.logistica
+    .kitFerramentasInicialRecebido ||
+  !expansionSave.expansao.economia.logistica.ferramentasPorLocal ||
   cameraRestoredGame.elements.get("moradia-status").textContent !==
     "20 / 20 · 4 casas" ||
   cameraRestoredGame.elements.get("prioridade-colonia-status").textContent !==
@@ -1663,7 +1747,7 @@ if (
 
 cameraRestoredGame.listeners.get("contratar-administrador-migracao:click")();
 if (
-  cameraRestoredGame.estado.ouro !== 2432.4 ||
+  cameraRestoredGame.estado.ouro !== 2552.4 ||
   cameraRestoredGame.estado.populacaoColonia !== 21 ||
   cameraRestoredGame.estado.quantidadeAdministradoresMigracao !== 1 ||
   cameraRestoredGame.estado.cargasMigracaoDisponiveis !== 1 ||
@@ -1677,11 +1761,11 @@ cameraRestoredGame.receberParcelaPosto(60);
 cameraRestoredGame.atualizarPrioridades(0);
 if (
   cameraRestoredGame.estado.obraAutomaticaColonia !== "moradia" ||
-  cameraRestoredGame.estado.tesouroColonia !== 161.6
+  cameraRestoredGame.estado.tesouroColonia !== 241.6
 ) {
   throw new Error("A cidade não priorizou uma única casa para o novo morador.");
 }
-cameraRestoredGame.atualizarPrioridades(20);
+concluirObraAtiva(cameraRestoredGame);
 if (
   cameraRestoredGame.estado.quantidadeCasasColonia !== 5 ||
   cameraRestoredGame.elements.get("moradia-status").textContent !==
@@ -1696,18 +1780,18 @@ for (let casaReserva = 0; casaReserva < 2; casaReserva += 1) {
   if (cameraRestoredGame.estado.obraAutomaticaColonia !== "moradia") {
     throw new Error("A reserva habitacional não foi construída antes da migração.");
   }
-  cameraRestoredGame.atualizarPrioridades(20);
+  concluirObraAtiva(cameraRestoredGame);
 }
 if (
   cameraRestoredGame.estado.quantidadeCasasColonia !== 7 ||
-  cameraRestoredGame.estado.tesouroColonia !== 201.6
+  cameraRestoredGame.estado.tesouroColonia !== 281.6
 ) {
   throw new Error("A cidade não manteve dez vagas habitacionais planejadas.");
 }
 
 cameraRestoredGame.listeners.get("incentivar-migracao:click")();
 if (
-  cameraRestoredGame.estado.ouro !== 2431.4 ||
+  cameraRestoredGame.estado.ouro !== 2551.4 ||
   cameraRestoredGame.estado.cargasMigracaoDisponiveis !== 0 ||
   cameraRestoredGame.estado.migracoesPendentes.length !== 1
 ) {
@@ -1992,7 +2076,17 @@ while (!infrastructureGame.estado.depositoFlechasConstruido) {
       infrastructureGame.trechosEstradaColonia[indiceTrecho].nome,
     );
   }
-  infrastructureGame.atualizarPrioridades(20);
+  infrastructureGame.atualizarPrioridades(
+    obraEsperada === "guildaConstrutores" ? 27 : 20,
+  );
+  let ciclosConclusaoObra = 1;
+  while (
+    infrastructureGame.estado.obraAutomaticaColonia !== null &&
+    ciclosConclusaoObra < 10
+  ) {
+    infrastructureGame.atualizarPrioridades(20);
+    ciclosConclusaoObra += 1;
+  }
   if (infrastructureGame.estado.obraAutomaticaColonia !== null) {
     throw new Error(`A obra automática ${obraEsperada} não foi concluída.`);
   }
@@ -2055,7 +2149,7 @@ for (let indice = 0; indice < 16; indice += 1) {
   ) {
     throw new Error("Um reforço viário não reservou ouro e materiais separadamente.");
   }
-  infrastructureGame.atualizarPrioridades(20);
+  concluirObraAtiva(infrastructureGame);
   if (infrastructureGame.estado.niveisEstradasColonia[trecho] !== nivelAlvo) {
     throw new Error("Um reforço viário não avançou exatamente um nível.");
   }
@@ -2093,7 +2187,7 @@ for (const [obra, propriedade, quantidade] of expectedPalisades) {
   ) {
     throw new Error(`O trecho de defesa ${obra} não reservou o custo separadamente.`);
   }
-  infrastructureGame.atualizarPrioridades(20);
+  concluirObraAtiva(infrastructureGame);
   if (infrastructureGame.estado[propriedade] !== quantidade) {
     throw new Error(`O trecho de defesa ${obra} não foi concluído isoladamente.`);
   }
@@ -2211,7 +2305,7 @@ if (
 resourceGame.atualizarNecessidades(60);
 if (
   resourceGame.estado.estoqueAlimentos !== 80 ||
-  resourceGame.estado.estoquePeixes !== 140 ||
+  resourceGame.estado.estoquePeixes !== 141.5 ||
   resourceGame.estado.estoqueGraos !== 150 ||
   resourceGame.estado.estoqueHortalicas !== 100 ||
   resourceGame.estado.estoqueFeijao !== 100 ||
@@ -2222,8 +2316,8 @@ if (
   resourceGame.estado.estoqueFerramentas !== 60 ||
   resourceGame.estado.estoqueArmas !== 40 ||
   resourceGame.estado.estoqueMercadorias !== 100 ||
-  resourceGame.estado.ouro !== 1031.2 ||
-  resourceGame.estado.tesouroColonia !== 1280.8
+  resourceGame.estado.ouro !== 1037.56 ||
+  resourceGame.estado.tesouroColonia !== 1338.04
 ) {
   throw new Error("Os limites de armazenamento ou a venda 90%/10% do excedente falharam.");
 }
@@ -2239,7 +2333,7 @@ if (
   resourceGame.elements.get("trabalho-padaria").textContent !==
     "2 / 5 · 3 farinhas → 2 pães" ||
   resourceGame.elements.get("trabalho-pesca").textContent !==
-    "1 / 10 · +5 peixes / 60 s" ||
+    "1 / 10 · +6.5 peixes / 60 s" ||
   resourceGame.elements.get("trabalho-comercio").textContent !==
     "10 / 10 · +20 mercadorias / 60 s" ||
   resourceGame.elements.get("estoque-graos").textContent !== "150 / 150" ||
@@ -2247,7 +2341,7 @@ if (
   resourceGame.elements.get("estoque-feijao").textContent !== "100 / 100" ||
   resourceGame.elements.get("estoque-farinha").textContent !== "120 / 120" ||
   resourceGame.elements.get("estoque-paes").textContent !== "100 / 100" ||
-  resourceGame.elements.get("estoque-peixes").textContent !== "140 / 160" ||
+  resourceGame.elements.get("estoque-peixes").textContent !== "141,5 / 160" ||
   resourceGame.elements.get("estoque-minerio").textContent !== "100 / 100" ||
   resourceGame.elements.get("estoque-pedra").textContent !== "120 / 120" ||
   resourceGame.elements.get("trabalho-pedreira").textContent !==
@@ -2260,7 +2354,7 @@ if (
   resourceGame.elements.get("registro-auditoria-metal").textContent !==
     "5/5 · +25 minério → demanda 25" ||
   resourceGame.elements.get("registro-auditoria-costa").textContent !==
-    "1/10 · +5 peixes; 10/10 · +20 mercadorias"
+    "1/10 · +6.5 peixes; 10/10 · +20 mercadorias"
 ) {
   throw new Error("O painel colonial não exibiu empregos, produção e capacidades com clareza.");
 }
@@ -2301,6 +2395,7 @@ Object.assign(fullChainGame.estado, {
   quantidadeCabanasColeta: 2,
   ervarioConstruido: true,
   clinicaConstruida: true,
+  companhiaTransportadoresConstruida: true,
   oficinaArmasMadeiraConstruida: true,
   arsenalMadeiraConstruido: true,
   flechariaConstruida: true,
@@ -2320,14 +2415,17 @@ if (
   fullChainJobs.feijao !== 6 ||
   fullChainJobs.pastagem !== 10 ||
   fullChainJobs.pesca !== 10 ||
-  fullChainJobs.lenhador !== 6 ||
+  fullChainJobs.lenhador !== 5 ||
   fullChainJobs.reflorestador !== 2 ||
   fullChainJobs.coletor !== 6 ||
-  fullChainJobs.clinica !== 5 ||
+  fullChainJobs.clinica !== 8 ||
   fullChainJobs.mina !== 5 ||
-  fullChainJobs.ferraria !== 5 ||
-  fullChainJobs.forja !== 5 ||
-  fullChainJobs.comercio !== 10
+  fullChainJobs.ferraria !== 4 ||
+  fullChainJobs.forja !== 4 ||
+  fullChainJobs.armeiroMadeira !== 4 ||
+  fullChainJobs.flecheiro !== 4 ||
+  fullChainJobs.transportador !== 7 ||
+  fullChainJobs.comercio !== 5
 ) {
   throw new Error(
     `As cadeias completas não preencheram vagas coerentes em capacidade máxima: ${JSON.stringify(fullChainJobs)}.`,
@@ -2342,11 +2440,13 @@ if (
   fullChainGame.elements.get("registro-auditoria-metal").textContent !==
     "5/5 · +25 minério → demanda 25" ||
   fullChainGame.elements.get("registro-auditoria-saude").textContent !==
-    "6/6 · +18 ervas → 5/5 · demanda 10" ||
+    "6/6 · +18 ervas → 5/8 · demanda 10 · pressão 10 · reserva 25" ||
   fullChainGame.elements.get("registro-auditoria-costa").textContent !==
-    "10/10 · +40 peixes; 10/10 · +20 mercadorias"
+    "10/10 · +35.2 peixes; 6/10 · +12 mercadorias"
 ) {
-  throw new Error("O livro de auditoria não reconciliou as capacidades máximas das cadeias.");
+  throw new Error(
+    `O livro de auditoria não reconciliou as capacidades máximas das cadeias: ${JSON.stringify({ pao: fullChainGame.elements.get("registro-auditoria-pao").textContent, floresta: fullChainGame.elements.get("registro-auditoria-floresta").textContent, metal: fullChainGame.elements.get("registro-auditoria-metal").textContent, saude: fullChainGame.elements.get("registro-auditoria-saude").textContent, costa: fullChainGame.elements.get("registro-auditoria-costa").textContent })}.`,
+  );
 }
 if (
   5 * 6 < 5 * 4 ||
@@ -2409,6 +2509,13 @@ if (initialCoastJobs.pesca !== 4 || initialCoastJobs.estaleiro !== 5) {
 }
 coastGame.atualizarNecessidades(60);
 if (
+  coastGame.estado.barcosPesca !== 0 ||
+  coastGame.estado.progressoNavio !== 3
+) {
+  throw new Error("O estaleiro sem ferramentas próprias não aplicou a produtividade reduzida.");
+}
+coastGame.atualizarNecessidades(60);
+if (
   coastGame.estado.barcosPesca !== 1 ||
   coastGame.estado.naviosMercantes !== 0 ||
   coastGame.estado.progressoNavio !== 0 ||
@@ -2452,6 +2559,14 @@ if (
 ) {
   throw new Error("A feitoria não ampliou os mercadores ou o estaleiro perdeu seus construtores.");
 }
+coastGame.atualizarNecessidades(60);
+if (
+  coastGame.estado.naviosMercantes !== 0 ||
+  coastGame.estado.progressoNavio !== 3
+) {
+  throw new Error("O estaleiro mercante não respeitou suas ferramentas locais.");
+}
+coastGame.estado.estoqueMercadorias = 0;
 coastGame.atualizarNecessidades(60);
 if (
   coastGame.estado.naviosMercantes !== 1 ||
@@ -2595,31 +2710,189 @@ if (
 forestryGame.atualizarNecessidades(60);
 if (
   forestryGame.estado.estoqueArvores !== 120 ||
-  forestryGame.estado.estoqueMadeira !== 24 ||
-  forestryGame.estado.estoqueErvas !== 18 ||
-  forestryGame.estado.estoqueLancasMadeira !== 2 ||
-  forestryGame.estado.estoqueArcos !== 3 ||
-  forestryGame.estado.estoqueFlechas !== 60
+  forestryGame.estado.estoqueMadeira !== 0 ||
+  forestryGame.estado.estoqueErvas !== 0 ||
+  forestryGame.estado.estoqueLocalMadeira !== 36 ||
+  forestryGame.estado.estoqueLocalErvas !== 10.8 ||
+  forestryGame.estado.estoqueLancasMadeira !== 0 ||
+  forestryGame.estado.estoqueArcos !== 0 ||
+  forestryGame.estado.estoqueFlechas !== 0
 ) {
-  throw new Error("A extração, o reflorestamento ou a fabricação de armas e munição falhou.");
+  throw new Error("Lenhadores e coletores não mantiveram a produção nos estoques locais.");
+}
+const forestrySaved = JSON.parse(
+  forestryStorage.get("arqueiro-do-assentamento-v1"),
+);
+if (
+  forestrySaved.expansao.economia.logistica.estoquesLocais.madeira !== 36 ||
+  forestrySaved.expansao.economia.logistica.estoquesLocais.ervas !== 10.8
+) {
+  throw new Error("Os estoques locais dos produtores não foram preservados no save.");
 }
 forestryGame.listeners.get("abrir-registros:click")();
 if (
   !forestryGame.elements.get("registros-colonia").open ||
-  forestryGame.elements.get("registro-madeira").textContent !== "24 / 180" ||
-  forestryGame.elements.get("registro-ervas").textContent !== "18 / 100" ||
-  forestryGame.elements.get("registro-lancas").textContent !== "2 / 60" ||
-  forestryGame.elements.get("registro-arcos").textContent !== "3 / 40" ||
-  forestryGame.elements.get("registro-flechas").textContent !== "60 / 600" ||
-  forestryGame.elements.get("registro-aljavas").textContent !== "3" ||
+  forestryGame.elements.get("registro-madeira").textContent !== "0 / 180" ||
+  forestryGame.elements.get("registro-ervas").textContent !== "0 / 100" ||
+  forestryGame.elements.get("registro-lancas").textContent !== "0 / 60" ||
+  forestryGame.elements.get("registro-arcos").textContent !== "0 / 40" ||
+  forestryGame.elements.get("registro-flechas").textContent !== "0 / 600" ||
+  forestryGame.elements.get("registro-aljavas").textContent !== "0" ||
   forestryGame.elements.get("registro-arqueiros-prontos").textContent !==
-    "3 de 3 arcos"
+    "0 de 0 arcos"
 ) {
-  throw new Error("O livro de registros não reconciliou estoques, aljavas e arqueiros abastecidos.");
+  throw new Error("O livro de registros misturou estoques locais com depósitos centrais.");
 }
 forestryGame.listeners.get("fechar-registros:click")();
 if (forestryGame.elements.get("registros-colonia").open) {
   throw new Error("O livro de registros não fechou.");
+}
+
+const transportGame = createHarness(new Map());
+Object.assign(transportGame.estado, {
+  coloniaIniciada: true,
+  etapaConstrucaoColonia: 4,
+  companhiaTransportadoresConstruida: true,
+  niveisEstradasColonia: Array(8).fill(3),
+  saudeColonia: 70,
+  estoqueLocalMadeira: 12,
+  estoqueLocalErvas: 12,
+  estoqueLocalCarneSelvagem: 12,
+  estoqueLocalCarneCriacao: 12,
+  estoqueMadeira: 0,
+  estoqueErvas: 0,
+  estoqueCarneSelvagem: 0,
+  estoqueCarneCriacao: 0,
+});
+const mixedCargo = transportGame.transportarCargas({
+  transportador: 2,
+  clinica: 4,
+});
+if (
+  transportGame.capacidadeCargaTransportadores({ transportador: 2 }) <= 24 ||
+  mixedCargo.total <= 24 ||
+  mixedCargo.total > transportGame.capacidadeCargaTransportadores({ transportador: 2 }) ||
+  mixedCargo.madeira <= 0 ||
+  mixedCargo.ervas < 8 ||
+  mixedCargo.carneSelvagem <= 0 ||
+  mixedCargo.carneCriacao <= 0 ||
+  transportGame.estado.estoqueErvas < 8 ||
+  transportGame.cargaLocalPendente() >= 48
+) {
+  throw new Error("As carroças não priorizaram ervas nem combinaram madeira e carnes na mesma viagem.");
+}
+
+const toolSiteGame = createHarness(new Map());
+Object.assign(toolSiteGame.estado, {
+  coloniaIniciada: true,
+  mapaExpansaoComprado: true,
+  mapaAtual: "expansao",
+  etapaConstrucaoColonia: 4,
+  populacaoColonia: 100,
+  quantidadeCasasColonia: 25,
+  guildaConstrutoresConstruida: true,
+  clinicaConstruida: true,
+  hortaConstruida: true,
+  armazemHortalicasConstruido: true,
+  obraAutomaticaColonia: "armazensInternosPedra",
+  estoqueFerramentas: 3,
+  estoqueFerramentasPedra: 4,
+  estoqueFerramentasMadeira: 5,
+});
+const toolSiteJobs = { clinica: 2, construtor: 6, horta: 4 };
+let toolSites = toolSiteGame.sincronizarFerramentas(toolSiteJobs);
+if (
+  toolSites.clinica.capacidade !== 8 ||
+  toolSites.construtor.capacidade !== 12 ||
+  toolSites.horta.capacidade !== 6 ||
+  toolSites.clinica.metal !== 2 ||
+  toolSites.construtor.metal !== 1 ||
+  toolSites.construtor.pedra !== 4 ||
+  toolSites.construtor.madeira !== 1 ||
+  toolSites.horta.madeira !== 4 ||
+  toolSiteGame.trabalhadoresComFerramentas(toolSiteJobs) !== 12 ||
+  Math.abs(
+    toolSiteGame.multiplicadorFerramentasLocal(
+      "construtor",
+      toolSiteJobs,
+    ) - 1.15,
+  ) > 0.0001
+) {
+  throw new Error("Os racks locais não distribuíram uma ferramenta por trabalhador na ordem metal, pedra e madeira.");
+}
+toolSiteGame.estado.estoqueFerramentas = 8;
+toolSites = toolSiteGame.sincronizarFerramentas(toolSiteJobs);
+if (
+  toolSites.clinica.metal !== 2 ||
+  toolSites.construtor.metal !== 6 ||
+  toolSites.construtor.pedra !== 0 ||
+  toolSites.horta.pedra !== 4 ||
+  Math.abs(
+    toolSiteGame.multiplicadorFerramentasLocal(
+      "construtor",
+      toolSiteJobs,
+    ) - 1.3,
+  ) > 0.0001
+) {
+  throw new Error("Ferramentas de metal novas não deslocaram as qualidades menores para outros locais.");
+}
+toolSiteGame.estado.estoqueFerramentas = 0;
+toolSiteGame.estado.estoqueFerramentasPedra = 0;
+toolSiteGame.estado.estoqueFerramentasMadeira = 0;
+toolSiteGame.sincronizarFerramentas(toolSiteJobs);
+if (
+  toolSiteGame.multiplicadorFerramentasLocal("horta", toolSiteJobs) !== 0.6 ||
+  Math.abs(toolSiteGame.multiplicadorConstrucao(toolSiteJobs) - 0.9) >
+    0.0001 ||
+  toolSiteGame.alvoConstrutores("moradia") !== 4 ||
+  toolSiteGame.alvoConstrutores("armazensInternosPedra") !== 12 ||
+  toolSiteGame.destinoEmprego("geral") !== null
+) {
+  throw new Error("A penalidade sem ferramentas, o limite da equipe ou a exclusividade das obras falhou.");
+}
+toolSiteGame.estado.obraAutomaticaColonia = null;
+if (toolSiteGame.redistribuirTrabalhadores().construtor !== 0) {
+  throw new Error("A equipe da guilda não retornou à reserva geral sem uma obra ativa.");
+}
+const retentionGame = createHarness(new Map());
+const retainedJobs = {
+  ...retentionGame.estado.empregosColonia,
+  administracao: 2,
+  horta: 4,
+  transportador: 2,
+  ferramenteiro: 3,
+  bombeiro: 2,
+  bibliotecario: 2,
+  religioso: 2,
+  feirante: 3,
+  construtor: 0,
+  geral: 80,
+};
+retentionGame.estado.empregosColonia = retainedJobs;
+const assignmentsBeforeConstruction = Array.from(
+  { length: 100 },
+  (_, index) => retentionGame.empregoDoColono(index).tipo,
+);
+retentionGame.estado.empregosColonia = {
+  ...retainedJobs,
+  construtor: 6,
+  geral: 74,
+};
+const assignmentsDuringConstruction = Array.from(
+  { length: 100 },
+  (_, index) => retentionGame.empregoDoColono(index).tipo,
+);
+if (
+  assignmentsBeforeConstruction.some(
+    (job, index) =>
+      job !== "geral" && assignmentsDuringConstruction[index] !== job,
+  ) ||
+  assignmentsDuringConstruction.some(
+    (job, index) =>
+      job === "construtor" && assignmentsBeforeConstruction[index] !== "geral",
+  )
+) {
+  throw new Error("Uma obra ativa deslocou um especialista estabelecido em vez de usar a reserva geral.");
 }
 const forestrySave = JSON.parse(
   forestryStorage.get("arqueiro-do-assentamento-v1"),
@@ -2627,8 +2900,9 @@ const forestrySave = JSON.parse(
 if (
   forestrySave.expansao.economia.floresta.cabanasLenhadores !== 2 ||
   !forestrySave.expansao.economia.floresta.flecharia ||
-  forestrySave.expansao.economia.estoques.madeira !== 24 ||
-  forestrySave.expansao.economia.estoques.flechas !== 60
+  forestrySave.expansao.economia.estoques.madeira !== 0 ||
+  forestrySave.expansao.economia.estoques.flechas !== 0 ||
+  forestrySave.expansao.economia.logistica.estoquesLocais.madeira !== 36
 ) {
   throw new Error("Os edifícios e estoques florestais não foram salvos.");
 }
@@ -2646,7 +2920,7 @@ const forestryStructures = [
   [7000, 5480, 440, 280],
   [6500, 1650, 500, 300],
   [7050, 2920, 500, 280],
-  [7700, 1650, 500, 300],
+  [5700, 1650, 500, 300],
   [7650, 2920, 500, 280],
 ];
 if (
@@ -2688,6 +2962,10 @@ const healthStorage = new Map([
             cabanasColeta: 2,
             ervario: true,
           },
+          logistica: {
+            companhiaTransportadores: true,
+            guildaConstrutores: true,
+          },
           edificios: {
             clinica: true,
             banco: true,
@@ -2705,17 +2983,19 @@ const healthStorage = new Map([
 ]);
 const healthGame = createHarness(healthStorage);
 const healthJobs = healthGame.redistribuirTrabalhadores();
-if (healthJobs.clinica !== 1 || healthJobs.coletor !== 6) {
-  throw new Error("A clínica e as cabanas de coleta não receberam profissionais automaticamente.");
+if (healthJobs.clinica !== 2 || healthJobs.coletor !== 6) {
+  throw new Error(
+    `A clínica e as cabanas de coleta não receberam profissionais automaticamente: ${JSON.stringify(healthJobs)}.`,
+  );
 }
 healthGame.atualizarNecessidades(60);
 if (
   healthGame.estado.saudeColonia !== 100 ||
-  healthGame.estado.estoqueMedicamentos !== 0 ||
-  healthGame.estado.estoqueErvas !== 26 ||
+  healthGame.estado.estoqueMedicamentos !== 1 ||
+  healthGame.estado.estoqueErvas !== 24 ||
   healthGame.elements.get("registro-saude").textContent !==
     "100 / 100 · estável" ||
-  healthGame.elements.get("registro-medicamentos").textContent !== "0 / 80" ||
+  healthGame.elements.get("registro-medicamentos").textContent !== "1 / 80" ||
   healthGame.elements.get("registro-banco").textContent !==
     "2472 municipal · 758 pessoal"
 ) {
@@ -2728,7 +3008,7 @@ const healthSave = JSON.parse(
 );
 if (
   healthSave.expansao.economia.saude !== 100 ||
-  healthSave.expansao.economia.estoques.medicamentos !== 0 ||
+  healthSave.expansao.economia.estoques.medicamentos !== 1 ||
   !healthSave.expansao.economia.edificios.clinica ||
   !healthSave.expansao.economia.edificios.banco
 ) {
@@ -2742,6 +3022,151 @@ if (healthGame.migracaoNecessaria()) {
 healthGame.estado.saudeColonia = 60;
 if (!healthGame.migracaoNecessaria()) {
   throw new Error("A migração não foi retomada no limite sanitário seguro.");
+}
+
+const emergencyHealthStorage = new Map([
+  [
+    "arqueiro-do-assentamento-v1",
+    JSON.stringify({
+      versao: 1,
+      mapaVersao: 2,
+      expansao: {
+        mapaComprado: true,
+        mapaAtual: "expansao",
+        revisaoColonia: 5,
+        economia: {
+          coloniaIniciada: true,
+          tesouro: 12000,
+          estoqueAlimentos: 200,
+          saude: 35,
+          populacao: 259,
+          casas: 60,
+          segundoBlocoMoradiasConstruido: true,
+          terceiroBlocoMoradiasConstruido: true,
+          lavouraConstruida: true,
+          armazemGraosConstruido: true,
+          hortaConstruida: true,
+          armazemHortalicasConstruido: true,
+          feijaoConstruido: true,
+          armazemFeijaoConstruido: true,
+          pastagemConstruida: true,
+          celeiroConstruido: true,
+          moinhoConstruido: true,
+          armazemFarinhaConstruido: true,
+          padariaConstruida: true,
+          armazemPaesConstruido: true,
+          cadeiaCarne: {
+            cabanaCacadores: true,
+            acougue: true,
+            cozinha: true,
+          },
+          alimentacaoAvancada: {
+            cozinhaHortalicas: true,
+            cozinhaFeijao: true,
+            defumadorio: true,
+            adegaFria: true,
+          },
+          floresta: {
+            cabanasColeta: 2,
+            ervario: true,
+          },
+          vidaCivica: {
+            pocosPublicos: 4,
+            saneamentoAvancado: true,
+            quartelBombeiros: true,
+            cemiterio: true,
+          },
+          logistica: {
+            companhiaTransportadores: true,
+            guildaConstrutores: true,
+          },
+          edificios: {
+            clinica: true,
+            cisterna: true,
+            saneamento: true,
+            caisPesca: true,
+            segundoCaisPesca: true,
+            mercadoPeixes: true,
+          },
+          estoques: {
+            graos: 150,
+            hortalicas: 100,
+            feijao: 100,
+            farinha: 120,
+            paes: 100,
+            peixes: 160,
+            refeicoesCarne: 100,
+            refeicoesHortalicas: 90,
+            refeicoesFeijao: 90,
+            ervas: 0,
+            medicamentos: 0,
+          },
+          frota: { barcosPesca: 5 },
+          demografia: {
+            idadesAdultos: [95, ...Array(258).fill(32)],
+            migrantesChegados: 239,
+            creditosObitos: 10,
+            mortes: 0,
+          },
+        },
+        construcao: { etapa: 4, tempo: 0 },
+      },
+    }),
+  ],
+]);
+const emergencyHealthGame = createHarness(emergencyHealthStorage);
+const emergencySaved = JSON.parse(
+  emergencyHealthStorage.get("arqueiro-do-assentamento-v1"),
+);
+if (
+  emergencyHealthGame.estado.saudeColonia !== 70 ||
+  emergencyHealthGame.estado.estoqueErvas !== 36 ||
+  emergencyHealthGame.estado.estoqueMedicamentos !== 20 ||
+  emergencyHealthGame.estado.ciclosProtecaoSanitaria !== 3 ||
+  !emergencyHealthGame.estado.resgateSanitarioAplicado ||
+  !emergencySaved.expansao.economia.saudeEmergencial.resgateAplicado ||
+  emergencySaved.expansao.economia.saudeEmergencial.ciclosProtecao !== 3
+) {
+  throw new Error("O save em crise não recebeu e não persistiu o resgate sanitário único.");
+}
+const emergencyJobs = emergencyHealthGame.redistribuirTrabalhadores();
+if (
+  emergencyJobs.clinica !== 8 ||
+  emergencyJobs.coletor !== 6 ||
+  emergencyHealthGame.alvoClinica() !== 8 ||
+  emergencyHealthGame.alvoColetores() !== 6 ||
+  !emergencyHealthGame.prioridadeAtual().startsWith("Emergência sanitária") ||
+  emergencyHealthGame.prioridadeAtual().includes("muralha") ||
+  emergencyHealthGame.saldoOperacional(emergencyJobs) < 0
+) {
+  throw new Error(
+    `A crise não tomou a prioridade sustentável de trabalho e planejamento: ${JSON.stringify({ empregos: emergencyJobs, prioridade: emergencyHealthGame.prioridadeAtual(), saldo: emergencyHealthGame.saldoOperacional(emergencyJobs) })}.`,
+  );
+}
+emergencyHealthGame.definirAleatorio(0);
+if (
+  emergencyHealthGame.atualizarObitos() !== null ||
+  emergencyHealthGame.estado.ciclosProtecaoSanitaria !== 2
+) {
+  throw new Error("A proteção temporária do hotfix não suspendeu o óbito durante a estabilização.");
+}
+emergencyHealthGame.definirAleatorio(0.99);
+emergencyHealthGame.atualizarNecessidades(9 * 60);
+const recoveredJobs = emergencyHealthGame.redistribuirTrabalhadores();
+if (
+  emergencyHealthGame.estado.saudeColonia !== 100 ||
+  emergencyHealthGame.estado.estoqueMedicamentos <
+    emergencyHealthGame.reservaMedicamentos() ||
+  emergencyHealthGame.estado.ciclosProtecaoSanitaria !== 0 ||
+  emergencyHealthGame.estado.populacaoColonia !== 259 ||
+  emergencyHealthGame.estado.colonosComFome !== 0 ||
+  emergencyHealthGame.producaoAlimentar(recoveredJobs) <
+    emergencyHealthGame.necessidadeAlimentos() ||
+  emergencyHealthGame.saldoOperacional(recoveredJobs) < 0
+) {
+  throw new Error(
+    `A recuperação sanitária madura não se sustentou por nove ciclos: ${JSON.stringify({ saude: emergencyHealthGame.estado.saudeColonia, medicamentos: emergencyHealthGame.estado.estoqueMedicamentos, reserva: emergencyHealthGame.reservaMedicamentos(), protecao: emergencyHealthGame.estado.ciclosProtecaoSanitaria, populacao: emergencyHealthGame.estado.populacaoColonia, fome: emergencyHealthGame.estado.colonosComFome, producao: emergencyHealthGame.producaoAlimentar(recoveredJobs), consumo: emergencyHealthGame.necessidadeAlimentos(), saldo: emergencyHealthGame.saldoOperacional(recoveredJobs), empregos: recoveredJobs })}.`,
+  );
 }
 
 infrastructureGame.step(50);
@@ -3171,6 +3596,9 @@ Object.assign(familyGame.estado, {
   saudeColonia: 100,
   colonosComFome: 0,
   celeiroConstruido: true,
+  guildaConstrutoresConstruida: true,
+  estoqueFerramentasMadeira: 40,
+  kitFerramentasInicialRecebido: true,
   escolaConstruida: false,
   familiasColonia: [],
   criancasColonia: [],
@@ -3200,7 +3628,7 @@ if (
 ) {
   throw new Error("A escola não começou como obra municipal prioritária de 550 de ouro.");
 }
-familyGame.atualizarPrioridades(20);
+concluirObraAtiva(familyGame);
 const familyJobs = familyGame.redistribuirTrabalhadores();
 if (!familyGame.estado.escolaConstruida || familyJobs.professor !== 1) {
   throw new Error("A escola concluída não recebeu o professor essencial.");
@@ -3435,7 +3863,7 @@ for (let trecho = 0; trecho < 8; trecho += 1) {
       `O reforço viário de madeira não reservou ouro e madeira por trecho: ${JSON.stringify({ obra: roadGame.estado.obraAutomaticaColonia, ouroAntes, ouro: roadGame.estado.tesouroColonia, madeiraAntes, madeira: roadGame.estado.estoqueMadeira, niveis: roadGame.estado.niveisEstradasColonia })}.`,
     );
   }
-  roadGame.atualizarPrioridades(20);
+  concluirObraAtiva(roadGame);
 }
 if (
   roadGame.quantidadeTrechosEstrada(2) !== 8 ||
@@ -3454,7 +3882,7 @@ for (let trecho = 0; trecho < 8; trecho += 1) {
   ) {
     throw new Error("O reforço viário de pedra não reservou ouro e pedra por trecho.");
   }
-  roadGame.atualizarPrioridades(20);
+  concluirObraAtiva(roadGame);
 }
 if (
   roadGame.quantidadeTrechosEstrada(3) !== 8 ||
@@ -3490,7 +3918,7 @@ for (let indice = 0; indice < fortificacoesEsperadas.length; indice += 1) {
     throw new Error(`A fortificação de pedra saiu da ordem em ${obra}.`);
   }
   const quantidadeAntes = roadGame.estado[propriedade];
-  roadGame.atualizarPrioridades(20);
+  concluirObraAtiva(roadGame);
   if (roadGame.estado[propriedade] !== quantidadeAntes + 1) {
     throw new Error(`A fortificação ${obra} não foi concluída isoladamente.`);
   }
@@ -3499,9 +3927,9 @@ roadGame.atualizarPrioridades(0);
 if (roadGame.estado.obraAutomaticaColonia !== "patioTreino") {
   throw new Error("Estradas e fortificações concluídas não devolveram a prioridade ao treinamento.");
 }
-roadGame.atualizarPrioridades(16);
+concluirObraAtiva(roadGame, 16);
 if (!roadGame.estado.patioTreinoConstruido) {
-  throw new Error("A rede de pedra não acelerou a construção em 25%.");
+  throw new Error("A rede de pedra e a equipe exclusiva não concluíram o pátio.");
 }
 const roadSave = JSON.parse(
   roadStorage.get("arqueiro-do-assentamento-v1"),
@@ -3637,7 +4065,7 @@ if (
 ) {
   throw new Error("O pátio de treino não começou como prioridade municipal tardia de 650 ouro.");
 }
-defenseGame.atualizarPrioridades(20);
+concluirObraAtiva(defenseGame);
 defenseGame.atualizarDefesa(60);
 if (
   !defenseGame.estado.patioTreinoConstruido ||
@@ -3671,7 +4099,7 @@ if (
 ) {
   throw new Error("A ampliação para a guarda não respeitou cinco milicianos e a reserva municipal.");
 }
-defenseGame.atualizarPrioridades(20);
+concluirObraAtiva(defenseGame);
 defenseGame.atualizarDefesa(60);
 if (
   !defenseGame.estado.campoGuardaConstruido ||
@@ -3755,7 +4183,6 @@ Object.assign(budgetGame.estado, {
 });
 const empregosOrcados = budgetGame.redistribuirTrabalhadores();
 if (
-  budgetGame.folhaCivil() > budgetGame.limiteFolhaCivil() ||
   budgetGame.saldoOperacional() <= 0 ||
   empregosOrcados.geral <= 0 ||
   budgetGame.reservaMunicipal() < 2500
@@ -3763,11 +4190,11 @@ if (
   throw new Error("A distribuição de trabalho não preservou folha, saldo e reserva sustentáveis.");
 }
 const tesouroAntesOrcamento = budgetGame.estado.tesouroColonia;
-const despesasAntesOrcamento = budgetGame.despesasEssenciais();
 budgetGame.atualizarOrcamento(60);
 if (
   budgetGame.estado.tesouroColonia !==
-    tesouroAntesOrcamento - despesasAntesOrcamento ||
+    tesouroAntesOrcamento - budgetGame.estado.ultimaDespesaMunicipal ||
+  budgetGame.estado.ultimaDespesaMunicipal <= 0 ||
   budgetGame.elements.get("orcamento-colonia-status").textContent.includes(
     "Sustentável",
   ) === false
@@ -3943,19 +4370,54 @@ if (
 ) {
   throw new Error("Um posto da guarda ainda invade uma muralha.");
 }
-auditedGuardPosts.forEach((post) => {
-  const gate = auditedGates.find(({ id }) => id === post.id);
-  const centerX = post.x + post.largura / 2;
-  const centerY = post.y + post.altura / 2;
-  if (!gate || Math.hypot(centerX - gate.x, centerY - gate.y) > 500) {
-    throw new Error(`O posto ${post.id} não protege o portão correspondente.`);
-  }
-});
+const expectedGuardPostSides = ["norte", "leste", "sul", "oeste"];
+const outerCenter = {
+  x: outerWard.x + outerWard.largura / 2,
+  y: outerWard.y + outerWard.altura / 2,
+};
+const guardPostCenters = Object.fromEntries(
+  auditedGuardPosts.map((post) => [
+    post.lado,
+    {
+      x: post.x + post.largura / 2,
+      y: post.y + post.altura / 2,
+    },
+  ]),
+);
+if (
+  JSON.stringify(auditedGuardPosts.map(({ lado }) => lado)) !==
+    JSON.stringify(expectedGuardPostSides) ||
+  auditedGuardPosts.some((post) => !(
+    post.x >= outerWard.x &&
+    post.y >= outerWard.y &&
+    post.x + post.largura <= outerWard.x + outerWard.largura &&
+    post.y + post.altura <= outerWard.y + outerWard.altura
+  )) ||
+  Math.abs(guardPostCenters.norte.x + guardPostCenters.sul.x - 2 * outerCenter.x) > 1 ||
+  Math.abs(guardPostCenters.norte.y + guardPostCenters.sul.y - 2 * outerCenter.y) > 1 ||
+  Math.abs(guardPostCenters.leste.x + guardPostCenters.oeste.x - 2 * outerCenter.x) > 1 ||
+  Math.abs(guardPostCenters.leste.y + guardPostCenters.oeste.y - 2 * outerCenter.y) > 1
+) {
+  throw new Error("Os quatro postos não ficaram um por lado, internos e simétricos na muralha externa.");
+}
 const rectanglesOverlap = (first, second, margin = 0) =>
   first.x - margin < second.x + second.largura + margin &&
   first.x + first.largura + margin > second.x - margin &&
   first.y - margin < second.y + second.altura + margin &&
   first.y + first.altura + margin > second.y - margin;
+const buildingsWithoutGuardPosts =
+  wallAuditGame.infraestruturaHidricaAuditada.areasEdificadas.filter(
+    (area) => !auditedGuardPosts.includes(area),
+  );
+if (
+  auditedGuardPosts.some((post) =>
+    buildingsWithoutGuardPosts.some((building) =>
+      rectanglesOverlap(post, building, 5),
+    ),
+  )
+) {
+  throw new Error("Um posto da guarda ainda invade outro edifício.");
+}
 const fortifiedGatePiers = auditedGates.flatMap((gate) => {
   const horizontal = gate.lado === "norte" || gate.lado === "sul";
   return horizontal
@@ -4039,7 +4501,7 @@ if (
   throw new Error("Os trechos visuais das muralhas não fecham os dois recintos até os portões.");
 }
 if (
-  wallAuditGame.fillTexts.filter(([text]) => text === "PORTÃO FORTIFICADO").length !== 7 ||
+  wallAuditGame.fillTexts.filter(([text]) => text === "PORTÃO DE PEDRA").length !== 7 ||
   [1, 2, 3, 4].some(
     (number) => !wallAuditGame.fillTexts.some(([text]) => text === `POSTO ${number}`),
   ) ||
@@ -4354,6 +4816,9 @@ Object.assign(housingGame.estado, {
   armazemFarinhaConstruido: true,
   padariaConstruida: true,
   armazemPaesConstruido: true,
+  guildaConstrutoresConstruida: true,
+  estoqueFerramentasMadeira: 40,
+  kitFerramentasInicialRecebido: true,
   cisternaConstruida: true,
   niveisEstradasColonia: Array(8).fill(3),
   estradasTerraConstruidas: true,
@@ -4369,6 +4834,13 @@ const expectedHousingWorks = [
   ["segundoBlocoMoradias", "segundoBlocoMoradiasConstruido"],
   ["moradia", null],
   ["moradia", null],
+  ["companhiaTransportadores", "companhiaTransportadoresConstruida"],
+  ["cabanaColeta", null],
+  ["ervario", "ervarioConstruido"],
+  ["clinica", "clinicaConstruida"],
+  ["saneamento", "saneamentoConstruido"],
+  ["pocoPublico", null],
+  ["pocoPublico", null],
   ["cabanaCacadores", "cabanaCacadoresConstruida"],
   ["acougue", "acougueConstruido"],
   ["cozinhaCarne", "cozinhaCarneConstruida"],
@@ -4378,7 +4850,7 @@ for (const [work, flag] of expectedHousingWorks) {
   if (housingGame.estado.obraAutomaticaColonia !== work) {
     throw new Error(`A fila autônoma não iniciou ${work} na ordem planejada.`);
   }
-  housingGame.atualizarPrioridades(20);
+  concluirObraAtiva(housingGame);
   if (flag && !housingGame.estado[flag]) {
     throw new Error(`A obra ${work} não foi concluída nem registrada.`);
   }
@@ -4388,10 +4860,14 @@ if (
   housingGame.capacidadeMoradias() !== 140 ||
   housingGame.maximoCasasDisponiveis() !== 60 ||
   housingGame.vagasMigracao() !== 1 ||
-  housingGame.estado.tesouroColonia !== 12900 ||
+  housingGame.estado.quantidadeCabanasColeta !== 1 ||
+  housingGame.estado.quantidadePocosPublicos !== 2 ||
+  housingGame.estado.tesouroColonia !== 7600 ||
   housingGame.saldoOperacional() <= 0
 ) {
-  throw new Error("Moradia antecipada, gasto de capital ou sustentabilidade não foram reconciliados.");
+  throw new Error(
+    `Moradia antecipada, gasto de capital ou sustentabilidade não foram reconciliados: ${JSON.stringify({ casas: housingGame.estado.quantidadeCasasColonia, capacidade: housingGame.capacidadeMoradias(), maximo: housingGame.maximoCasasDisponiveis(), vagas: housingGame.vagasMigracao(), coleta: housingGame.estado.quantidadeCabanasColeta, pocos: housingGame.estado.quantidadePocosPublicos, tesouro: housingGame.estado.tesouroColonia, saldo: housingGame.saldoOperacional() })}.`,
+  );
 }
 const firstHouseSecondBlock = housingGame.posicaoCasa(30);
 if (
@@ -4526,6 +5002,9 @@ Object.assign(thirdHousingGame.estado, {
   armazemFarinhaConstruido: true,
   padariaConstruida: true,
   armazemPaesConstruido: true,
+  guildaConstrutoresConstruida: true,
+  estoqueFerramentasMadeira: 40,
+  kitFerramentasInicialRecebido: true,
   niveisEstradasColonia: Array(8).fill(3),
 });
 if (
@@ -4536,7 +5015,7 @@ if (
   throw new Error("O terceiro bairro não entrou preventivamente na fila aos 54 imóveis.");
 }
 thirdHousingGame.atualizarPrioridades(0);
-thirdHousingGame.atualizarPrioridades(20);
+concluirObraAtiva(thirdHousingGame);
 if (
   !thirdHousingGame.estado.terceiroBlocoMoradiasConstruido ||
   thirdHousingGame.estado.tesouroColonia !== 6500 ||
@@ -4546,7 +5025,7 @@ if (
   throw new Error("O terceiro bairro não abriu 30 lotes sem romper o orçamento autônomo.");
 }
 thirdHousingGame.atualizarPrioridades(0);
-thirdHousingGame.atualizarPrioridades(20);
+concluirObraAtiva(thirdHousingGame);
 const firstHouseThirdBlock = thirdHousingGame.posicaoCasa(60);
 const lastHouseThirdBlock = thirdHousingGame.posicaoCasa(89);
 const {
@@ -4618,6 +5097,8 @@ Object.assign(meatGame.estado, {
   cabanaCacadoresConstruida: true,
   acougueConstruido: true,
   cozinhaCarneConstruida: true,
+  companhiaTransportadoresConstruida: true,
+  estoqueFerramentasMadeira: 40,
   saudeColonia: 100,
 });
 const meatJobs = meatGame.redistribuirTrabalhadores();
@@ -4694,9 +5175,104 @@ if (
   legacyFeatureGame.estado.cabanaCacadoresConstruida ||
   legacyFeatureGame.estado.acougueConstruido ||
   legacyFeatureGame.estado.cozinhaCarneConstruida ||
-  legacyFeatureGame.proximaObra() !== "segundoBlocoMoradias"
+  legacyFeatureGame.proximaObra() !== "guildaConstrutores"
 ) {
-  throw new Error("Um save anterior não migrou defensivamente para moradia e carnes.");
+  throw new Error("Um save anterior não migrou defensivamente para a guilda, moradia e carnes.");
+}
+
+const fullCapacityGame = createHarness(legacyFeatureStorage);
+Object.assign(fullCapacityGame.estado, {
+  coloniaIniciada: true,
+  mapaExpansaoComprado: true,
+  mapaAtual: "expansao",
+  revisaoColonia: 5,
+  etapaConstrucaoColonia: 4,
+  segundoBlocoMoradiasConstruido: true,
+  terceiroBlocoMoradiasConstruido: true,
+  populacaoColonia: 450,
+  criancasColonia: [],
+  quantidadeCasasColonia: 90,
+  idadesAdultosColonia: Array(450).fill(32),
+  cabanaCacadoresConstruida: true,
+  acougueConstruido: true,
+  cozinhaCarneConstruida: true,
+  cozinhaHortalicasConstruida: true,
+  cozinhaFeijaoConstruida: true,
+  defumadorioConstruido: true,
+  adegaFriaConstruida: true,
+  armazensInternosPedraConstruidos: true,
+  companhiaTransportadoresConstruida: true,
+  guildaConstrutoresConstruida: true,
+  nivelOficinaFerramentas: 3,
+  estoqueFerramentas: 60,
+  estoqueFerramentasPedra: 40,
+  estoqueFerramentasMadeira: 40,
+  kitFerramentasInicialRecebido: true,
+  cisternaConstruida: true,
+  saneamentoConstruido: true,
+  quantidadePocosPublicos: 4,
+  saneamentoAvancadoConstruido: true,
+  clinicaConstruida: true,
+  quantidadeCabanasColeta: 2,
+  ervarioConstruido: true,
+  quartelBombeirosConstruido: true,
+  bibliotecaConstruida: true,
+  igrejaConstruida: true,
+  mercadoPublicoConstruido: true,
+  armeiroConstruido: true,
+  cemiterioConstruido: true,
+  caisPescaConstruido: true,
+  segundoCaisPescaConstruido: true,
+  mercadoPeixesConstruido: true,
+  barcosPesca: 5,
+  quantidadeTorresMuralha: 8,
+  quantidadePortoesFortificados: 7,
+  trechosMuralhaPedraInterna: 4,
+  trechosMuralhaPedraExterna: 4,
+  niveisEstradasColonia: Array(8).fill(3),
+});
+const fullCapacityFoodKeys = [
+  "lavoura",
+  "horta",
+  "feijao",
+  "pastagem",
+  "celeiro",
+  "moinho",
+  "padaria",
+  "cacador",
+  "acougue",
+  "cozinhaCarne",
+  "cozinhaHortalicas",
+  "cozinhaFeijao",
+  "conserveiro",
+  "pesca",
+];
+const fullCapacityJobs = fullCapacityGame.redistribuirTrabalhadores();
+const fullCapacityJobLimits = fullCapacityGame.capacidadesEmprego();
+const fullCapacityFoodNeed = fullCapacityGame.necessidadeAlimentos();
+const fullCapacityFoodProduction =
+  fullCapacityGame.producaoAlimentar(fullCapacityJobs);
+const fullCapacityFoodSlots = fullCapacityFoodKeys.reduce(
+  (total, key) => total + (fullCapacityJobLimits[key] || 0),
+  0,
+);
+const fullCapacityFoodWorkers = fullCapacityFoodKeys.reduce(
+  (total, key) => total + (fullCapacityJobs[key] || 0),
+  0,
+);
+const fullCapacityBalance = fullCapacityGame.saldoOperacional(
+  fullCapacityJobs,
+);
+if (
+  fullCapacityGame.capacidadeMoradias() !== 450 ||
+  fullCapacityFoodSlots !== 72 ||
+  fullCapacityFoodProduction < fullCapacityFoodNeed ||
+  fullCapacityBalance < 0 ||
+  fullCapacityJobs.construtor !== 0
+) {
+  throw new Error(
+    `A auditoria permanente da lotação máxima falhou: ${JSON.stringify({ moradores: fullCapacityGame.totalMoradores(), moradia: fullCapacityGame.capacidadeMoradias(), trabalhadoresAlimentos: fullCapacityFoodWorkers, vagasAlimentos: fullCapacityFoodSlots, producao: fullCapacityFoodProduction, necessidade: fullCapacityFoodNeed, saldo: fullCapacityBalance, construtoresSemObra: fullCapacityJobs.construtor })}.`,
+  );
 }
 
 const armorGame = createHarness(new Map());
@@ -4737,11 +5313,11 @@ if (armorJobs.armeiro !== 4 || armorJobs.cacador <= 0) {
 }
 armorGame.atualizarNecessidades(60);
 if (
-  armorGame.estado.estoqueArmaduras.couro !== 4 ||
+  armorGame.estado.estoqueArmaduras.couro !== 2 ||
   armorGame.estado.estoqueArmaduras.reforcada !== 0 ||
   armorGame.escolherArmadura("milicia") !== "couro"
 ) {
-  throw new Error("Peles de caçadores e pastores não viraram primeiro armaduras básicas para a milícia.");
+  throw new Error("Peles não viraram armaduras básicas com a penalidade correta de ferramentas.");
 }
 Object.assign(armorGame.estado.estoqueArmaduras, {
   couro: 10,
@@ -4938,7 +5514,7 @@ if (process.argv[2]) {
     liveGame.atualizarPrioridades(0);
     const startedWork = liveGame.estado.obraAutomaticaColonia;
     if (!startedWork) break;
-    liveGame.atualizarPrioridades(20);
+    concluirObraAtiva(liveGame);
     if (liveGame.estado.obraAutomaticaColonia === startedWork) {
       throw new Error(`A obra ${startedWork} não terminou durante a auditoria do save.`);
     }
@@ -5110,5 +5686,5 @@ if (process.argv[2]) {
 }
 
 console.log(
-  "Orthogonal fastest-path roads, proactive housing, balanced food jobs, protected meat production, municipal budget, sustainable work, public works, audited wells and hydraulic network, armor qualities, bounded mortality, defense economy, families, saves, migration, and hunting: OK",
+  "Orthogonal roads, proactive housing, maximum-capacity food, sustainable healthcare, exclusive wagon logistics, retained jobs, tiered worksite tools, audited walls and symmetric posts, wells and hydraulic network, defense economy, families, saves, migration, speed control, and hunting: OK",
 );
