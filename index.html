@@ -759,6 +759,7 @@
             <li>O defumadório transforma 2 cortes em 2 carnes defumadas e 3 peixes em 2 peixes secos. A despensa seca interna recebe somente esses alimentos duráveis.</li>
             <li>Refeições frescas e alimentos comuns são consumidos antes das reservas duráveis. Carne defumada e peixe seco são sempre as últimas fontes de comida usadas.</li>
             <li>Os empregos alimentares são escolhidos pela produção marginal real de toda a cadeia — incluindo ferramentas, estradas, barcos, transporte e processamento — até cobrir consumo +20%; se o estoque cair abaixo de um ciclo ou houver fome, a meta sobe para +40%. Enquanto faltar comida, esses empregos usam somente a parcela sustentável do orçamento restante depois de manutenção e soldos.</li>
+            <li>A pastagem mantém uma equipe-base proporcional à meta alimentar. Quando carnes cruas se acumulam e há espaço protegido para refeições, açougueiros e cozinheiros recebem prioridade para liberar os depósitos e transformar o estoque em comida de alto valor.</li>
             <li>Custos municipais: pastagem 500; celeiro central 300; horta/pomar 350 + armazém 200; feijoal 350 + armazém 200; campo de grãos 400 + silo 250; moinho 450 + depósito 200; padaria 500 + despensa 250.</li>
             <li>As muralhas não existem no início. Depois das construções produtivas, a cidade pode erguer a paliçada interna por 4 trechos de 250 e a externa por 4 trechos de 450.</li>
             <li>A paliçada completa é o estágio 1. Depois, os dois recintos recebem muralhas de pedra, oito torres de canto e os sete portões das estradas ganham gatehouses de pedra.</li>
@@ -7151,6 +7152,54 @@
           ),
           limiteFolhaAlimentar,
         );
+        const alvoPastoresExpandidos =
+          estado.pastagemConstruida && estado.celeiroConstruido
+            ? Math.min(
+                maximoTrabalhadoresPastagem,
+                Math.ceil(metaAlimentar / 32),
+              )
+            : 0;
+        adicionarComLimite(
+          "pastagem",
+          alvoPastoresExpandidos,
+          Math.max(0, alvoPastoresExpandidos - empregos.pastagem),
+          limiteFolhaAlimentar,
+        );
+        const carneCruaArmazenada =
+          estado.estoqueCarneSelvagem + estado.estoqueCarneCriacao;
+        const espacoRefeicoesCarne = Math.max(
+          0,
+          capacidadeArmazemInternoColonia(capacidadeRefeicoesCarneColonia) -
+            estado.estoqueRefeicoesCarne,
+        );
+        const alvoProcessamentoCarneArmazenada = cadeiaCarneCompleta &&
+            carneCruaArmazenada >= carneCruaPorOperacaoAcougue &&
+            espacoRefeicoesCarne >= refeicoesPorCozinheiro
+          ? Math.min(
+              maximoTrabalhadoresAcougue,
+              maximoTrabalhadoresCozinhaCarne,
+              Math.ceil(
+                carneCruaArmazenada / carneCruaPorOperacaoAcougue,
+              ),
+            )
+          : 0;
+        while (
+          empregos.acougue < alvoProcessamentoCarneArmazenada &&
+          empregos.cozinhaCarne < alvoProcessamentoCarneArmazenada &&
+          disponiveis >= 2
+        ) {
+          const testeProcessamento = {
+            ...empregos,
+            acougue: empregos.acougue + 1,
+            cozinhaCarne: empregos.cozinhaCarne + 1,
+          };
+          if (
+            folhaCivilColonia(testeProcessamento) > limiteFolhaAlimentar
+          ) break;
+          empregos.acougue += 1;
+          empregos.cozinhaCarne += 1;
+          disponiveis -= 2;
+        }
 
         const produzirComFerramentasProjetadas = (distribuicao) => {
           const ferramentasAnteriores = estado.ferramentasLocaisColonia;
@@ -7195,13 +7244,26 @@
             ]],
           },
           {
-            nome: "carne",
+            nome: "carneCompleta",
             ativo: cadeiaCarneCompleta,
             vagas: [
               ["cacador", maximoTrabalhadoresCacadores],
               ["acougue", maximoTrabalhadoresAcougue],
               ["cozinhaCarne", maximoTrabalhadoresCozinhaCarne],
             ],
+          },
+          {
+            nome: "processamentoCarne",
+            ativo: cadeiaCarneCompleta,
+            vagas: [
+              ["acougue", maximoTrabalhadoresAcougue],
+              ["cozinhaCarne", maximoTrabalhadoresCozinhaCarne],
+            ],
+          },
+          {
+            nome: "caca",
+            ativo: cadeiaCarneCompleta,
+            vagas: [["cacador", maximoTrabalhadoresCacadores]],
           },
           {
             nome: "pao",

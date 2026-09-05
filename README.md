@@ -26,7 +26,9 @@ the essential-payroll ceiling is reached; unused food slots then remain visible
 as reserve capacity. During hunger or a sub-cycle food reserve, the target rises
 to 40%. The expanded pasture now reaches the agricultural road, retains its
 southern boundary, animates the whole plot, and supports 14 herders instead of
-10.
+10. A population-scaled pasture baseline keeps livestock and hides flowing;
+full raw-meat stores temporarily reserve matched butcher and meat-kitchen crews
+to clear the bottleneck into protected high-value meals.
 
 Mature construction is performed only by a four-to-twelve-person guild crew.
 Established specialists retain their jobs, and idle builders return to the

@@ -5483,6 +5483,9 @@ if (
     `A auditoria permanente da lotação máxima falhou: ${JSON.stringify({ moradores: fullCapacityGame.totalMoradores(), moradia: fullCapacityGame.capacidadeMoradias(), trabalhadoresAlimentos: fullCapacityFoodWorkers, vagasAlimentos: fullCapacityFoodSlots, producao: fullCapacityFoodProduction, necessidade: fullCapacityFoodNeed, saldo: fullCapacityBalance, racks: fullCapacityRackSlots, postos: fullCapacityAllJobSlots, construtoresSemObra: fullCapacityJobs.construtor })}.`,
   );
 }
+console.log(
+  `FULL_CAPACITY_FOOD_AUDIT ${JSON.stringify({ moradores: fullCapacityGame.totalMoradores(), trabalhadoresAlimentos: fullCapacityFoodWorkers, vagasAlimentos: fullCapacityFoodSlots, producao: fullCapacityFoodProduction, necessidade: fullCapacityFoodNeed, coberturaPercentual: Math.round((fullCapacityFoodProduction / fullCapacityFoodNeed) * 1000) / 10, saldoOperacional: fullCapacityBalance })}`,
+);
 
 const armorGame = createHarness(new Map());
 Object.assign(armorGame.estado, {
