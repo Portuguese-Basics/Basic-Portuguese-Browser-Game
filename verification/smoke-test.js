@@ -477,6 +477,18 @@ const first = createHarness(storage);
 if (first.elements.get("patrimonio-pessoal").textContent !== "5 ouro") {
   throw new Error("O placar de patrimônio pessoal não apareceu no início.");
 }
+if (
+  first.elements.get("velocidade-tempo-1").attributes["aria-pressed"] !==
+    "true" ||
+  [2, 5, 10].some(
+    (velocidade) =>
+      first.elements.get(`velocidade-tempo-${velocidade}`).attributes[
+        "aria-pressed"
+      ] !== "false",
+  )
+) {
+  throw new Error("O controle de tempo não iniciou em 1×.");
+}
 const hasNorthernRiver = first.fillRects.some(
   ([x, y, width, height]) => x === 0 && y === 40 && width === 1400 && height === 120,
 );
@@ -546,6 +558,114 @@ if (newGame.local !== "assentamento" || newGame.vida !== 100 || newGame.ouro !==
 restored.listeners.get("apagar:click")();
 if (storage.has("arqueiro-do-assentamento-v1")) {
   throw new Error("Apagar progresso não removeu o salvamento.");
+}
+
+const speedStorage = new Map([
+  [
+    "arqueiro-do-assentamento-v1",
+    JSON.stringify({
+      versao: 1,
+      local: "assentamento",
+      vida: 100,
+      ouro: 0,
+      jogador: { x: 500, y: 390 },
+      inimigos: [],
+      fazendeiro: { quantidade: 1, tempo: 0 },
+    }),
+  ],
+]);
+const speedGame = createHarness(speedStorage);
+speedGame.listeners.get("velocidade-tempo-10:click")();
+let speedSave = JSON.parse(
+  speedStorage.get("arqueiro-do-assentamento-v1"),
+);
+if (
+  speedSave.velocidadeTempo !== 10 ||
+  speedGame.elements.get("velocidade-tempo-10").attributes["aria-pressed"] !==
+    "true" ||
+  speedGame.elements.get("velocidade-tempo-1").attributes["aria-pressed"] !==
+    "false" ||
+  !speedGame.elements.get("mensagem").textContent.includes("10×")
+) {
+  throw new Error("A seleção de 10× não foi aplicada, indicada e salva.");
+}
+for (let frame = 1; frame <= 21; frame += 1) {
+  speedGame.step(frame * 50);
+}
+speedSave = JSON.parse(speedStorage.get("arqueiro-do-assentamento-v1"));
+if (speedSave.ouro !== 1) {
+  throw new Error("A velocidade 10× não acelerou dez segundos de produção em um segundo real.");
+}
+const speedRestored = createHarness(speedStorage);
+if (
+  speedRestored.estado.velocidadeTempo !== 10 ||
+  speedRestored.elements.get("velocidade-tempo-10").attributes[
+    "aria-pressed"
+  ] !== "true"
+) {
+  throw new Error("A velocidade selecionada não foi restaurada do save.");
+}
+
+const invalidSpeedStorage = new Map([
+  [
+    "arqueiro-do-assentamento-v1",
+    JSON.stringify({
+      versao: 1,
+      velocidadeTempo: 3,
+      local: "assentamento",
+      vida: 100,
+      ouro: 0,
+      jogador: { x: 500, y: 390 },
+      inimigos: [],
+    }),
+  ],
+]);
+const invalidSpeedGame = createHarness(invalidSpeedStorage);
+if (
+  invalidSpeedGame.estado.velocidadeTempo !== 1 ||
+  invalidSpeedGame.elements.get("velocidade-tempo-1").attributes[
+    "aria-pressed"
+  ] !== "true"
+) {
+  throw new Error("Um save antigo ou com velocidade inválida não voltou com segurança para 1×.");
+}
+
+function huntingClockStorage(velocidadeTempo) {
+  return new Map([
+    [
+      "arqueiro-do-assentamento-v1",
+      JSON.stringify({
+        versao: 1,
+        velocidadeTempo,
+        local: "floresta",
+        vida: 100,
+        ouro: 0,
+        jogador: { x: 700, y: 790 },
+        inimigos: [
+          {
+            id: "teste-relogio",
+            x: 1100,
+            y: 790,
+            nivel: 1,
+            vida: 3,
+            velocidade: 24,
+          },
+        ],
+      }),
+    ],
+  ]);
+}
+const huntAt1x = createHarness(huntingClockStorage(1));
+const huntAt10x = createHarness(huntingClockStorage(10));
+huntAt1x.step(50);
+huntAt10x.step(50);
+if (
+  huntAt1x.estado.jogador.x !== huntAt10x.estado.jogador.x ||
+  huntAt1x.estado.jogador.y !== huntAt10x.estado.jogador.y ||
+  huntAt1x.estado.inimigos[0].x !== huntAt10x.estado.inimigos[0].x ||
+  huntAt1x.estado.inimigos[0].y !== huntAt10x.estado.inimigos[0].y
+) {
+  throw new Error("A aceleração do tempo alterou indevidamente a velocidade da caçada.");
 }
 
 storage.set(
