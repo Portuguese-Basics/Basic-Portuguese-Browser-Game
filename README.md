@@ -11,8 +11,10 @@ at normal real-time speed.
 The colony now includes proactive three-district housing, a food-first economy,
 healthcare and sanitation, preserved-food reserves, stone fortifications,
 controlled migration, and bounded aging and mortality. Resource gatherers keep
-their output at the source; up to 12 dedicated horse-and-wagon transport teams
-move mixed loads to storage and production buildings.
+their output at the source. Whenever production or source backlog exists, the
+transporter company protects a six-wagon operating crew and scales up to 12
+dedicated horse-and-wagon teams as flow and delay rise. Mixed loads move to
+storage and production buildings under the sustainable essential-payroll limit.
 
 Mature construction is performed only by a four-to-twelve-person guild crew.
 Established specialists retain their jobs, and idle builders return to the

@@ -183,6 +183,10 @@ function createHarness(storage) {
     "globalThis.__testeJogo.empregoDoColono = empregoDoColono;",
     context,
   );
+  vm.runInNewContext(
+    "globalThis.__testeJogo.alvoTransportadoresProducaoColonia = alvoTransportadoresProducaoColonia;",
+    context,
+  );
   return {
     elements,
     listeners,
@@ -420,6 +424,11 @@ function createHarness(storage) {
     },
     cargaLocalPendente() {
       return context.__testeJogo.cargaLocalPendenteColonia();
+    },
+    alvoTransportadores(empregos) {
+      return context.__testeJogo.alvoTransportadoresProducaoColonia(
+        empregos,
+      );
     },
     transportarCargas(empregos) {
       return context.__testeJogo.transportarCargasColonia(empregos);
@@ -2436,13 +2445,13 @@ if (
   fullChainGame.elements.get("registro-auditoria-pao").textContent !==
     "5/6 → 5/5 → 5/5 · +30 grãos → +15 farinhas → +10 pães" ||
   fullChainGame.elements.get("registro-auditoria-floresta").textContent !==
-    "6/6 · −12 árvores/+60 madeira ↔ 2/2 · +12 árvores" ||
+    "5/6 · −10 árvores/+50 madeira ↔ 2/2 · +12 árvores" ||
   fullChainGame.elements.get("registro-auditoria-metal").textContent !==
-    "5/5 · +25 minério → demanda 25" ||
+    "5/5 · +25 minério → demanda 22" ||
   fullChainGame.elements.get("registro-auditoria-saude").textContent !==
     "6/6 · +18 ervas → 5/8 · demanda 10 · pressão 10 · reserva 25" ||
   fullChainGame.elements.get("registro-auditoria-costa").textContent !==
-    "10/10 · +35.2 peixes; 6/10 · +12 mercadorias"
+    "10/10 · +38 peixes; 5/10 · +11 mercadorias"
 ) {
   throw new Error(
     `O livro de auditoria não reconciliou as capacidades máximas das cadeias: ${JSON.stringify({ pao: fullChainGame.elements.get("registro-auditoria-pao").textContent, floresta: fullChainGame.elements.get("registro-auditoria-floresta").textContent, metal: fullChainGame.elements.get("registro-auditoria-metal").textContent, saude: fullChainGame.elements.get("registro-auditoria-saude").textContent, costa: fullChainGame.elements.get("registro-auditoria-costa").textContent })}.`,
@@ -2769,6 +2778,7 @@ const mixedCargo = transportGame.transportarCargas({
   clinica: 4,
 });
 if (
+  transportGame.alvoTransportadores({}) !== 6 ||
   transportGame.capacidadeCargaTransportadores({ transportador: 2 }) <= 24 ||
   mixedCargo.total <= 24 ||
   mixedCargo.total > transportGame.capacidadeCargaTransportadores({ transportador: 2 }) ||
@@ -2780,6 +2790,36 @@ if (
   transportGame.cargaLocalPendente() >= 48
 ) {
   throw new Error("As carroças não priorizaram ervas nem combinaram madeira e carnes na mesma viagem.");
+}
+
+const idleTransportGame = createHarness(new Map());
+Object.assign(idleTransportGame.estado, {
+  coloniaIniciada: true,
+  etapaConstrucaoColonia: 4,
+  companhiaTransportadoresConstruida: true,
+});
+if (idleTransportGame.alvoTransportadores({}) !== 0) {
+  throw new Error("A companhia manteve carroças ociosas sem produção nem carga na origem.");
+}
+
+const heavyTransportGame = createHarness(new Map());
+Object.assign(heavyTransportGame.estado, {
+  coloniaIniciada: true,
+  etapaConstrucaoColonia: 4,
+  companhiaTransportadoresConstruida: true,
+  depositoMadeiraConstruido: true,
+  quantidadeCabanasLenhadores: 2,
+  ervarioConstruido: true,
+  quantidadeCabanasColeta: 2,
+  cabanaCacadoresConstruida: true,
+  acougueConstruido: true,
+  estoqueLocalMadeira: 60,
+  estoqueLocalErvas: 18,
+  estoqueLocalCarneSelvagem: 12,
+  estoqueLocalCarneCriacao: 10,
+});
+if (heavyTransportGame.alvoTransportadores({ pastagem: 10 }) !== 12) {
+  throw new Error("A meta logística não escalou até 12 carroças diante do fluxo e atraso máximos.");
 }
 
 const toolSiteGame = createHarness(new Map());
@@ -3133,6 +3173,8 @@ const emergencyJobs = emergencyHealthGame.redistribuirTrabalhadores();
 if (
   emergencyJobs.clinica !== 8 ||
   emergencyJobs.coletor !== 6 ||
+  emergencyJobs.transportador < 6 ||
+  emergencyHealthGame.capacidadeCargaTransportadores(emergencyJobs) < 72 ||
   emergencyHealthGame.alvoClinica() !== 8 ||
   emergencyHealthGame.alvoColetores() !== 6 ||
   !emergencyHealthGame.prioridadeAtual().startsWith("Emergência sanitária") ||
@@ -3142,6 +3184,17 @@ if (
   throw new Error(
     `A crise não tomou a prioridade sustentável de trabalho e planejamento: ${JSON.stringify({ empregos: emergencyJobs, prioridade: emergencyHealthGame.prioridadeAtual(), saldo: emergencyHealthGame.saldoOperacional(emergencyJobs) })}.`,
   );
+}
+emergencyHealthGame.atualizarInterface();
+if (
+  !emergencyHealthGame.elements
+    .get("trabalho-transportador")
+    .textContent.includes("meta 6") ||
+  !emergencyHealthGame.elements
+    .get("registro-auditoria-logistica")
+    .textContent.includes("meta 6")
+) {
+  throw new Error("A interface não explicou a meta reforçada da companhia de transportadores.");
 }
 emergencyHealthGame.definirAleatorio(0);
 if (
@@ -3160,6 +3213,7 @@ if (
   emergencyHealthGame.estado.ciclosProtecaoSanitaria !== 0 ||
   emergencyHealthGame.estado.populacaoColonia !== 259 ||
   emergencyHealthGame.estado.colonosComFome !== 0 ||
+  recoveredJobs.transportador < 6 ||
   emergencyHealthGame.producaoAlimentar(recoveredJobs) <
     emergencyHealthGame.necessidadeAlimentos() ||
   emergencyHealthGame.saldoOperacional(recoveredJobs) < 0

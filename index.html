@@ -779,7 +779,7 @@
             <li>As linhas azuis tracejadas são tubulações subterrâneas de água e esgoto: acompanham corredores viários, atravessam muralhas somente pelos portões e terminam na borda dos poços.</li>
             <li>Quatro poços públicos — bairros oeste, sul e norte, mais a reserva de incêndio leste —, rede ampliada e brigada elevam a proteção sanitária e contra fogo sem ultrapassar o orçamento operacional.</li>
             <li>Lenhadores, caçadores, pastores e coletores deixam madeira, carnes e ervas em estoques locais. Somente os transportadores retiram esses bens e os entregam a depósitos, açougue, ervário e clínica.</li>
-            <li>A companhia opera até 12 carroças com cavalos. Cada equipe carrega 12 unidades por viagem, ampliadas pelas estradas, e combina madeira, carnes e ervas na mesma rota; remédios recebem precedência durante recuperação sanitária.</li>
+            <li>A companhia mantém no mínimo 6 carroças com cavalos sempre que houver produção ou carga na origem, e amplia a equipe até 12 conforme o fluxo e o atraso. Cada equipe carrega 12 unidades por viagem, ampliadas pelas estradas, e combina madeira, carnes e ervas na mesma rota; remédios recebem precedência durante recuperação sanitária.</li>
             <li>A guilda mantém uma equipe exclusiva de até 12 construtores; os demais colonos conservam seus empregos. Sem obra, a equipe volta à reserva geral. Cada ferramenta equipa exatamente um trabalhador.</li>
             <li>A biblioteca e escola avançada ficam no recinto interno e melhoram a produção dos trabalhadores treinados. A igreja interna sustenta a satisfação de fé.</li>
             <li>O mercado público fica junto à costa, fora dos portões. A cada 10 minutos ele pode financiar um festival de 600 ouro se a reserva municipal continuar protegida.</li>
@@ -2816,6 +2816,7 @@
       const capacidadeEstoqueLocalCarneCriacaoColonia = 60;
       const capacidadeCargaCarrocaColonia = 12;
       const loteMistoCarrocaColonia = 3;
+      const minimoTransportadoresOperacionaisColonia = 6;
       const capacidadeLancasMadeiraColonia = 60;
       const capacidadeArcosColonia = 40;
       const capacidadeFlechasColonia = 600;
@@ -3971,14 +3972,19 @@
           fluxoErvas +
           fluxoCarneSelvagem +
           fluxoCarneCriacao;
+        const cargaPendente = cargaLocalPendenteColonia();
+        if (fluxoTotal <= 0 && cargaPendente <= 0) return 0;
         const demandaComAtraso =
-          fluxoTotal + Math.min(cargaLocalPendenteColonia(), fluxoTotal);
+          fluxoTotal + Math.min(cargaPendente, Math.max(fluxoTotal, 1));
         const cargaPorCarroca =
           capacidadeCargaCarrocaColonia *
           multiplicadorMovimentoEstradasColonia();
         return Math.min(
           maximoTransportadoresColonia,
-          Math.ceil(demandaComAtraso / Math.max(1, cargaPorCarroca)),
+          Math.max(
+            minimoTransportadoresOperacionaisColonia,
+            Math.ceil(demandaComAtraso / Math.max(1, cargaPorCarroca)),
+          ),
         );
       }
 
@@ -7082,6 +7088,13 @@
           }
         }
 
+        const alvoLogistica = alvoTransportadoresProducaoColonia(empregos);
+        adicionarComLimite(
+          "transportador",
+          alvoLogistica,
+          Math.max(0, alvoLogistica - empregos.transportador),
+          limiteFolhaAlimentar,
+        );
         ocupar("migracao", estado.quantidadeAdministradoresMigracao);
 
         const trabalhosProdutivos = [
@@ -7114,7 +7127,7 @@
           },
           {
             chave: "transportador",
-            prioridadeAlimentar: true,
+            prioridadeLogistica: true,
             maximo: alvoTransportadoresProducaoColonia(empregos),
           },
           {
@@ -7239,6 +7252,7 @@
               producaoAlimentarPorCiclo(empregos) < metaAlimentar;
             const adicionados =
               (trabalho.prioridadeAlimentar && faltaAlimento) ||
+                trabalho.prioridadeLogistica ||
                 (trabalho.chave === "construtor" &&
                   estado.obraAutomaticaColonia)
                 ? adicionarComLimite(
@@ -9248,6 +9262,8 @@
           });
         const capacidadeCarga = capacidadeCargaTransportadoresColonia(empregos);
         const cargaPendente = cargaLocalPendenteColonia();
+        const alvoTransportadores =
+          alvoTransportadoresProducaoColonia(empregos);
         const ultimaCarga = estado.ultimaCargaTransportadaColonia;
         const nivelFerramentaAtivo = nivelFerramentasAtivoColonia();
         const nomesFerramentas = ["Nenhuma", "Madeira", "Pedra", "Metal"];
@@ -9455,7 +9471,7 @@
         trabalhoArmeiroEl.textContent =
           `${empregos.armeiro} / ${maximoArmeirosColonia} · próxima: ${nomeArmaduraColonia(tipoArmaduraProduzivelColonia())}`;
         trabalhoTransportadorEl.textContent =
-          `${empregos.transportador} / ${maximoTransportadoresColonia} · ${formatarQuantidade(capacidadeCarga)} cargas mistas / 60 s`;
+          `${empregos.transportador} / ${maximoTransportadoresColonia} · meta ${alvoTransportadores} · ${formatarQuantidade(capacidadeCarga)} cargas mistas / 60 s`;
         trabalhoConstrutorEl.textContent =
           estado.obraAutomaticaColonia
             ? `${empregos.construtor} / ${maximoConstrutoresColonia} · ${ferramentasConstrutores}/${empregos.construtor} ferramentas · ${produtividadeConstrutores}% produtividade`
@@ -9955,7 +9971,7 @@
         registrosEls["auditoria-conservacao"].textContent =
           `${empregos.conserveiro}/${maximoTrabalhadoresConservacao} conserveiros · ${formatarQuantidade(estado.estoqueCarneDefumada)} carne + ${formatarQuantidade(estado.estoquePeixeSeco)} peixe · consumo final`;
         registrosEls["auditoria-logistica"].textContent =
-          `${empregos.transportador}/${maximoTransportadoresColonia} carroças · capacidade ${formatarQuantidade(capacidadeCarga)} · última: ${formatarQuantidade(ultimaCarga.madeira)} madeira, ${formatarQuantidade(ultimaCarga.carneSelvagem + ultimaCarga.carneCriacao)} carnes, ${formatarQuantidade(ultimaCarga.ervas)} ervas · ${formatarQuantidade(cargaPendente)} na origem`;
+          `${empregos.transportador}/${maximoTransportadoresColonia} carroças · meta ${alvoTransportadores} · capacidade ${formatarQuantidade(capacidadeCarga)} · última: ${formatarQuantidade(ultimaCarga.madeira)} madeira, ${formatarQuantidade(ultimaCarga.carneSelvagem + ultimaCarga.carneCriacao)} carnes, ${formatarQuantidade(ultimaCarga.ervas)} ervas · ${formatarQuantidade(cargaPendente)} na origem`;
         registrosEls["auditoria-armaduras"].textContent =
           `${empregos.armeiro}/${maximoArmeirosColonia} armeiros · peles ${formatarQuantidade(estado.estoqueCouro)} · prioridade ${nomeArmaduraColonia(tipoArmaduraPrioritariaColonia())} · arsenal dentro das muralhas`;
         registrosEls.arvores.textContent = estoqueArvoresEl.textContent;
@@ -10019,7 +10035,7 @@
         registrosEls["bonus-ferramentas"].textContent =
           `${trabalhadoresFerramentados} trabalhadores · ${sinalBonusFerramentas}${Math.round(bonusFerramentas * 100)}% médio`;
         registrosEls.transportadores.textContent =
-          `${empregos.transportador} / ${maximoTransportadoresColonia} · ${formatarQuantidade(capacidadeCarga)} cargas/60 s · ${formatarQuantidade(cargaPendente)} aguardando coleta`;
+          `${empregos.transportador} / ${maximoTransportadoresColonia} · meta ${alvoTransportadores} · ${formatarQuantidade(capacidadeCarga)} cargas/60 s · ${formatarQuantidade(cargaPendente)} aguardando coleta`;
         registrosEls.construtores.textContent =
           estado.obraAutomaticaColonia
             ? `${empregos.construtor} / ${maximoConstrutoresColonia} · ${ferramentasConstrutores}/${empregos.construtor} ferramentas · ${produtividadeConstrutores}%`
