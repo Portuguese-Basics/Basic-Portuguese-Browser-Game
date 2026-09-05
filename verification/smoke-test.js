@@ -5263,15 +5263,23 @@ const fullCapacityFoodWorkers = fullCapacityFoodKeys.reduce(
 const fullCapacityBalance = fullCapacityGame.saldoOperacional(
   fullCapacityJobs,
 );
+const fullCapacityRackSlots = Object.values(
+  fullCapacityGame.estado.ferramentasLocaisColonia,
+).reduce((total, local) => total + (local.capacidade || 0), 0);
+const fullCapacityAllJobSlots = Object.values(fullCapacityJobLimits).reduce(
+  (total, slots) => total + slots,
+  0,
+);
 if (
   fullCapacityGame.capacidadeMoradias() !== 450 ||
   fullCapacityFoodSlots !== 72 ||
   fullCapacityFoodProduction < fullCapacityFoodNeed ||
   fullCapacityBalance < 0 ||
+  fullCapacityRackSlots !== fullCapacityAllJobSlots ||
   fullCapacityJobs.construtor !== 0
 ) {
   throw new Error(
-    `A auditoria permanente da lotação máxima falhou: ${JSON.stringify({ moradores: fullCapacityGame.totalMoradores(), moradia: fullCapacityGame.capacidadeMoradias(), trabalhadoresAlimentos: fullCapacityFoodWorkers, vagasAlimentos: fullCapacityFoodSlots, producao: fullCapacityFoodProduction, necessidade: fullCapacityFoodNeed, saldo: fullCapacityBalance, construtoresSemObra: fullCapacityJobs.construtor })}.`,
+    `A auditoria permanente da lotação máxima falhou: ${JSON.stringify({ moradores: fullCapacityGame.totalMoradores(), moradia: fullCapacityGame.capacidadeMoradias(), trabalhadoresAlimentos: fullCapacityFoodWorkers, vagasAlimentos: fullCapacityFoodSlots, producao: fullCapacityFoodProduction, necessidade: fullCapacityFoodNeed, saldo: fullCapacityBalance, racks: fullCapacityRackSlots, postos: fullCapacityAllJobSlots, construtoresSemObra: fullCapacityJobs.construtor })}.`,
   );
 }
 
