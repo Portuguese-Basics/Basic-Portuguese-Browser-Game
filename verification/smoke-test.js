@@ -168,7 +168,7 @@ function createHarness(storage) {
   };
 
   vm.runInNewContext(
-    `${source}\nglobalThis.__testeJogo = { estado, atualizarFazendeiro, atualizarFruticultor, atualizarPescador, atualizarComerciante, atualizarFerreiro, atualizarMineiro, atualizarBanqueiro, atualizarEscriturario, atualizarTransferenciaPosto, atualizarOrcamentoMunicipalColonia, atualizarPrioridadesColonia, atualizarNecessidadesColonia, atualizarDefesaColonia, atualizarConstrucaoColonia, atualizarMigracaoColonia, atualizarEnvelhecimentoEObitosColonia, redistribuirTrabalhadoresColonia, migracaoNecessariaColonia, migracaoIncentivadaPermitidaColonia, motivoBloqueioIncentivoMigracaoColonia, folhaCivilColonia, limiteFolhaCivilColonia, manutencaoMunicipalColonia, despesasEssenciaisMunicipaisColonia, saldoOperacionalMunicipalColonia, reservaMunicipalDinamicaColonia, folhaSoldosColonia, limiteSoldosColonia, segurancaCivilColonia, forcaMilitarColonia, posicaoColonoNovaColonia, posicaoCasaColonia, quantidadeColonosExpansao, totalMoradoresColonia, quantidadeBebesColonia, quantidadeCriancasColonia, chanceNascimentoColonia, idadeMediaAdultosColonia, duracaoBebeColonia, duracaoInfanciaColonia, barcoComercialAtracado, proximaObraAutomaticaColonia, custoObraAutomaticaColonia, casasNecessariasColonia, reservaPlanejadaMoradiaColonia, maximoCasasDisponiveisColonia, capacidadeMoradiasColonia, vagasMigracaoColonia, vagasFisicasMigracaoColonia, necessidadeAlimentosColonia, producaoAlimentarPorCiclo, valorAlimentarTotalColonia, consumirAlimentosColonia, capacidadesEmpregoColonia, totalCapacidadeEmpregosColonia, totalEmpregosOcupadosColonia, tipoArmaduraPrioritariaColonia, tipoArmaduraProduzivelColonia, escolherArmaduraDefesaColonia, totalArmadurasEstoqueColonia, proximoTrechoEstradaColonia, quantidadeTrechosEstradaNoNivelColonia, multiplicadorProducaoEstradasColonia, multiplicadorMovimentoEstradasColonia, multiplicadorConstrucaoEstradasColonia, multiplicadorConstrucaoColonia, catalogoArmazenamentoAlimentosColonia, capacidadeArmazemInternoColonia, trabalhadoresComFerramentasColonia, bonusFerramentasColonia, bonusLogisticaColonia, bonusEducacaoColonia, nivelFerramentasAtivoColonia, protecaoIncendioColonia, satisfacaoFeColonia, festivalAtivoColonia, materiaisObraColonia, trechosEstradaColonia, caminhosTrechoEstradaColonia, rotaMaisRapidaColonia, destinoEmpregoColonia, acessoCasaColonia, areasHotfixCozinhas: { recintoExterno, recintoInterno, areaCozinhaCarneColonia, areaCozinhaHortalicasColonia, areaCozinhaFeijaoColonia, areaCofreCortesColonia, areaDespensaRefeicoesColonia, areaAdegaFriaColonia, areaDefumadorioColonia, areaCemiterioColonia, areaPatioTreinoColonia }, definirTempoRio(valor) { tempoRio = valor; } };`,
+    `${source}\nglobalThis.__testeJogo = { estado, atualizarFazendeiro, atualizarFruticultor, atualizarPescador, atualizarComerciante, atualizarFerreiro, atualizarMineiro, atualizarBanqueiro, atualizarEscriturario, atualizarTransferenciaPosto, atualizarOrcamentoMunicipalColonia, atualizarPrioridadesColonia, atualizarNecessidadesColonia, atualizarDefesaColonia, atualizarConstrucaoColonia, atualizarMigracaoColonia, atualizarEnvelhecimentoEObitosColonia, redistribuirTrabalhadoresColonia, migracaoNecessariaColonia, migracaoIncentivadaPermitidaColonia, motivoBloqueioIncentivoMigracaoColonia, folhaCivilColonia, limiteFolhaCivilColonia, manutencaoMunicipalColonia, despesasEssenciaisMunicipaisColonia, saldoOperacionalMunicipalColonia, reservaMunicipalDinamicaColonia, folhaSoldosColonia, limiteSoldosColonia, segurancaCivilColonia, forcaMilitarColonia, posicaoColonoNovaColonia, posicaoCasaColonia, quantidadeColonosExpansao, totalMoradoresColonia, quantidadeBebesColonia, quantidadeCriancasColonia, chanceNascimentoColonia, idadeMediaAdultosColonia, duracaoBebeColonia, duracaoInfanciaColonia, barcoComercialAtracado, proximaObraAutomaticaColonia, custoObraAutomaticaColonia, casasNecessariasColonia, reservaPlanejadaMoradiaColonia, maximoCasasDisponiveisColonia, capacidadeMoradiasColonia, vagasMigracaoColonia, vagasFisicasMigracaoColonia, necessidadeAlimentosColonia, producaoAlimentarPorCiclo, valorAlimentarTotalColonia, consumirAlimentosColonia, capacidadesEmpregoColonia, totalCapacidadeEmpregosColonia, totalEmpregosOcupadosColonia, tipoArmaduraPrioritariaColonia, tipoArmaduraProduzivelColonia, escolherArmaduraDefesaColonia, totalArmadurasEstoqueColonia, proximoTrechoEstradaColonia, quantidadeTrechosEstradaNoNivelColonia, multiplicadorProducaoEstradasColonia, multiplicadorMovimentoEstradasColonia, multiplicadorConstrucaoEstradasColonia, multiplicadorConstrucaoColonia, catalogoArmazenamentoAlimentosColonia, capacidadeArmazemInternoColonia, trabalhadoresComFerramentasColonia, bonusFerramentasColonia, bonusLogisticaColonia, bonusEducacaoColonia, nivelFerramentasAtivoColonia, protecaoIncendioColonia, satisfacaoFeColonia, festivalAtivoColonia, materiaisObraColonia, trechosEstradaColonia, caminhosTrechoEstradaColonia, rotaMaisRapidaColonia, destinoEmpregoColonia, acessoCasaColonia, areasMoradia: { recintoExterno, recintoInterno, areaMoradias, areaSegundoBlocoMoradias, areaTerceiroBlocoMoradias }, areasHotfixCozinhas: { recintoExterno, recintoInterno, areaCozinhaCarneColonia, areaCozinhaHortalicasColonia, areaCozinhaFeijaoColonia, areaCofreCortesColonia, areaDespensaRefeicoesColonia, areaAdegaFriaColonia, areaDefumadorioColonia, areaCemiterioColonia, areaPatioTreinoColonia }, definirTempoRio(valor) { tempoRio = valor; } };`,
     context,
   );
   return {
@@ -179,6 +179,7 @@ function createHarness(storage) {
     fillTexts,
     arcs,
     lineSegments,
+    areasMoradia: context.__testeJogo.areasMoradia,
     areasHotfixCozinhas: context.__testeJogo.areasHotfixCozinhas,
     estado: context.__testeJogo.estado,
     quantidadeColonosExpansao: context.__testeJogo.quantidadeColonosExpansao,
@@ -265,8 +266,8 @@ function createHarness(storage) {
     atualizarOrcamento(segundos) {
       context.__testeJogo.atualizarOrcamentoMunicipalColonia(segundos);
     },
-    folhaCivil() {
-      return context.__testeJogo.folhaCivilColonia();
+    folhaCivil(empregos) {
+      return context.__testeJogo.folhaCivilColonia(empregos);
     },
     limiteFolhaCivil() {
       return context.__testeJogo.limiteFolhaCivilColonia();
@@ -277,8 +278,8 @@ function createHarness(storage) {
     despesasEssenciais() {
       return context.__testeJogo.despesasEssenciaisMunicipaisColonia();
     },
-    saldoOperacional() {
-      return context.__testeJogo.saldoOperacionalMunicipalColonia();
+    saldoOperacional(empregos) {
+      return context.__testeJogo.saldoOperacionalMunicipalColonia(empregos);
     },
     reservaMunicipal() {
       return context.__testeJogo.reservaMunicipalDinamicaColonia();
@@ -3833,6 +3834,105 @@ if (
   throw new Error("As cozinhas, os estoques preservados ou o cemitério não ficaram nas zonas planejadas.");
 }
 
+const thirdHousingGame = createHarness(new Map());
+Object.assign(thirdHousingGame.estado, {
+  coloniaIniciada: true,
+  mapaExpansaoComprado: true,
+  mapaAtual: "expansao",
+  revisaoColonia: 5,
+  etapaConstrucaoColonia: 4,
+  populacaoColonia: 250,
+  quantidadeCasasColonia: 54,
+  segundoBlocoMoradiasConstruido: true,
+  terceiroBlocoMoradiasConstruido: false,
+  tesouroColonia: 10000,
+  estoqueAlimentos: 500,
+  saudeColonia: 100,
+  lavouraConstruida: true,
+  armazemGraosConstruido: true,
+  hortaConstruida: true,
+  armazemHortalicasConstruido: true,
+  feijaoConstruido: true,
+  armazemFeijaoConstruido: true,
+  pastagemConstruida: true,
+  celeiroConstruido: true,
+  moinhoConstruido: true,
+  armazemFarinhaConstruido: true,
+  padariaConstruida: true,
+  armazemPaesConstruido: true,
+  niveisEstradasColonia: Array(8).fill(3),
+});
+if (
+  thirdHousingGame.proximaObra() !== "terceiroBlocoMoradias" ||
+  thirdHousingGame.custoObra("terceiroBlocoMoradias") !== 3500 ||
+  thirdHousingGame.maximoCasasDisponiveis() !== 60
+) {
+  throw new Error("O terceiro bairro não entrou preventivamente na fila aos 54 imóveis.");
+}
+thirdHousingGame.atualizarPrioridades(0);
+thirdHousingGame.atualizarPrioridades(20);
+if (
+  !thirdHousingGame.estado.terceiroBlocoMoradiasConstruido ||
+  thirdHousingGame.estado.tesouroColonia !== 6500 ||
+  thirdHousingGame.maximoCasasDisponiveis() !== 90 ||
+  thirdHousingGame.proximaObra() !== "moradia"
+) {
+  throw new Error("O terceiro bairro não abriu 30 lotes sem romper o orçamento autônomo.");
+}
+thirdHousingGame.atualizarPrioridades(0);
+thirdHousingGame.atualizarPrioridades(20);
+const firstHouseThirdBlock = thirdHousingGame.posicaoCasa(60);
+const lastHouseThirdBlock = thirdHousingGame.posicaoCasa(89);
+const {
+  recintoExterno: limiteExternoMoradias,
+  recintoInterno: limiteInternoMoradias,
+  areaTerceiroBlocoMoradias: terceiroBairroNordeste,
+} = thirdHousingGame.areasMoradia;
+const housingRoadGroup = thirdHousingGame.trechosEstradaColonia.find(
+  ({ id }) => id === "moradias",
+);
+const northeastRoute = thirdHousingGame.rotaMaisRapida(
+  thirdHousingGame.acessoCasa(300),
+  thirdHousingGame.destinoEmprego("administracao", 0),
+);
+if (
+  thirdHousingGame.estado.quantidadeCasasColonia !== 55 ||
+  thirdHousingGame.capacidadeMoradias() !== 275 ||
+  firstHouseThirdBlock.x !== 9845 ||
+  firstHouseThirdBlock.y !== 1615 ||
+  lastHouseThirdBlock.x !== 10795 ||
+  lastHouseThirdBlock.y !== 2275 ||
+  !areaContida(terceiroBairroNordeste, limiteExternoMoradias) ||
+  areasSobrepostas(terceiroBairroNordeste, limiteInternoMoradias) ||
+  housingRoadGroup.acessos.length !== 15 ||
+  northeastRoute.trechos.length === 0 ||
+  northeastRoute.pontos.some((ponto, indice) => {
+    if (indice === 0) return false;
+    const anterior = northeastRoute.pontos[indice - 1];
+    return ponto.x !== anterior.x && ponto.y !== anterior.y;
+  })
+) {
+  throw new Error("O lote nordeste, suas 30 casas ou os acessos ortogonais não foram preservados.");
+}
+thirdHousingGame.estado.quantidadeCasasColonia = 61;
+thirdHousingGame.resetDrawCalls();
+thirdHousingGame.step(100);
+if (
+  !thirdHousingGame.strokeRects.some(
+    ([x, y, width, height]) =>
+      x === 9800 && y === 1550 && width === 1200 && height === 900,
+  ) ||
+  !thirdHousingGame.strokeRects.some(
+    ([x, y, width, height]) =>
+      x === 9845 && y === 1615 && width === 130 && height === 105,
+  ) ||
+  !thirdHousingGame.fillTexts.some(([label]) =>
+    String(label).startsWith("BAIRRO 3 · 1/30 CASAS"),
+  )
+) {
+  throw new Error("O terceiro bairro não apareceu no mapa no lote nordeste.");
+}
+
 const meatStorage = new Map();
 const meatGame = createHarness(meatStorage);
 Object.assign(meatGame.estado, {
@@ -3924,6 +4024,7 @@ const legacyFeatureGame = createHarness(legacyFeatureStorage);
 if (
   legacyFeatureGame.estado.revisaoColonia !== 5 ||
   legacyFeatureGame.estado.segundoBlocoMoradiasConstruido ||
+  legacyFeatureGame.estado.terceiroBlocoMoradiasConstruido ||
   legacyFeatureGame.estado.cabanaCacadoresConstruida ||
   legacyFeatureGame.estado.acougueConstruido ||
   legacyFeatureGame.estado.cozinhaCarneConstruida ||
@@ -4044,6 +4145,9 @@ Object.assign(featureSaveSource.estado, {
   revisaoColonia: 5,
   etapaConstrucaoColonia: 4,
   populacaoColonia: 22,
+  quantidadeCasasColonia: 61,
+  segundoBlocoMoradiasConstruido: true,
+  terceiroBlocoMoradiasConstruido: true,
   armeiroConstruido: true,
   cemiterioConstruido: true,
   estoqueCouro: 17,
@@ -4070,6 +4174,9 @@ featureSaveTarget.listeners.get("importar-save:click")();
 if (
   !featureSaveTarget.estado.armeiroConstruido ||
   !featureSaveTarget.estado.cemiterioConstruido ||
+  !featureSaveTarget.estado.segundoBlocoMoradiasConstruido ||
+  !featureSaveTarget.estado.terceiroBlocoMoradiasConstruido ||
+  featureSaveTarget.estado.quantidadeCasasColonia !== 61 ||
   featureSaveTarget.estado.estoqueCouro !== 17 ||
   featureSaveTarget.estado.estoqueArmaduras.placas !== 1 ||
   featureSaveTarget.estado.armadurasEquipadasColonia.soldado.placas !== 1 ||
@@ -4245,6 +4352,87 @@ if (process.argv[2]) {
     estoqueFerramentas: Math.max(30, matureGame.estado.estoqueFerramentas),
   });
   report.configuracaoMadura = snapshotAudit(matureGame);
+  Object.assign(matureGame.estado, {
+    terceiroBlocoMoradiasConstruido: true,
+    populacaoColonia: 450,
+    criancasColonia: [],
+    quantidadeCasasColonia: 90,
+    idadesAdultosColonia: Array(450).fill(32),
+  });
+  const empregosAutomaticosLotacaoMaxima =
+    matureGame.redistribuirTrabalhadores();
+  const capacidadesLotacaoMaxima = matureGame.capacidadesEmprego();
+  const empregosAlimentaresCompletos = {
+    ...empregosAutomaticosLotacaoMaxima,
+  };
+  foodJobKeys.forEach((key) => {
+    empregosAlimentaresCompletos[key] = capacidadesLotacaoMaxima[key] || 0;
+  });
+  const empregosAlimentaresComApoio = {
+    ...empregosAlimentaresCompletos,
+    transportador: capacidadesLotacaoMaxima.transportador || 0,
+    bibliotecario: capacidadesLotacaoMaxima.bibliotecario || 0,
+  };
+  const necessidadeLotacaoMaxima = matureGame.necessidadeAlimentos();
+  const producaoAutomaticaLotacaoMaxima = matureGame.producaoAlimentar(
+    empregosAutomaticosLotacaoMaxima,
+  );
+  const producaoAlimentarCompleta = matureGame.producaoAlimentar(
+    empregosAlimentaresCompletos,
+  );
+  const producaoAlimentarComApoio = matureGame.producaoAlimentar(
+    empregosAlimentaresComApoio,
+  );
+  report.lotacaoMaximaTresBairros = {
+    moradores: matureGame.totalMoradores(),
+    casas: matureGame.estado.quantidadeCasasColonia,
+    capacidadeMoradia: matureGame.capacidadeMoradias(),
+    necessidadeAlimentar: necessidadeLotacaoMaxima,
+    empregosAlimentaresAutomaticos: foodJobKeys.reduce(
+      (total, key) =>
+        total + (empregosAutomaticosLotacaoMaxima[key] || 0),
+      0,
+    ),
+    vagasAlimentares: foodJobKeys.reduce(
+      (total, key) => total + (capacidadesLotacaoMaxima[key] || 0),
+      0,
+    ),
+    producaoAutomatica: producaoAutomaticaLotacaoMaxima,
+    coberturaAutomaticaPercentual:
+      Math.round(
+        (producaoAutomaticaLotacaoMaxima / necessidadeLotacaoMaxima) * 1000,
+      ) / 10,
+    producaoComTodasVagasAlimentares: producaoAlimentarCompleta,
+    coberturaComTodasVagasAlimentaresPercentual:
+      Math.round(
+        (producaoAlimentarCompleta / necessidadeLotacaoMaxima) * 1000,
+      ) / 10,
+    producaoComAlimentacaoEApoioCompletos: producaoAlimentarComApoio,
+    coberturaComAlimentacaoEApoioCompletosPercentual:
+      Math.round(
+        (producaoAlimentarComApoio / necessidadeLotacaoMaxima) * 1000,
+      ) / 10,
+    folhaAutomatica: matureGame.folhaCivil(
+      empregosAutomaticosLotacaoMaxima,
+    ),
+    folhaComAlimentacaoEApoioCompletos: matureGame.folhaCivil(
+      empregosAlimentaresComApoio,
+    ),
+    limiteFolhaCivil: matureGame.limiteFolhaCivil(),
+    manutencao: matureGame.manutencaoMunicipal(),
+    saldoComAlimentacaoEApoioCompletos: matureGame.saldoOperacional(
+      empregosAlimentaresComApoio,
+    ),
+  };
+  if (
+    report.lotacaoMaximaTresBairros.capacidadeMoradia !== 450 ||
+    report.lotacaoMaximaTresBairros.vagasAlimentares !== 69 ||
+    report.lotacaoMaximaTresBairros.producaoComAlimentacaoEApoioCompletos <
+      necessidadeLotacaoMaxima ||
+    report.lotacaoMaximaTresBairros.saldoComAlimentacaoEApoioCompletos < 0
+  ) {
+    throw new Error("A auditoria de alimentação na lotação máxima não reconciliou capacidade e sustentabilidade.");
+  }
   console.log(`LIVE_SAVE_AUDIT ${JSON.stringify(report)}`);
 }
 

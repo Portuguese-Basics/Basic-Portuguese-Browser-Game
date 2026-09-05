@@ -703,7 +703,7 @@
             <li>Os colonos escolhem sozinhos as obras e os empregos prioritários da cidade.</li>
             <li>Cada morador consome 1 alimento por minuto e precisa de moradia. Cada casa abriga 5 pessoas; a cidade mantém antecipadamente pelo menos 10 vagas ou 10% da população, o que for maior.</li>
             <li>A reserva habitacional limita somente a migração espontânea. Um incentivo pago pode ocupar qualquer leito realmente livre se a saúde e a alimentação estiverem estáveis; sua embarcação leva 12 segundos e não depende dos pescadores.</li>
-            <li>Há dois bairros de até 30 casas cada. O segundo custa 2.500 de ouro municipal e é aberto antes de o primeiro ficar cheio; cada casa continua custando 250.</li>
+            <li>Há três bairros de até 30 casas cada. O segundo custa 2.500 de ouro municipal; o terceiro custa 3.500, ocupa o nordeste do recinto externo e é aberto antes de o segundo ficar cheio. Cada casa continua custando 250.</li>
             <li>A torre administrativa, as moradias de prestígio e o celeiro ocupam o recinto interno planejado; os blocos de moradia ocupam o recinto externo planejado.</li>
             <li>O campo de grãos, a horta e pomar, o feijoal, a pastagem, a mina e a pedreira ficam no extremo oeste. A costa é reservada para pesca, comércio e chegada de migrantes.</li>
             <li>A horta e pomar produz 4 cestas por trabalhador; cada cesta vale 2 alimentos. O feijoal produz 3 sacas; cada saca vale 3 alimentos.</li>
@@ -786,7 +786,7 @@
               <li>Casas construídas <span id="painel-casas">0</span></li>
               <li>Capacidade habitacional <span id="painel-capacidade-casas">0</span></li>
               <li>Reserva planejada <span id="painel-reserva-moradia">10 vagas</span></li>
-              <li>Bairros disponíveis <span id="painel-bairros">1 / 2</span></li>
+              <li>Bairros disponíveis <span id="painel-bairros">1 / 3</span></li>
               <li>Sem moradia <span id="painel-sem-moradia">20</span></li>
               <li>Em construção <span id="painel-construcao">Nenhuma</span></li>
             </ul>
@@ -926,6 +926,7 @@
               <li>Moinho + depósito de farinha <span id="edificio-moinho">Planejados</span></li>
               <li>Padaria + despensa de pães <span id="edificio-padaria">Planejados</span></li>
               <li>Segundo bairro de moradias <span id="edificio-segundo-bairro">Planejado</span></li>
+              <li>Terceiro bairro de moradias no nordeste <span id="edificio-terceiro-bairro">Planejado</span></li>
               <li>Cabana dos caçadores <span id="edificio-cacadores">Planejada</span></li>
               <li>Açougue + cofre interno de cortes <span id="edificio-acougue">Planejados</span></li>
               <li>Cozinha de carnes externa + despensa interna <span id="edificio-cozinha-carne">Planejadas</span></li>
@@ -1626,6 +1627,9 @@
       const edificioSegundoBairroEl = document.querySelector(
         "#edificio-segundo-bairro",
       );
+      const edificioTerceiroBairroEl = document.querySelector(
+        "#edificio-terceiro-bairro",
+      );
       const edificioCacadoresEl = document.querySelector(
         "#edificio-cacadores",
       );
@@ -1911,6 +1915,12 @@
       const areaSegundoBlocoMoradias = {
         x: 7100,
         y: 6500,
+        largura: 1200,
+        altura: 900,
+      };
+      const areaTerceiroBlocoMoradias = {
+        x: 9800,
+        y: 1550,
         largura: 1200,
         altura: 900,
       };
@@ -2341,6 +2351,11 @@
               { x: 5100, y: 6700 },
               { x: 6700, y: 6700 },
             ],
+            [
+              { x: 6700, y: 2500 },
+              { x: 9700, y: 2500 },
+              { x: 9700, y: 1750 },
+            ],
           ],
           acessos: [
             [{ x: 5350, y: 5850 }, { x: 6700, y: 5850 }],
@@ -2353,6 +2368,11 @@
             [{ x: 6700, y: 7030 }, { x: 8300, y: 7030 }],
             [{ x: 6700, y: 7195 }, { x: 8300, y: 7195 }],
             [{ x: 6700, y: 7365 }, { x: 8300, y: 7365 }],
+            [{ x: 9700, y: 1750 }, { x: 11000, y: 1750 }],
+            [{ x: 9700, y: 1915 }, { x: 11000, y: 1915 }],
+            [{ x: 9700, y: 2080 }, { x: 11000, y: 2080 }],
+            [{ x: 9700, y: 2245 }, { x: 11000, y: 2245 }],
+            [{ x: 9700, y: 2415 }, { x: 11000, y: 2415 }],
           ],
         },
         {
@@ -2510,6 +2530,7 @@
       const custoFlechariaColonia = 450;
       const custoDepositoFlechasColonia = 200;
       const custoSegundoBlocoMoradiasColonia = 2500;
+      const custoTerceiroBlocoMoradiasColonia = 3500;
       const custoCabanaCacadoresColonia = 900;
       const custoAcougueColonia = 1400;
       const custoCozinhaCarneColonia = 1800;
@@ -2578,7 +2599,9 @@
       const capacidadeArmaduraPorTipoColonia = 20;
       const capacidadeCasaColonia = 5;
       const casasPorBlocoMoradiasColonia = 30;
-      const maximoCasasColonia = casasPorBlocoMoradiasColonia * 2;
+      const totalBlocosMoradiasColonia = 3;
+      const maximoCasasColonia =
+        casasPorBlocoMoradiasColonia * totalBlocosMoradiasColonia;
       const reservaMinimaMoradiaColonia = 10;
       const fracaoReservaMoradiaColonia = 0.1;
       const custoCasaColonia = 250;
@@ -2901,6 +2924,7 @@
         padariaConstruida: false,
         armazemPaesConstruido: false,
         segundoBlocoMoradiasConstruido: false,
+        terceiroBlocoMoradiasConstruido: false,
         cabanaCacadoresConstruida: false,
         acougueConstruido: false,
         cozinhaCarneConstruida: false,
@@ -3837,6 +3861,7 @@
         estado.padariaConstruida = false;
         estado.armazemPaesConstruido = false;
         estado.segundoBlocoMoradiasConstruido = false;
+        estado.terceiroBlocoMoradiasConstruido = false;
         estado.cabanaCacadoresConstruida = false;
         estado.acougueConstruido = false;
         estado.cozinhaCarneConstruida = false;
@@ -4076,6 +4101,8 @@
               armazemPaesConstruido: estado.armazemPaesConstruido,
               segundoBlocoMoradiasConstruido:
                 estado.segundoBlocoMoradiasConstruido,
+              terceiroBlocoMoradiasConstruido:
+                estado.terceiroBlocoMoradiasConstruido,
               cadeiaCarne: {
                 cabanaCacadores: estado.cabanaCacadoresConstruida,
                 acougue: estado.acougueConstruido,
@@ -4748,6 +4775,9 @@
             salvo.expansao?.economia?.armazemPaesConstruido === true;
           estado.segundoBlocoMoradiasConstruido =
             salvo.expansao?.economia?.segundoBlocoMoradiasConstruido === true;
+          estado.terceiroBlocoMoradiasConstruido =
+            estado.segundoBlocoMoradiasConstruido &&
+            salvo.expansao?.economia?.terceiroBlocoMoradiasConstruido === true;
           estado.cabanaCacadoresConstruida =
             salvo.expansao?.economia?.cadeiaCarne?.cabanaCacadores === true;
           estado.acougueConstruido =
@@ -5056,6 +5086,7 @@
             salvo.expansao?.economia?.obraAutomatica === "depositoFlechas" ||
             salvo.expansao?.economia?.obraAutomatica === "moradia" ||
             salvo.expansao?.economia?.obraAutomatica === "segundoBlocoMoradias" ||
+            salvo.expansao?.economia?.obraAutomatica === "terceiroBlocoMoradias" ||
             salvo.expansao?.economia?.obraAutomatica === "cabanaCacadores" ||
             salvo.expansao?.economia?.obraAutomatica === "acougue" ||
             salvo.expansao?.economia?.obraAutomatica === "cozinhaCarne" ||
@@ -5780,6 +5811,7 @@
         estado.padariaConstruida = false;
         estado.armazemPaesConstruido = false;
         estado.segundoBlocoMoradiasConstruido = false;
+        estado.terceiroBlocoMoradiasConstruido = false;
         estado.cabanaCacadoresConstruida = false;
         estado.acougueConstruido = false;
         estado.cozinhaCarneConstruida = false;
@@ -6590,8 +6622,11 @@
       }
 
       function maximoCasasDisponiveisColonia() {
+        if (estado.terceiroBlocoMoradiasConstruido) {
+          return maximoCasasColonia;
+        }
         return estado.segundoBlocoMoradiasConstruido
-          ? maximoCasasColonia
+          ? casasPorBlocoMoradiasColonia * 2
           : casasPorBlocoMoradiasColonia;
       }
 
@@ -6601,6 +6636,21 @@
           (estado.quantidadeCasasColonia >= 24 ||
             casasNecessariasColonia() > casasPorBlocoMoradiasColonia)
         );
+      }
+
+      function terceiroBlocoMoradiasNecessarioColonia() {
+        return (
+          estado.segundoBlocoMoradiasConstruido &&
+          !estado.terceiroBlocoMoradiasConstruido &&
+          (estado.quantidadeCasasColonia >=
+              casasPorBlocoMoradiasColonia * 2 - 6 ||
+            casasNecessariasColonia() > casasPorBlocoMoradiasColonia * 2)
+        );
+      }
+
+      function quantidadeBlocosMoradiasDisponiveisColonia() {
+        if (estado.terceiroBlocoMoradiasConstruido) return 3;
+        return estado.segundoBlocoMoradiasConstruido ? 2 : 1;
       }
 
       function vagasMigracaoColonia() {
@@ -6915,6 +6965,7 @@
           estado.flechariaConstruida,
         ].filter(Boolean).length * 0.75;
         total += estado.segundoBlocoMoradiasConstruido ? 2 : 0;
+        total += estado.terceiroBlocoMoradiasConstruido ? 2 : 0;
         total += estado.cabanaCacadoresConstruida ? 0.75 : 0;
         total += estado.acougueConstruido ? 1 : 0;
         total += estado.cozinhaCarneConstruida ? 1.5 : 0;
@@ -7084,6 +7135,7 @@
         return [
           "moradia",
           "segundoBlocoMoradias",
+          "terceiroBlocoMoradias",
           "escola",
           "pastagem",
           "celeiro",
@@ -7101,6 +7153,7 @@
         const manutencoes = {
           moradia: 0.25,
           segundoBlocoMoradias: 2,
+          terceiroBlocoMoradias: 2,
           cabanaCacadores: 0.75,
           acougue: 1,
           cozinhaCarne: 1.5,
@@ -7629,6 +7682,9 @@
         if (tipo === "segundoBlocoMoradias") {
           return "segundo bairro de moradias";
         }
+        if (tipo === "terceiroBlocoMoradias") {
+          return "terceiro bairro de moradias no nordeste";
+        }
         if (tipo === "cabanaCacadores") return "cabana dos caçadores";
         if (tipo === "acougue") {
           return "açougue e cofre interno de cortes";
@@ -7744,6 +7800,7 @@
           depositoFlechas: custoDepositoFlechasColonia,
           moradia: custoCasaColonia,
           segundoBlocoMoradias: custoSegundoBlocoMoradiasColonia,
+          terceiroBlocoMoradias: custoTerceiroBlocoMoradiasColonia,
           cabanaCacadores: custoCabanaCacadoresColonia,
           acougue: custoAcougueColonia,
           cozinhaCarne: custoCozinhaCarneColonia,
@@ -7810,6 +7867,12 @@
           segundoBlocoMoradiasNecessarioColonia()
         ) {
           return "segundoBlocoMoradias";
+        }
+        if (
+          (faltaMoradiaAgora || cadeiaAlimentarBasicaCompleta) &&
+          terceiroBlocoMoradiasNecessarioColonia()
+        ) {
+          return "terceiroBlocoMoradias";
         }
         if (
           (faltaMoradiaAgora || cadeiaAlimentarBasicaCompleta) &&
@@ -8262,7 +8325,7 @@
         painelReservaMoradiaEl.textContent =
           `${Math.max(0, capacidadeMoradia - totalMoradores)} livres · meta ${reservaPlanejadaMoradiaColonia()}`;
         painelBairrosEl.textContent =
-          `${estado.segundoBlocoMoradiasConstruido ? 2 : 1} / 2 · até ${maximoCasasDisponiveisColonia()} casas`;
+          `${quantidadeBlocosMoradiasDisponiveisColonia()} / ${totalBlocosMoradiasColonia} · até ${maximoCasasDisponiveisColonia()} casas`;
         painelSemMoradiaEl.textContent = String(
           Math.max(0, totalMoradores - capacidadeMoradia),
         );
@@ -8485,6 +8548,10 @@
         edificioSegundoBairroEl.textContent = statusEdificioColonia(
           "segundoBlocoMoradias",
           estado.segundoBlocoMoradiasConstruido,
+        );
+        edificioTerceiroBairroEl.textContent = statusEdificioColonia(
+          "terceiroBlocoMoradias",
+          estado.terceiroBlocoMoradiasConstruido,
         );
         edificioCacadoresEl.textContent = statusEdificioColonia(
           "cabanaCacadores",
@@ -8825,7 +8892,7 @@
         registrosEls["auditoria-carne"].textContent =
           `${empregos.cacador}/${maximoTrabalhadoresCacadores} + ${empregos.pastagem} pastores → ${empregos.acougue}/${maximoTrabalhadoresAcougue} → ${empregos.cozinhaCarne}/${maximoTrabalhadoresCozinhaCarne} · até ${formatarQuantidade(Math.min(empregos.cacador, empregos.acougue, empregos.cozinhaCarne) * refeicoesPorCozinheiro * valorAlimentarRefeicaoCarne)} alimento`;
         registrosEls["auditoria-moradia"].textContent =
-          `${totalMoradores}/${capacidadeMoradia} moradores · ${Math.max(0, capacidadeMoradia - totalMoradores)} livres · meta ${reservaPlanejadaMoradiaColonia()} · ${estado.segundoBlocoMoradiasConstruido ? "2 bairros" : "1 bairro"}`;
+          `${totalMoradores}/${capacidadeMoradia} moradores · ${Math.max(0, capacidadeMoradia - totalMoradores)} livres · meta ${reservaPlanejadaMoradiaColonia()} · ${quantidadeBlocosMoradiasDisponiveisColonia()} bairros`;
         registrosEls["auditoria-empregos"].textContent =
           `${empregosOcupados}/${capacidadeEmpregos} postos ocupados · ${empregos.geral} adultos disponíveis · folha ${formatarOuro(folhaCivil)}/${formatarOuro(limiteFolhaCivilColonia())}`;
         registrosEls["auditoria-floresta"].textContent =
@@ -10297,6 +10364,14 @@
               areaSegundoBlocoMoradias.y +
               areaSegundoBlocoMoradias.altura / 2,
           },
+          terceiroBlocoMoradias: {
+            x:
+              areaTerceiroBlocoMoradias.x +
+              areaTerceiroBlocoMoradias.largura / 2,
+            y:
+              areaTerceiroBlocoMoradias.y +
+              areaTerceiroBlocoMoradias.altura / 2,
+          },
           cabanaCacadores: {
             x: areaCabanaCacadores.x + areaCabanaCacadores.largura / 2,
             y: areaCabanaCacadores.y + areaCabanaCacadores.altura / 2,
@@ -10494,7 +10569,11 @@
         };
         focarCameraExpansao(
           alvos[tipo] || centroObraColonia(tipo),
-          tipo === "moradia" || tipo === "segundoBlocoMoradias" ? 0.8 : 0.6,
+          tipo === "moradia" ||
+            tipo === "segundoBlocoMoradias" ||
+            tipo === "terceiroBlocoMoradias"
+            ? 0.8
+            : 0.6,
         );
         definirMensagem(
           `Os colonos iniciaram ${nomeObraAutomaticaColonia(tipo)} e reservaram ${custo} do cofre municipal${tipo === "estradaSegmento" ? textoMateriaisTrechoEstradaColonia(trechoEstradaReservado) : textoMateriaisObraColonia(tipo)}.`,
@@ -10590,6 +10669,8 @@
           );
         } else if (obraConcluida === "segundoBlocoMoradias") {
           estado.segundoBlocoMoradiasConstruido = true;
+        } else if (obraConcluida === "terceiroBlocoMoradias") {
+          estado.terceiroBlocoMoradiasConstruido = true;
         } else if (obraConcluida === "cabanaCacadores") {
           estado.cabanaCacadoresConstruida = true;
         } else if (obraConcluida === "acougue") {
@@ -12308,11 +12389,16 @@
       }
 
       function posicaoCasaColonia(indiceCasa) {
-        const segundoBloco = indiceCasa >= casasPorBlocoMoradiasColonia;
-        const indiceNoBloco = segundoBloco
-          ? indiceCasa - casasPorBlocoMoradiasColonia
-          : indiceCasa;
-        const area = segundoBloco ? areaSegundoBlocoMoradias : areaMoradias;
+        const indiceBloco = Math.min(
+          totalBlocosMoradiasColonia - 1,
+          Math.floor(indiceCasa / casasPorBlocoMoradiasColonia),
+        );
+        const indiceNoBloco = indiceCasa % casasPorBlocoMoradiasColonia;
+        const area = [
+          areaMoradias,
+          areaSegundoBlocoMoradias,
+          areaTerceiroBlocoMoradias,
+        ][indiceBloco];
         const coluna = indiceNoBloco % 6;
         const linha = Math.floor(indiceNoBloco / 6);
         return {
@@ -13058,6 +13144,14 @@
               areaSegundoBlocoMoradias.y +
               areaSegundoBlocoMoradias.altura / 2,
           },
+          terceiroBlocoMoradias: {
+            x:
+              areaTerceiroBlocoMoradias.x +
+              areaTerceiroBlocoMoradias.largura / 2,
+            y:
+              areaTerceiroBlocoMoradias.y +
+              areaTerceiroBlocoMoradias.altura / 2,
+          },
           cabanaCacadores: {
             x: areaCabanaCacadores.x + areaCabanaCacadores.largura / 2,
             y: areaCabanaCacadores.y + areaCabanaCacadores.altura / 2,
@@ -13487,6 +13581,21 @@
           contexto.globalAlpha = 1;
         }
 
+        const progressoTerceiroBloco = progressoEdificioColonia(
+          "terceiroBlocoMoradias",
+          estado.terceiroBlocoMoradiasConstruido,
+        );
+        if (progressoTerceiroBloco > 0) {
+          contexto.globalAlpha = 0.35 + progressoTerceiroBloco * 0.65;
+          contexto.strokeRect(
+            areaTerceiroBlocoMoradias.x,
+            areaTerceiroBlocoMoradias.y,
+            areaTerceiroBlocoMoradias.largura,
+            areaTerceiroBlocoMoradias.altura,
+          );
+          contexto.globalAlpha = 1;
+        }
+
         const casasConcluidas = estado.etapaConstrucaoColonia >= 4
           ? estado.quantidadeCasasColonia
           : 4;
@@ -13551,11 +13660,21 @@
         if (progressoSegundoBloco > 0) {
           contexto.fillText(
             estado.segundoBlocoMoradiasConstruido
-              ? `BAIRRO 2 · ${Math.max(0, estado.quantidadeCasasColonia - casasPorBlocoMoradiasColonia)}/${casasPorBlocoMoradiasColonia} CASAS`
+              ? `BAIRRO 2 · ${Math.min(casasPorBlocoMoradiasColonia, Math.max(0, estado.quantidadeCasasColonia - casasPorBlocoMoradiasColonia))}/${casasPorBlocoMoradiasColonia} CASAS`
               : `BAIRRO 2 · ${Math.round(progressoSegundoBloco * 100)}%`,
             areaSegundoBlocoMoradias.x +
               areaSegundoBlocoMoradias.largura / 2,
             areaSegundoBlocoMoradias.y + 28,
+          );
+        }
+        if (progressoTerceiroBloco > 0) {
+          contexto.fillText(
+            estado.terceiroBlocoMoradiasConstruido
+              ? `BAIRRO 3 · ${Math.max(0, estado.quantidadeCasasColonia - casasPorBlocoMoradiasColonia * 2)}/${casasPorBlocoMoradiasColonia} CASAS`
+              : `BAIRRO 3 · ${Math.round(progressoTerceiroBloco * 100)}%`,
+            areaTerceiroBlocoMoradias.x +
+              areaTerceiroBlocoMoradias.largura / 2,
+            areaTerceiroBlocoMoradias.y + 28,
           );
         }
         contexto.textAlign = "start";
