@@ -1314,15 +1314,15 @@ expansionPurchaseGame.resetDrawCalls();
 expansionPurchaseGame.step(100);
 const hasColonialGrainPlan = expansionPurchaseGame.strokeRects.some(
   ([x, y, width, height]) =>
-    x === 400 && y === 2800 && width === 1100 && height === 1100,
+    x === 400 && y === 2800 && width === 1100 && height === 1300,
 );
 const hasColonialProduce = expansionPurchaseGame.fillRects.some(
   ([x, y, width, height]) =>
-    x === 1608 && y === 2808 && width === 1084 && height === 1084,
+    x === 1608 && y === 2808 && width === 1084 && height === 1284,
 );
 const hasColonialBeans = expansionPurchaseGame.fillRects.some(
   ([x, y, width, height]) =>
-    x === 2808 && y === 2808 && width === 1084 && height === 1084,
+    x === 2808 && y === 2808 && width === 1084 && height === 1284,
 );
 const hasColonialPasture = expansionPurchaseGame.fillRects.some(
   ([x, y, width, height]) =>
@@ -1332,6 +1332,15 @@ const hasFieldRoad = expansionPurchaseGame.fillRects.some(
   ([x, y, width, height]) =>
     x === 3900 && y === 4090 && width === 3030 && height === 120,
 );
+const hasRoadBetweenFieldsAndPasture =
+  expansionPurchaseGame.lineSegments.some(
+    ([x1, y1, x2, y2]) =>
+      x1 === 400 && y1 === 4150 && x2 === 1600 && y2 === 4150,
+  ) &&
+  expansionPurchaseGame.lineSegments.some(
+    ([x1, y1, x2, y2]) =>
+      x1 === 2800 && y1 === 4150 && x2 === 4000 && y2 === 4150,
+  );
 const hasProduceStore = expansionPurchaseGame.strokeRects.some(
   ([x, y, width, height]) =>
     x === 5600 && y === 2050 && width === 380 && height === 270,
@@ -1386,6 +1395,7 @@ if (
   !hasColonialBeans ||
   !hasColonialPasture ||
   !hasFieldRoad ||
+  !hasRoadBetweenFieldsAndPasture ||
   !hasProduceStore ||
   !hasBeanStore ||
   !hasOuterWardPlan ||
@@ -2082,11 +2092,11 @@ if (
 }
 if (
   resourceGame.elements.get("trabalho-lavoura").textContent !==
-    "2 / 5 · +6 grãos cada" ||
+    "2 / 6 · +6 grãos cada" ||
   resourceGame.elements.get("trabalho-horta").textContent !==
-    "2 / 5 · +4 cestas cada" ||
+    "2 / 6 · +4 cestas cada" ||
   resourceGame.elements.get("trabalho-feijao").textContent !==
-    "2 / 5 · +3 sacas cada" ||
+    "2 / 6 · +3 sacas cada" ||
   resourceGame.elements.get("trabalho-moinho").textContent !==
     "2 / 5 · 4 grãos → 3 farinhas" ||
   resourceGame.elements.get("trabalho-padaria").textContent !==
@@ -2109,7 +2119,7 @@ if (
   resourceGame.elements.get("estoque-armas").textContent !== "40 / 40" ||
   resourceGame.elements.get("estoque-mercadorias").textContent !== "100 / 100" ||
   resourceGame.elements.get("registro-auditoria-pao").textContent !==
-    "2/5 → 2/5 → 2/5 · +12 grãos → +6 farinhas → +4 pães" ||
+    "2/6 → 2/5 → 2/5 · +12 grãos → +6 farinhas → +4 pães" ||
   resourceGame.elements.get("registro-auditoria-metal").textContent !==
     "5/5 · +25 minério → demanda 25" ||
   resourceGame.elements.get("registro-auditoria-costa").textContent !==
@@ -2169,8 +2179,8 @@ if (
   fullChainJobs.lavoura !== 5 ||
   fullChainJobs.moinho !== 5 ||
   fullChainJobs.padaria !== 5 ||
-  fullChainJobs.horta !== 5 ||
-  fullChainJobs.feijao !== 5 ||
+  fullChainJobs.horta !== 6 ||
+  fullChainJobs.feijao !== 6 ||
   fullChainJobs.pastagem !== 10 ||
   fullChainJobs.pesca !== 10 ||
   fullChainJobs.lenhador !== 6 ||
@@ -2182,12 +2192,14 @@ if (
   fullChainJobs.forja !== 5 ||
   fullChainJobs.comercio !== 10
 ) {
-  throw new Error("As cadeias completas não preencheram vagas coerentes em capacidade máxima.");
+  throw new Error(
+    `As cadeias completas não preencheram vagas coerentes em capacidade máxima: ${JSON.stringify(fullChainJobs)}.`,
+  );
 }
 fullChainGame.atualizarNecessidades(60);
 if (
   fullChainGame.elements.get("registro-auditoria-pao").textContent !==
-    "5/5 → 5/5 → 5/5 · +30 grãos → +15 farinhas → +10 pães" ||
+    "5/6 → 5/5 → 5/5 · +30 grãos → +15 farinhas → +10 pães" ||
   fullChainGame.elements.get("registro-auditoria-floresta").textContent !==
     "6/6 · −12 árvores/+60 madeira ↔ 2/2 · +12 árvores" ||
   fullChainGame.elements.get("registro-auditoria-metal").textContent !==
@@ -4415,6 +4427,9 @@ if (process.argv[2]) {
     folhaAutomatica: matureGame.folhaCivil(
       empregosAutomaticosLotacaoMaxima,
     ),
+    saldoAutomatico: matureGame.saldoOperacional(
+      empregosAutomaticosLotacaoMaxima,
+    ),
     folhaComAlimentacaoEApoioCompletos: matureGame.folhaCivil(
       empregosAlimentaresComApoio,
     ),
@@ -4426,7 +4441,10 @@ if (process.argv[2]) {
   };
   if (
     report.lotacaoMaximaTresBairros.capacidadeMoradia !== 450 ||
-    report.lotacaoMaximaTresBairros.vagasAlimentares !== 69 ||
+    report.lotacaoMaximaTresBairros.vagasAlimentares !== 72 ||
+    report.lotacaoMaximaTresBairros.producaoAutomatica <
+      necessidadeLotacaoMaxima ||
+    report.lotacaoMaximaTresBairros.saldoAutomatico < 0 ||
     report.lotacaoMaximaTresBairros.producaoComAlimentacaoEApoioCompletos <
       necessidadeLotacaoMaxima ||
     report.lotacaoMaximaTresBairros.saldoComAlimentacaoEApoioCompletos < 0
