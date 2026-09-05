@@ -4,6 +4,10 @@ It all started with a dot that was an archer. The project is now a buildless,
 single-page settlement and colony simulation with a Brazilian Portuguese
 interface and deliberately minimal canvas graphics.
 
+The in-game clock can run at 1×, 2×, 5×, or 10×. Accelerated time advances
+passive production and colony systems while hunting and direct actions remain
+at normal real-time speed.
+
 Play the public version:
 https://portuguese-basics.github.io/Basic-Portuguese-Browser-Game/
 
