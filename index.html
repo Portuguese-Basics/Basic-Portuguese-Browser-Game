@@ -735,7 +735,7 @@
             <li>Transportadores aceleram toda a produção em até 12%. Construtores e estradas reduzem o tempo das obras; ferramentas de madeira, pedra e metal equipam até 4 trabalhadores cada.</li>
             <li>A biblioteca e escola avançada ficam no recinto interno e melhoram a produção dos trabalhadores treinados. A igreja interna sustenta a satisfação de fé.</li>
             <li>O mercado público fica junto à costa, fora dos portões. A cada 10 minutos ele pode financiar um festival de 600 ouro se a reserva municipal continuar protegida.</li>
-            <li>Armazéns internos podem receber reforço de pedra, ampliando em 50% os estoques protegidos. Muralhas de pedra, torres e portões fortificados são obras tardias.</li>
+            <li>Armazéns internos podem receber reforço de pedra, ampliando em 50% os estoques protegidos. Sete passagens ligam o eixo central, os recursos e o campo de treino sem deixar estradas bloqueadas; oito torres protegem todos os cantos dos dois recintos.</li>
             <li>Cada combatente recebe uma arma de metal ou lança, ou um arco com uma aljava de 20 flechas. Guardas patrulham a cidade; soldados ficam disponíveis para ordens futuras.</li>
             <li>A costa pode sustentar dois cais de pesca com 5 trabalhadores cada. O mercado costeiro guarda 160 peixes; cada pescador entrega 3 peixes e cada barco ativo acrescenta 2 por minuto.</li>
             <li>A feitoria amplia o cais comercial para 10 mercadores. Cada navio mercante acrescenta 2 mercadorias por minuto enquanto houver mercadores.</li>
@@ -967,7 +967,7 @@
               <li>Saneamento ampliado + brigada de incêndio <span id="edificio-servicos-publicos">Planejados</span></li>
               <li>Biblioteca, igreja e mercado público <span id="edificio-vida-civica">Planejados</span></li>
               <li>Cemitério municipal ao sul <span id="edificio-cemiterio">Planejado</span></li>
-              <li>Muralhas de pedra, torres e portões <span id="edificio-defesa-pedra">0 / 14 obras</span></li>
+              <li>Muralhas de pedra, torres e portões <span id="edificio-defesa-pedra">0 / 23 obras</span></li>
             </ul>
           </section>
         </div>
@@ -1126,7 +1126,7 @@
               <li>Biblioteca e escola avançada <span id="registro-biblioteca">Planejada</span></li>
               <li>Satisfação de fé <span id="registro-fe">35 / 100</span></li>
               <li>Mercado e festival <span id="registro-festival">Planejados</span></li>
-              <li>Fortificação de pedra <span id="registro-fortificacao-pedra">0 / 14 obras</span></li>
+              <li>Fortificação de pedra <span id="registro-fortificacao-pedra">0 / 23 obras</span></li>
             </ul>
           </section>
 
@@ -1906,6 +1906,88 @@
         altura: 3600,
       };
       const yEstradaCampoColonia = 4150;
+      const meiaAberturaPortaoColonia = 105;
+      const portoesMuralhaColonia = [
+        {
+          id: "interno-oeste",
+          nome: "Portão interno oeste",
+          recinto: recintoInterno,
+          lado: "oeste",
+          indiceTrecho: 3,
+          x: recintoInterno.x,
+          y: yEstradaCampoColonia,
+        },
+        {
+          id: "externo-oeste",
+          nome: "Portão externo do campo",
+          recinto: recintoExterno,
+          lado: "oeste",
+          indiceTrecho: 3,
+          x: recintoExterno.x,
+          y: yEstradaCampoColonia,
+        },
+        {
+          id: "interno-leste",
+          nome: "Portão interno leste",
+          recinto: recintoInterno,
+          lado: "leste",
+          indiceTrecho: 1,
+          x: recintoInterno.x + recintoInterno.largura,
+          y: yEstradaCampoColonia,
+        },
+        {
+          id: "externo-leste",
+          nome: "Portão externo da costa",
+          recinto: recintoExterno,
+          lado: "leste",
+          indiceTrecho: 1,
+          x: recintoExterno.x + recintoExterno.largura,
+          y: yEstradaCampoColonia,
+        },
+        {
+          id: "externo-oeste-recursos",
+          nome: "Portão externo dos recursos",
+          recinto: recintoExterno,
+          lado: "oeste",
+          indiceTrecho: 3,
+          x: recintoExterno.x,
+          y: 5520,
+        },
+        {
+          id: "interno-oeste-recursos",
+          nome: "Portão interno dos recursos",
+          recinto: recintoInterno,
+          lado: "oeste",
+          indiceTrecho: 3,
+          x: recintoInterno.x,
+          y: 5520,
+        },
+        {
+          id: "externo-sul-treinamento",
+          nome: "Portão sul do treinamento",
+          recinto: recintoExterno,
+          lado: "sul",
+          indiceTrecho: 2,
+          x: 6700,
+          y: recintoExterno.y + recintoExterno.altura,
+        },
+      ];
+      const cantosTorresMuralhaColonia = [
+        { recinto: "interno", canto: "noroeste", x: recintoInterno.x, y: recintoInterno.y },
+        { recinto: "interno", canto: "nordeste", x: recintoInterno.x + recintoInterno.largura, y: recintoInterno.y },
+        { recinto: "interno", canto: "sudoeste", x: recintoInterno.x, y: recintoInterno.y + recintoInterno.altura },
+        { recinto: "interno", canto: "sudeste", x: recintoInterno.x + recintoInterno.largura, y: recintoInterno.y + recintoInterno.altura },
+        { recinto: "externo", canto: "noroeste", x: recintoExterno.x, y: recintoExterno.y },
+        { recinto: "externo", canto: "nordeste", x: recintoExterno.x + recintoExterno.largura, y: recintoExterno.y },
+        { recinto: "externo", canto: "sudoeste", x: recintoExterno.x, y: recintoExterno.y + recintoExterno.altura },
+        { recinto: "externo", canto: "sudeste", x: recintoExterno.x + recintoExterno.largura, y: recintoExterno.y + recintoExterno.altura },
+      ];
+      const areasPostosGuardaColonia = [
+        { id: "externo-oeste", x: 5100, y: 3820, largura: 220, altura: 220 },
+        { id: "externo-oeste-recursos", x: 5070, y: 5070, largura: 220, altura: 220 },
+        { id: "externo-sul-treinamento", x: 6800, y: 7580, largura: 220, altura: 220 },
+        { id: "externo-leste", x: 10960, y: 4320, largura: 220, altura: 220 },
+      ];
       const areaMoradias = {
         x: 5350,
         y: 5650,
@@ -2341,6 +2423,8 @@
             { x: 6700, y: 5400 },
             { x: 6700, y: 6700 },
             { x: 6700, y: 7400 },
+            { x: 6700, y: 7500 },
+            { x: 6700, y: 8060 },
           ],
           ramais: [
             [
@@ -2355,6 +2439,10 @@
               { x: 6700, y: 2500 },
               { x: 9700, y: 2500 },
               { x: 9700, y: 1750 },
+            ],
+            [
+              { x: 6700, y: 8060 },
+              { x: 7200, y: 8060 },
             ],
           ],
           acessos: [
@@ -2446,8 +2534,12 @@
           ],
           ramais: [
             [
-              { x: 4400, y: 6200 },
-              { x: 5000, y: 6200 },
+              { x: 4400, y: 5600 },
+              { x: 4400, y: 5520 },
+              { x: 5000, y: 5520 },
+              { x: 6700, y: 5520 },
+              { x: 6800, y: 5520 },
+              { x: 6900, y: 5520 },
             ],
           ],
         },
@@ -2572,10 +2664,10 @@
       const pedraTrechoMuralhaExternaColonia = 40;
       const custoTorreMuralhaColonia = 1600;
       const pedraTorreMuralhaColonia = 30;
-      const totalTorresMuralhaColonia = 4;
+      const totalTorresMuralhaColonia = cantosTorresMuralhaColonia.length;
       const custoPortaoFortificadoColonia = 2000;
       const pedraPortaoFortificadoColonia = 40;
-      const totalPortoesFortificadosColonia = 2;
+      const totalPortoesFortificadosColonia = portoesMuralhaColonia.length;
       const capacidadeCeleiroColonia = 200;
       const capacidadeGraosColonia = 150;
       const capacidadeHortalicasColonia = 100;
@@ -10627,13 +10719,19 @@
           },
           postoGuarda: {
             x:
-              estado.quantidadePostosGuarda % 2 === 0
-                ? recintoExterno.x
-                : recintoExterno.x + recintoExterno.largura,
+              areasPostosGuardaColonia[
+                Math.min(
+                  estado.quantidadePostosGuarda,
+                  areasPostosGuardaColonia.length - 1,
+                )
+              ].x + 110,
             y:
-              estado.quantidadePostosGuarda < 2
-                ? recintoExterno.y
-                : recintoExterno.y + recintoExterno.altura,
+              areasPostosGuardaColonia[
+                Math.min(
+                  estado.quantidadePostosGuarda,
+                  areasPostosGuardaColonia.length - 1,
+                )
+              ].y + 110,
           },
         };
         focarCameraExpansao(
@@ -13498,19 +13596,35 @@
           ),
           torreMuralha: {
             x:
-              estado.quantidadeTorresMuralha % 2 === 0
-                ? recintoInterno.x
-                : recintoInterno.x + recintoInterno.largura,
+              cantosTorresMuralhaColonia[
+                Math.min(
+                  estado.quantidadeTorresMuralha,
+                  cantosTorresMuralhaColonia.length - 1,
+                )
+              ].x,
             y:
-              estado.quantidadeTorresMuralha < 2
-                ? recintoInterno.y
-                : recintoInterno.y + recintoInterno.altura,
+              cantosTorresMuralhaColonia[
+                Math.min(
+                  estado.quantidadeTorresMuralha,
+                  cantosTorresMuralhaColonia.length - 1,
+                )
+              ].y,
           },
           portaoFortificado: {
-            x: estado.quantidadePortoesFortificados === 0
-              ? recintoInterno.x
-              : recintoExterno.x,
-            y: yEstradaCampoColonia,
+            x:
+              portoesMuralhaColonia[
+                Math.min(
+                  estado.quantidadePortoesFortificados,
+                  portoesMuralhaColonia.length - 1,
+                )
+              ].x,
+            y:
+              portoesMuralhaColonia[
+                Math.min(
+                  estado.quantidadePortoesFortificados,
+                  portoesMuralhaColonia.length - 1,
+                )
+              ].y,
           },
         };
         return centros[tipo] || posicaoAdministrador;
@@ -13917,38 +14031,54 @@
         }
       }
 
+      function segmentosTrechoPalicadaColonia(recinto, indiceTrecho) {
+        const lados = ["norte", "leste", "sul", "oeste"];
+        const lado = lados[indiceTrecho];
+        const horizontal = lado === "norte" || lado === "sul";
+        const inicio = horizontal ? recinto.x : recinto.y;
+        const fim = horizontal
+          ? recinto.x + recinto.largura
+          : recinto.y + recinto.altura;
+        const coordenadaFixa = lado === "norte"
+          ? recinto.y
+          : lado === "sul"
+            ? recinto.y + recinto.altura
+            : lado === "oeste"
+              ? recinto.x
+              : recinto.x + recinto.largura;
+        const aberturas = portoesMuralhaColonia
+          .filter((portao) => portao.recinto === recinto && portao.lado === lado)
+          .map((portao) => horizontal ? portao.x : portao.y)
+          .sort((a, b) => a - b);
+        const segmentos = [];
+        let cursor = inicio;
+        aberturas.forEach((centro) => {
+          const antes = Math.max(inicio, centro - meiaAberturaPortaoColonia);
+          const depois = Math.min(fim, centro + meiaAberturaPortaoColonia);
+          if (antes > cursor) segmentos.push([cursor, antes]);
+          cursor = Math.max(cursor, depois);
+        });
+        if (cursor < fim) segmentos.push([cursor, fim]);
+        return segmentos.map(([de, ate]) => horizontal
+          ? { x1: de, y1: coordenadaFixa, x2: ate, y2: coordenadaFixa }
+          : { x1: coordenadaFixa, y1: de, x2: coordenadaFixa, y2: ate });
+      }
+
       function desenharPlanoRecintoColonia(recinto) {
-        const abertura = 105;
-        desenharLinhaPlanejadaPalicada(
-          recinto.x,
-          recinto.y,
-          recinto.x + recinto.largura,
-          recinto.y,
-        );
-        desenharLinhaPlanejadaPalicada(
-          recinto.x + recinto.largura,
-          recinto.y,
-          recinto.x + recinto.largura,
-          recinto.y + recinto.altura,
-        );
-        desenharLinhaPlanejadaPalicada(
-          recinto.x + recinto.largura,
-          recinto.y + recinto.altura,
-          recinto.x,
-          recinto.y + recinto.altura,
-        );
-        desenharLinhaPlanejadaPalicada(
-          recinto.x,
-          recinto.y + recinto.altura,
-          recinto.x,
-          yEstradaCampoColonia + abertura,
-        );
-        desenharLinhaPlanejadaPalicada(
-          recinto.x,
-          yEstradaCampoColonia - abertura,
-          recinto.x,
-          recinto.y,
-        );
+        for (
+          let indice = 0;
+          indice < totalTrechosPalicadaColonia;
+          indice += 1
+        ) {
+          segmentosTrechoPalicadaColonia(recinto, indice).forEach((segmento) =>
+            desenharLinhaPlanejadaPalicada(
+              segmento.x1,
+              segmento.y1,
+              segmento.x2,
+              segmento.y2,
+            ),
+          );
+        }
       }
 
       function desenharTrechoPalicadaColonia(
@@ -13957,67 +14087,17 @@
         progresso,
         cor,
       ) {
-        if (indiceTrecho === 0) {
+        segmentosTrechoPalicadaColonia(recinto, indiceTrecho).forEach(
+          (segmento) =>
           desenharLinhaPalicada(
-            recinto.x,
-            recinto.y,
-            recinto.x + recinto.largura,
-            recinto.y,
+            segmento.x1,
+            segmento.y1,
+            segmento.x2,
+            segmento.y2,
             progresso,
             cor,
-          );
-        } else if (indiceTrecho === 1) {
-          desenharLinhaPalicada(
-            recinto.x + recinto.largura,
-            recinto.y,
-            recinto.x + recinto.largura,
-            recinto.y + recinto.altura,
-            progresso,
-            cor,
-          );
-        } else if (indiceTrecho === 2) {
-          desenharLinhaPalicada(
-            recinto.x + recinto.largura,
-            recinto.y + recinto.altura,
-            recinto.x,
-            recinto.y + recinto.altura,
-            progresso,
-            cor,
-          );
-        } else {
-          const abertura = 105;
-          desenharLinhaPalicada(
-            recinto.x,
-            recinto.y + recinto.altura,
-            recinto.x,
-            yEstradaCampoColonia + abertura,
-            progresso,
-            cor,
-          );
-          desenharLinhaPalicada(
-            recinto.x,
-            recinto.y,
-            recinto.x,
-            yEstradaCampoColonia - abertura,
-            progresso,
-            cor,
-          );
-          if (progresso > 0) {
-            contexto.fillStyle = cor;
-            contexto.fillRect(
-              recinto.x - 34,
-              yEstradaCampoColonia - 110,
-              34,
-              82 * limitarProgresso(progresso),
-            );
-            contexto.fillRect(
-              recinto.x - 34,
-              yEstradaCampoColonia + 28,
-              34,
-              82 * limitarProgresso(progresso),
-            );
-          }
-        }
+          ),
+        );
       }
 
       function desenharPalisadaColonia(recinto, tipo, trechos, cor, nome) {
@@ -14112,16 +14192,32 @@
           estado.trechosMuralhaPedraInterna,
         );
 
-        const cantosTorres = [
-          { x: recintoInterno.x, y: recintoInterno.y },
-          { x: recintoInterno.x + recintoInterno.largura, y: recintoInterno.y },
-          { x: recintoInterno.x, y: recintoInterno.y + recintoInterno.altura },
-          {
-            x: recintoInterno.x + recintoInterno.largura,
-            y: recintoInterno.y + recintoInterno.altura,
-          },
-        ];
-        cantosTorres.forEach((canto, indice) => {
+        contexto.fillStyle = "#3f3020";
+        contexto.font = "bold 18px sans-serif";
+        contexto.textAlign = "center";
+        contexto.textBaseline = "middle";
+        contexto.fillText(
+          "SETE PORTÕES NAS ROTAS PRINCIPAIS",
+          recintoExterno.x + 240,
+          yEstradaCampoColonia - 105,
+        );
+        contexto.textAlign = "start";
+        contexto.textBaseline = "alphabetic";
+      }
+
+      function progressoTrechoDefesaColonia(tipo, trechos, indiceTrecho) {
+        const progressoObra = estado.obraAutomaticaColonia === tipo
+          ? estado.tempoObraAutomaticaColonia / duracaoObraAutomaticaColonia
+          : 0;
+        return limitarProgresso(
+          trechos + limitarProgresso(progressoObra) - indiceTrecho,
+        );
+      }
+
+      function desenharPortoesETorresColonia() {
+        if (estado.etapaConstrucaoColonia < 4) return;
+
+        cantosTorresMuralhaColonia.forEach((canto, indice) => {
           const progresso = progressoEstruturaRepetidaColonia(
             "torreMuralha",
             estado.quantidadeTorresMuralha,
@@ -14140,33 +14236,71 @@
           contexto.strokeRect(canto.x - 48, canto.y - 48, 96, 96);
         });
 
-        [recintoInterno.x, recintoExterno.x].forEach((x, indice) => {
-          const progresso = progressoEstruturaRepetidaColonia(
+        portoesMuralhaColonia.forEach((portao, indice) => {
+          const interno = portao.recinto === recintoInterno;
+          const tipoPalicada = interno ? "palicadaInterna" : "palicadaExterna";
+          const trechosPalicada = interno
+            ? estado.trechosPalicadaInterna
+            : estado.trechosPalicadaExterna;
+          const progressoPalicada = progressoTrechoDefesaColonia(
+            tipoPalicada,
+            trechosPalicada,
+            portao.indiceTrecho,
+          );
+          if (progressoPalicada <= 0) return;
+
+          const horizontal = portao.lado === "norte" || portao.lado === "sul";
+          contexto.globalAlpha = 0.35 + progressoPalicada * 0.65;
+          contexto.fillStyle = "#65452b";
+          if (horizontal) {
+            contexto.fillRect(portao.x - 126, portao.y - 34, 76, 68);
+            contexto.fillRect(portao.x + 50, portao.y - 34, 76, 68);
+          } else {
+            contexto.fillRect(portao.x - 34, portao.y - 126, 68, 76);
+            contexto.fillRect(portao.x - 34, portao.y + 50, 68, 76);
+          }
+          contexto.fillStyle = "#8a6037";
+          if (horizontal) {
+            contexto.fillRect(portao.x - 54, portao.y - 12, 108, 24);
+          } else {
+            contexto.fillRect(portao.x - 12, portao.y - 54, 24, 108);
+          }
+          contexto.globalAlpha = 1;
+
+          const progressoFortificado = progressoEstruturaRepetidaColonia(
             "portaoFortificado",
             estado.quantidadePortoesFortificados,
             indice,
           );
-          if (progresso <= 0) return;
-          contexto.fillStyle = "#555b59";
-          contexto.fillRect(
-            x - 46,
-            yEstradaCampoColonia - 125,
-            92,
-            250 * progresso,
-          );
-          contexto.fillStyle = "#5a3d27";
-          contexto.fillRect(x - 26, yEstradaCampoColonia - 76, 52, 152);
-        });
+          if (progressoFortificado > 0) {
+            contexto.globalAlpha = 0.25 + progressoFortificado * 0.75;
+            contexto.fillStyle = "#555b59";
+            contexto.strokeStyle = "#343b3a";
+            contexto.lineWidth = 8;
+            if (horizontal) {
+              contexto.fillRect(portao.x - 136, portao.y - 52, 88, 104);
+              contexto.fillRect(portao.x + 48, portao.y - 52, 88, 104);
+              contexto.strokeRect(portao.x - 136, portao.y - 52, 88, 104);
+              contexto.strokeRect(portao.x + 48, portao.y - 52, 88, 104);
+            } else {
+              contexto.fillRect(portao.x - 52, portao.y - 136, 104, 88);
+              contexto.fillRect(portao.x - 52, portao.y + 48, 104, 88);
+              contexto.strokeRect(portao.x - 52, portao.y - 136, 104, 88);
+              contexto.strokeRect(portao.x - 52, portao.y + 48, 104, 88);
+            }
+            contexto.globalAlpha = 1;
+          }
 
-        contexto.fillStyle = "#3f3020";
-        contexto.font = "bold 18px sans-serif";
-        contexto.textAlign = "center";
-        contexto.textBaseline = "middle";
-        contexto.fillText(
-          "PORTÕES PLANEJADOS DO CAMPO",
-          recintoExterno.x + 240,
-          yEstradaCampoColonia - 105,
-        );
+          contexto.fillStyle = "#33291f";
+          contexto.font = "bold 15px sans-serif";
+          contexto.textAlign = "center";
+          contexto.textBaseline = "middle";
+          contexto.fillText(
+            progressoFortificado >= 1 ? "PORTÃO FORTIFICADO" : "PORTÃO",
+            portao.x,
+            portao.y - (horizontal ? 82 : 158),
+          );
+        });
         contexto.textAlign = "start";
         contexto.textBaseline = "alphabetic";
       }
@@ -15632,13 +15766,7 @@
           "#a64a3e",
         );
 
-        const postos = [
-          { x: 7890, y: 1370 },
-          { x: 7890, y: 7250 },
-          { x: 4870, y: 4040 },
-          { x: 11070, y: 4040 },
-        ];
-        postos.forEach((posicao, indice) => {
+        areasPostosGuardaColonia.forEach((posicao, indice) => {
           const construido = indice < estado.quantidadePostosGuarda;
           const emObra =
             estado.obraAutomaticaColonia === "postoGuarda" &&
@@ -16403,6 +16531,7 @@
         desenharAreasProdutivasColonia();
         desenharDefesasColonia();
         desenharObrasPublicasColonia();
+        desenharPortoesETorresColonia();
         desenharAdministracaoColonia();
         desenharMoradiasPrestigioColonia();
         desenharCeleiroColonia();
