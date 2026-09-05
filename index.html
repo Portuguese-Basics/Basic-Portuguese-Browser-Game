@@ -140,6 +140,36 @@
         background: #633b35;
       }
 
+      .controle-velocidade {
+        display: flex;
+        align-items: center;
+        gap: 0.2rem;
+        min-height: 2.15rem;
+        padding: 0.18rem 0.25rem 0.18rem 0.45rem;
+        border: 1px solid #544b39;
+        border-radius: 0.35rem;
+        background: #302a1e;
+        color: #d4cbb4;
+        font-size: 0.76rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .controle-velocidade button {
+        min-width: 2.35rem;
+        min-height: 1.7rem;
+        padding: 0.2rem 0.35rem;
+        border-color: #655e4d;
+        background: #3b382f;
+      }
+
+      .controle-velocidade button[aria-pressed="true"] {
+        border-color: #d7a94c;
+        background: #8b6334;
+        color: #fff9df;
+        box-shadow: inset 0 0 0 1px rgb(255 255 255 / 16%);
+      }
+
       .mapa {
         position: relative;
         flex: 1;
@@ -559,6 +589,18 @@
       </section>
 
       <nav class="acoes" aria-label="Ações">
+        <div
+          id="controle-velocidade-tempo"
+          class="controle-velocidade"
+          role="group"
+          aria-label="Velocidade do tempo"
+        >
+          <span>Tempo</span>
+          <button id="velocidade-tempo-1" type="button" aria-pressed="true">1×</button>
+          <button id="velocidade-tempo-2" type="button" aria-pressed="false">2×</button>
+          <button id="velocidade-tempo-5" type="button" aria-pressed="false">5×</button>
+          <button id="velocidade-tempo-10" type="button" aria-pressed="false">10×</button>
+        </div>
         <button id="cacar" class="acao-posto" type="button">Caçar</button>
         <button id="voltar" class="acao-posto" type="button" disabled>Voltar</button>
         <button id="descansar" class="acao-posto" type="button">Descansar · 3 ouro</button>
@@ -696,6 +738,7 @@
             <li>Cada mineiro custa 100 de ouro e produz 1 de ouro a cada 10 segundos.</li>
             <li>Cada banqueiro custa 100 de ouro e rende 1% sobre o ouro atual a cada 60 segundos.</li>
             <li>Cada escriturário custa 100 de ouro e transfere 0,5% do ouro atual para o fundo de expansão a cada 60 segundos.</li>
+            <li>O controle Tempo acelera produção, obras, migração, necessidades, defesa e barcos em 2×, 5× ou 10×. Caçadas, cliques e salvamento automático continuam em tempo real.</li>
             <li>Com 10.000 de ouro no fundo, o escritório pode comprar o mapa de uma nova colônia.</li>
             <li>A nova colônia começa com 2.500 de ouro pessoal e uma transferência municipal inicial de 3.000.</li>
             <li>A colônia começa com 120 provisões prontas. Grãos e farinha são ingredientes e não podem ser consumidos diretamente.</li>
@@ -1442,6 +1485,10 @@
       const incentivarMigracaoBotao = document.querySelector(
         "#incentivar-migracao",
       );
+      const botoesVelocidadeTempo = [1, 2, 5, 10].map((velocidade) => ({
+        velocidade,
+        elemento: document.querySelector(`#velocidade-tempo-${velocidade}`),
+      }));
       const painelColonia = document.querySelector("#painel-colonia");
       const fecharPainelColoniaBotao = document.querySelector(
         "#fechar-painel-colonia",
@@ -3027,6 +3074,7 @@
       const nivelMaximo = 5;
       const chaveSalvamento = "arqueiro-do-assentamento-v1";
       const versaoSalvamento = 1;
+      const velocidadesTempoPermitidas = Object.freeze([1, 2, 5, 10]);
       const prefixoTransferencia = "ARQUEIRO1-";
       const tipoTransferencia = "arqueiro-do-assentamento-save";
       const nomesAtaque = [
@@ -3048,6 +3096,7 @@
 
       const estado = {
         local: "assentamento",
+        velocidadeTempo: 1,
         vida: vidaMaxima,
         ouro: 5,
         ataque: 1,
@@ -4195,6 +4244,7 @@
           versao: versaoSalvamento,
           mapaVersao: versaoMapa,
           salvoEm: Date.now(),
+          velocidadeTempo: estado.velocidadeTempo,
           local: estado.local,
           vida: estado.vida,
           ouro: estado.ouro,
@@ -4686,6 +4736,11 @@
           const escalaMigracaoX = larguraMundo / larguraSalva;
           const escalaMigracaoY = alturaMundo / alturaSalva;
 
+          estado.velocidadeTempo = velocidadesTempoPermitidas.includes(
+            salvo.velocidadeTempo,
+          )
+            ? salvo.velocidadeTempo
+            : 1;
           estado.local = salvo.local === "floresta" ? "floresta" : "assentamento";
           estado.vida = Math.round(
             numeroValido(salvo.vida, 0, vidaMaxima, vidaMaxima),
@@ -5936,6 +5991,7 @@
 
       function redefinirEstado() {
         estado.local = "assentamento";
+        estado.velocidadeTempo = 1;
         estado.vida = vidaMaxima;
         estado.ouro = 5;
         estado.ataque = 1;
@@ -8319,6 +8375,35 @@
         }
       }
 
+      function sincronizarControleVelocidadeTempo() {
+        botoesVelocidadeTempo.forEach(({ velocidade, elemento }) => {
+          const selecionada = velocidade === estado.velocidadeTempo;
+          elemento.setAttribute("aria-pressed", String(selecionada));
+          elemento.setAttribute(
+            "aria-label",
+            selecionada
+              ? `Velocidade ${velocidade} vezes selecionada`
+              : `Usar velocidade ${velocidade} vezes`,
+          );
+        });
+      }
+
+      function definirVelocidadeTempo(velocidade, anunciar = true) {
+        if (!velocidadesTempoPermitidas.includes(velocidade)) return false;
+        estado.velocidadeTempo = velocidade;
+        estado.salvamentoAtivo = true;
+        sincronizarControleVelocidadeTempo();
+        if (anunciar) {
+          definirMensagem(
+            velocidade === 1
+              ? "Velocidade normal."
+              : `Tempo acelerado para ${velocidade}×. Produção, obras e ciclos da colônia avançam mais rápido.`,
+          );
+          salvarProgresso();
+        }
+        return true;
+      }
+
       function statusEdificioColonia(tipo, construido) {
         if (construido) return "Construído";
         return estado.obraAutomaticaColonia === tipo
@@ -8363,6 +8448,7 @@
           "data-mapa",
           naNovaColonia ? "expansao" : "posto",
         );
+        sincronizarControleVelocidadeTempo();
         rotuloOuroEl.textContent = naNovaColonia ? "Ouro pessoal" : "Ouro";
         localEl.textContent = naNovaColonia
           ? "Nova colônia"
@@ -17335,28 +17421,29 @@
       let tempoSalvamento = 0;
       let tempoRio = 0;
       function quadro(agora) {
-        const delta = Math.min((agora - tempoAnterior) / 1000, 0.05);
+        const deltaReal = Math.min((agora - tempoAnterior) / 1000, 0.05);
+        const deltaSimulacao = deltaReal * estado.velocidadeTempo;
         tempoAnterior = agora;
-        tempoRio += delta;
+        tempoRio += deltaSimulacao;
 
         if (estado.local === "floresta") {
-          atualizarCacada(delta);
+          atualizarCacada(deltaReal);
         }
-        atualizarFazendeiro(delta);
-        atualizarFruticultor(delta);
-        atualizarPescador(delta);
-        atualizarComerciante(delta);
-        atualizarFerreiro(delta);
-        atualizarMineiro(delta);
-        atualizarBanqueiro(delta);
-        atualizarEscriturario(delta);
-        atualizarTransferenciaPosto(delta);
-        atualizarOrcamentoMunicipalColonia(delta);
-        atualizarMigracaoColonia(delta);
-        atualizarPrioridadesColonia(delta);
-        atualizarNecessidadesColonia(delta);
-        atualizarDefesaColonia(delta);
-        atualizarConstrucaoColonia(delta);
+        atualizarFazendeiro(deltaSimulacao);
+        atualizarFruticultor(deltaSimulacao);
+        atualizarPescador(deltaSimulacao);
+        atualizarComerciante(deltaSimulacao);
+        atualizarFerreiro(deltaSimulacao);
+        atualizarMineiro(deltaSimulacao);
+        atualizarBanqueiro(deltaSimulacao);
+        atualizarEscriturario(deltaSimulacao);
+        atualizarTransferenciaPosto(deltaSimulacao);
+        atualizarOrcamentoMunicipalColonia(deltaSimulacao);
+        atualizarMigracaoColonia(deltaSimulacao);
+        atualizarPrioridadesColonia(deltaSimulacao);
+        atualizarNecessidadesColonia(deltaSimulacao);
+        atualizarDefesaColonia(deltaSimulacao);
+        atualizarConstrucaoColonia(deltaSimulacao);
         if (
           estado.local === "floresta" ||
           estado.quantidadeFazendeiros > 0 ||
@@ -17369,13 +17456,13 @@
           estado.quantidadeEscriturarios > 0 ||
           estado.mapaExpansaoComprado
         ) {
-          tempoSalvamento += delta;
+          tempoSalvamento += deltaReal;
           if (tempoSalvamento >= 2) {
             tempoSalvamento = 0;
             salvarProgresso();
           }
         }
-        estado.brilhoGolpe = Math.max(0, estado.brilhoGolpe - delta);
+        estado.brilhoGolpe = Math.max(0, estado.brilhoGolpe - deltaReal);
         desenhar();
         requestAnimationFrame(quadro);
       }
@@ -17426,6 +17513,11 @@
         contratarAdministradorMigracao,
       );
       incentivarMigracaoBotao.addEventListener("click", incentivarMigracao);
+      botoesVelocidadeTempo.forEach(({ velocidade, elemento }) => {
+        elemento.addEventListener("click", () =>
+          definirVelocidadeTempo(velocidade),
+        );
+      });
       diminuirZoomBotao.addEventListener("click", () =>
         alterarZoomExpansao(0.8),
       );
