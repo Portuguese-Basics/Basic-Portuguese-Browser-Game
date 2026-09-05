@@ -184,7 +184,7 @@ function createHarness(storage) {
     context,
   );
   vm.runInNewContext(
-    "globalThis.__testeJogo.alvoTransportadoresProducaoColonia = alvoTransportadoresProducaoColonia;",
+    "Object.assign(globalThis.__testeJogo, { alvoTransportadoresProducaoColonia, cargaLocalEntregavelColonia, valorReservaDuravelColonia, reservaDuravelAlvoColonia, alvoPedreiraObraPrioritariaColonia });",
     context,
   );
   return {
@@ -425,6 +425,9 @@ function createHarness(storage) {
     cargaLocalPendente() {
       return context.__testeJogo.cargaLocalPendenteColonia();
     },
+    cargaLocalEntregavel() {
+      return context.__testeJogo.cargaLocalEntregavelColonia();
+    },
     alvoTransportadores(empregos) {
       return context.__testeJogo.alvoTransportadoresProducaoColonia(
         empregos,
@@ -432,6 +435,15 @@ function createHarness(storage) {
     },
     transportarCargas(empregos) {
       return context.__testeJogo.transportarCargasColonia(empregos);
+    },
+    valorReservaDuravel() {
+      return context.__testeJogo.valorReservaDuravelColonia();
+    },
+    reservaDuravelAlvo() {
+      return context.__testeJogo.reservaDuravelAlvoColonia();
+    },
+    alvoPedreiraPrioritaria(empregos) {
+      return context.__testeJogo.alvoPedreiraObraPrioritariaColonia(empregos);
     },
     bonusEducacao(empregos) {
       return context.__testeJogo.bonusEducacaoColonia(empregos);
@@ -2217,6 +2229,36 @@ if (
   throw new Error("O estágio 1 das paliçadas não foi salvo ou exibido corretamente.");
 }
 
+Object.assign(infrastructureGame.estado, {
+  populacaoColonia: 200,
+  idadesAdultosColonia: Array(200).fill(32),
+  quantidadeCasasColonia: 50,
+  segundoBlocoMoradiasConstruido: true,
+  terceiroBlocoMoradiasConstruido: true,
+  tesouroColonia: 50000,
+  estoquePedra: 0.97,
+  trechosMuralhaPedraInterna: 2,
+  estoqueCarneDefumada: 0,
+  estoquePeixeSeco: 0,
+  saudeColonia: 100,
+  colonosComFome: 0,
+});
+const priorityStaffingJobs = infrastructureGame.redistribuirTrabalhadores();
+if (
+  priorityStaffingJobs.pedreira <= 0 ||
+  priorityStaffingJobs.bombeiro < 1 ||
+  priorityStaffingJobs.conserveiro < 2 ||
+  priorityStaffingJobs.construtor !== 0 ||
+  infrastructureGame.protecaoIncendio(priorityStaffingJobs) < 60 ||
+  infrastructureGame.saldoOperacional(priorityStaffingJobs) < 0 ||
+  !infrastructureGame.prioridadeAtual().startsWith("Produzir ") ||
+  !infrastructureGame.prioridadeAtual().includes("pedras para trecho 3/4 da muralha interna de pedra")
+) {
+  throw new Error(
+    `Pedreira, brigada e conservação não receberam os mínimos sustentáveis antes da obra de pedra: ${JSON.stringify({ empregos: priorityStaffingJobs, prioridade: infrastructureGame.prioridadeAtual(), protecao: infrastructureGame.protecaoIncendio(priorityStaffingJobs), saldo: infrastructureGame.saldoOperacional(priorityStaffingJobs) })}.`,
+  );
+}
+
 const resourceStorage = new Map([
   [
     "arqueiro-do-assentamento-v1",
@@ -2424,16 +2466,16 @@ if (
   fullChainJobs.feijao !== 6 ||
   fullChainJobs.pastagem !== 10 ||
   fullChainJobs.pesca !== 10 ||
-  fullChainJobs.lenhador !== 5 ||
+  fullChainJobs.lenhador !== 6 ||
   fullChainJobs.reflorestador !== 2 ||
   fullChainJobs.coletor !== 6 ||
   fullChainJobs.clinica !== 8 ||
   fullChainJobs.mina !== 5 ||
-  fullChainJobs.ferraria !== 4 ||
-  fullChainJobs.forja !== 4 ||
-  fullChainJobs.armeiroMadeira !== 4 ||
-  fullChainJobs.flecheiro !== 4 ||
-  fullChainJobs.transportador !== 7 ||
+  fullChainJobs.ferraria !== 5 ||
+  fullChainJobs.forja !== 5 ||
+  fullChainJobs.armeiroMadeira !== 5 ||
+  fullChainJobs.flecheiro !== 5 ||
+  fullChainJobs.transportador !== 2 ||
   fullChainJobs.comercio !== 5
 ) {
   throw new Error(
@@ -2445,13 +2487,13 @@ if (
   fullChainGame.elements.get("registro-auditoria-pao").textContent !==
     "5/6 → 5/5 → 5/5 · +30 grãos → +15 farinhas → +10 pães" ||
   fullChainGame.elements.get("registro-auditoria-floresta").textContent !==
-    "5/6 · −10 árvores/+50 madeira ↔ 2/2 · +12 árvores" ||
+    "6/6 · −12 árvores/+60 madeira ↔ 2/2 · +12 árvores" ||
   fullChainGame.elements.get("registro-auditoria-metal").textContent !==
-    "5/5 · +25 minério → demanda 22" ||
+    "5/5 · +25 minério → demanda 25" ||
   fullChainGame.elements.get("registro-auditoria-saude").textContent !==
     "6/6 · +18 ervas → 5/8 · demanda 10 · pressão 10 · reserva 25" ||
   fullChainGame.elements.get("registro-auditoria-costa").textContent !==
-    "10/10 · +38 peixes; 5/10 · +11 mercadorias"
+    "10/10 · +35.2 peixes; 7/10 · +15 mercadorias"
 ) {
   throw new Error(
     `O livro de auditoria não reconciliou as capacidades máximas das cadeias: ${JSON.stringify({ pao: fullChainGame.elements.get("registro-auditoria-pao").textContent, floresta: fullChainGame.elements.get("registro-auditoria-floresta").textContent, metal: fullChainGame.elements.get("registro-auditoria-metal").textContent, saude: fullChainGame.elements.get("registro-auditoria-saude").textContent, costa: fullChainGame.elements.get("registro-auditoria-costa").textContent })}.`,
@@ -2772,7 +2814,9 @@ Object.assign(transportGame.estado, {
   estoqueErvas: 0,
   estoqueCarneSelvagem: 0,
   estoqueCarneCriacao: 0,
+  estoqueFerramentas: 2,
 });
+transportGame.sincronizarFerramentas({ transportador: 2 });
 const mixedCargo = transportGame.transportarCargas({
   transportador: 2,
   clinica: 4,
@@ -2818,8 +2862,64 @@ Object.assign(heavyTransportGame.estado, {
   estoqueLocalCarneSelvagem: 12,
   estoqueLocalCarneCriacao: 10,
 });
-if (heavyTransportGame.alvoTransportadores({ pastagem: 10 }) !== 12) {
+if (
+  heavyTransportGame.alvoTransportadores({
+    lenhador: 6,
+    coletor: 6,
+    cacador: 4,
+    pastagem: 10,
+  }) !== 12
+) {
   throw new Error("A meta logística não escalou até 12 carroças diante do fluxo e atraso máximos.");
+}
+
+const blockedTransportGame = createHarness(new Map());
+Object.assign(blockedTransportGame.estado, {
+  coloniaIniciada: true,
+  etapaConstrucaoColonia: 4,
+  companhiaTransportadoresConstruida: true,
+  acougueConstruido: true,
+  estoqueLocalCarneCriacao: 60,
+  estoqueCarneCriacao: 120,
+});
+if (
+  blockedTransportGame.alvoTransportadores({ pastagem: 10 }) !== 0 ||
+  blockedTransportGame.transportarCargas({ transportador: 6 }).total !== 0
+) {
+  throw new Error("Carga bloqueada por um depósito cheio ainda criou vagas ou viagens logísticas falsas.");
+}
+
+const tieredTransportGame = createHarness(new Map());
+Object.assign(tieredTransportGame.estado, {
+  coloniaIniciada: true,
+  etapaConstrucaoColonia: 4,
+  companhiaTransportadoresConstruida: true,
+});
+const tieredTransportJobs = { transportador: 2 };
+const transportCapacityByTool = {};
+for (const [tool, rack] of Object.entries({
+  sem: { metal: 0, pedra: 0, madeira: 0 },
+  madeira: { metal: 0, pedra: 0, madeira: 2 },
+  pedra: { metal: 0, pedra: 2, madeira: 0 },
+  metal: { metal: 2, pedra: 0, madeira: 0 },
+})) {
+  tieredTransportGame.estado.ferramentasLocaisColonia = {
+    transportador: { capacidade: 12, ...rack },
+  };
+  transportCapacityByTool[tool] =
+    tieredTransportGame.capacidadeCargaTransportadores(
+      tieredTransportJobs,
+    );
+}
+if (
+  transportCapacityByTool.sem !== 14.4 ||
+  transportCapacityByTool.madeira !== 24 ||
+  transportCapacityByTool.pedra !== 27.6 ||
+  transportCapacityByTool.metal !== 31.2
+) {
+  throw new Error(
+    `As carroças não receberam a progressão 60%/100%/115%/130% das ferramentas: ${JSON.stringify(transportCapacityByTool)}.`,
+  );
 }
 
 const toolSiteGame = createHarness(new Map());
@@ -3174,7 +3274,7 @@ if (
   emergencyJobs.clinica !== 8 ||
   emergencyJobs.coletor !== 6 ||
   emergencyJobs.transportador < 6 ||
-  emergencyHealthGame.capacidadeCargaTransportadores(emergencyJobs) < 72 ||
+  emergencyHealthGame.capacidadeCargaTransportadores(emergencyJobs) < 43 ||
   emergencyHealthGame.alvoClinica() !== 8 ||
   emergencyHealthGame.alvoColetores() !== 6 ||
   !emergencyHealthGame.prioridadeAtual().startsWith("Emergência sanitária") ||
@@ -5396,6 +5496,28 @@ if (
 ) {
   throw new Error("As qualidades de armadura não seguem as prioridades de produção e de cada força.");
 }
+Object.assign(armorGame.estado, {
+  quantidadeMilicianos: 10,
+  quantidadeGuardas: 10,
+  quantidadeSoldados: 10,
+  estoqueArmaduras: { couro: 6, reforcada: 0, malha: 0, placas: 0 },
+  armadurasEquipadasColonia: {
+    milicia: { couro: 0, reforcada: 0, malha: 0, placas: 0 },
+    guarda: { couro: 0, reforcada: 0, malha: 0, placas: 0 },
+    soldado: { couro: 0, reforcada: 0, malha: 0, placas: 0 },
+  },
+  tempoDefesaColonia: 0,
+});
+armorGame.atualizarDefesa(0);
+if (
+  armorGame.estado.estoqueArmaduras.couro !== 0 ||
+  armorGame.estado.armadurasEquipadasColonia.milicia.couro !== 6 ||
+  armorGame.estado.quantidadeMilicianos !== 10 ||
+  armorGame.estado.quantidadeGuardas !== 10 ||
+  armorGame.estado.quantidadeSoldados !== 10
+) {
+  throw new Error("As armaduras de couro estocadas não foram adaptadas à milícia existente sem nova contratação.");
+}
 
 const mortalityGame = createHarness(new Map());
 Object.assign(mortalityGame.estado, {
@@ -5452,9 +5574,10 @@ Object.assign(featureSaveSource.estado, {
   quantidadeCasasColonia: 61,
   segundoBlocoMoradiasConstruido: true,
   terceiroBlocoMoradiasConstruido: true,
+  armazensInternosPedraConstruidos: true,
   armeiroConstruido: true,
   cemiterioConstruido: true,
-  estoqueCouro: 17,
+  estoqueCouro: 150,
   estoqueArmaduras: { couro: 3, reforcada: 2, malha: 1, placas: 1 },
   idadesAdultosColonia: Array(22).fill(41),
   nascimentosTotaisColonia: 2,
@@ -5480,8 +5603,9 @@ if (
   !featureSaveTarget.estado.cemiterioConstruido ||
   !featureSaveTarget.estado.segundoBlocoMoradiasConstruido ||
   !featureSaveTarget.estado.terceiroBlocoMoradiasConstruido ||
+  !featureSaveTarget.estado.armazensInternosPedraConstruidos ||
   featureSaveTarget.estado.quantidadeCasasColonia !== 61 ||
-  featureSaveTarget.estado.estoqueCouro !== 17 ||
+  featureSaveTarget.estado.estoqueCouro !== 150 ||
   featureSaveTarget.estado.estoqueArmaduras.placas !== 1 ||
   featureSaveTarget.estado.armadurasEquipadasColonia.soldado.placas !== 1 ||
   featureSaveTarget.estado.mortesTotaisColonia !== 1 ||
@@ -5498,6 +5622,12 @@ if (process.argv[2]) {
     ["arqueiro-do-assentamento-v1", JSON.stringify(liveSave)],
   ]);
   const liveGame = createHarness(liveStorage);
+  const couroCarregadoDoSave = liveGame.estado.estoqueCouro;
+  const armadurasCouroAntesRetrofit =
+    liveGame.estado.estoqueArmaduras.couro;
+  liveGame.atualizarDefesa(0);
+  const armadurasCouroMiliciaDepoisRetrofit =
+    liveGame.estado.armadurasEquipadasColonia.milicia.couro;
   const foodJobKeys = [
     "lavoura",
     "horta",
@@ -5609,6 +5739,27 @@ if (process.argv[2]) {
     limiteFolhaCivil: liveGame.limiteFolhaCivil(),
     manutencao: liveGame.manutencaoMunicipal(),
     saldoOperacional: liveGame.saldoOperacional(),
+    prioridadeAtual: liveGame.prioridadeAtual(),
+    logistica: {
+      metaTransportadores: liveGame.alvoTransportadores(liveJobs),
+      capacidadeCarga: liveGame.capacidadeCargaTransportadores(liveJobs),
+      bonusFerramentas: liveGame.bonusLogistica(liveJobs),
+      cargaNaOrigem: liveGame.cargaLocalPendente(),
+      cargaEntregavel: liveGame.cargaLocalEntregavel(),
+    },
+    resiliencia: {
+      protecaoIncendio: liveGame.protecaoIncendio(liveJobs),
+      reservaDuravel: liveGame.valorReservaDuravel(),
+      metaReservaDuravel: liveGame.reservaDuravelAlvo(),
+      alvoPedreira: liveGame.alvoPedreiraPrioritaria(liveJobs),
+    },
+    compatibilidadeSave: {
+      couroCarregado: couroCarregadoDoSave,
+      armadurasCouroAntesRetrofit,
+      armadurasCouroMiliciaDepoisRetrofit,
+      armadurasCouroRestantes:
+        liveGame.estado.estoqueArmaduras.couro,
+    },
     alimentoEstocadoAntes: liveGame.valorAlimentarTotal(),
     necessidadeAlimentar: need,
     producaoAlimentar: production,

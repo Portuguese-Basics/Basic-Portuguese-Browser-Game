@@ -11,16 +11,28 @@ at normal real-time speed.
 The colony now includes proactive three-district housing, a food-first economy,
 healthcare and sanitation, preserved-food reserves, stone fortifications,
 controlled migration, and bounded aging and mortality. Resource gatherers keep
-their output at the source. Whenever production or source backlog exists, the
-transporter company protects a six-wagon operating crew and scales up to 12
-dedicated horse-and-wagon teams as flow and delay rise. Mixed loads move to
-storage and production buildings under the sustainable essential-payroll limit.
+their output at the source. Whenever staffed production can reach storage or a
+deliverable source backlog exists, the transporter company protects a six-wagon
+operating crew and scales up to 12 dedicated horse-and-wagon teams. Full
+destinations no longer create phantom logistics jobs. Mixed loads move under the
+sustainable essential-payroll limit.
 
 Mature construction is performed only by a four-to-twelve-person guild crew.
 Established specialists retain their jobs, and idle builders return to the
 general labor reserve. Every productive worksite has one tool rack position per
 worker: no tool yields 60% output, wood 100%, stone 115%, and iron 130%. Better
 tools are assigned first and automatically displace lower tiers to other sites.
+Those same tiers now govern wagon capacity: untooled, wood, stone, and iron
+transport crews carry at 60%, 100%, 115%, and 130% efficiency in addition to
+their road bonus.
+
+Funded stone projects automatically reserve enough quarry labor to close their
+material shortage before construction begins. A built fire station keeps at
+least one firefighter, while an undersupplied smokehouse keeps two preservers
+until smoked-meat and dried-fish reserves reach 25% of one consumption cycle.
+Existing defenders also equip compatible stockpiled armor immediately, with
+leather issued to unarmored militia first. Stone-upgraded inner warehouses now
+restore their full 150-hide inventory from existing saves.
 
 An emergency save migration stabilizes an existing colony below 80 health once,
 supplies herbs and medicine, and pauses mortality for three cycles. Thereafter,

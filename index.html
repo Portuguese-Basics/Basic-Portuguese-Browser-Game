@@ -2817,6 +2817,8 @@
       const capacidadeCargaCarrocaColonia = 12;
       const loteMistoCarrocaColonia = 3;
       const minimoTransportadoresOperacionaisColonia = 6;
+      const minimoBombeirosOperacionaisColonia = 1;
+      const minimoConserveirosReservaColonia = 2;
       const capacidadeLancasMadeiraColonia = 60;
       const capacidadeArcosColonia = 40;
       const capacidadeFlechasColonia = 600;
@@ -3624,6 +3626,40 @@
         }[tipo];
       }
 
+      function totalArmadurasEquipadasCategoriaColonia(categoria) {
+        return ["couro", "reforcada", "malha", "placas"].reduce(
+          (total, tipo) =>
+            total +
+            (estado.armadurasEquipadasColonia[categoria]?.[tipo] || 0),
+          0,
+        );
+      }
+
+      function equiparArmadurasDefensoresAtuaisColonia() {
+        if (!estado.armeiroConstruido) return 0;
+        const efetivos = {
+          milicia: estado.quantidadeMilicianos,
+          guarda: estado.quantidadeGuardas,
+          soldado: estado.quantidadeSoldados,
+        };
+        let equipados = 0;
+        for (const categoria of ["milicia", "guarda", "soldado"]) {
+          let semArmadura = Math.max(
+            0,
+            efetivos[categoria] -
+              totalArmadurasEquipadasCategoriaColonia(categoria),
+          );
+          while (semArmadura > 0) {
+            const armadura = escolherArmaduraDefesaColonia(categoria);
+            if (!armadura) break;
+            consumirArmaduraDefesaColonia(categoria, armadura);
+            semArmadura -= 1;
+            equipados += 1;
+          }
+        }
+        return equipados;
+      }
+
       function textoArmaduraDefesaColonia(categoria) {
         const equipadas = estado.armadurasEquipadasColonia[categoria];
         return ["couro", "reforcada", "malha", "placas"]
@@ -3907,7 +3943,12 @@
       }
 
       function bonusLogisticaColonia(empregos = estado.empregosColonia) {
-        return 0;
+        return Math.round(
+          (multiplicadorFerramentasLocalColonia(
+            "transportador",
+            empregos,
+          ) - 1) * 1000,
+        ) / 1000;
       }
 
       function capacidadeCargaTransportadoresColonia(
@@ -3918,6 +3959,10 @@
           (empregos.transportador || 0) *
             capacidadeCargaCarrocaColonia *
             multiplicadorMovimentoEstradasColonia() *
+            multiplicadorFerramentasLocalColonia(
+              "transportador",
+              empregos,
+            ) *
             100,
         ) / 100;
       }
@@ -3928,6 +3973,34 @@
             estado.estoqueLocalErvas +
             estado.estoqueLocalCarneSelvagem +
             estado.estoqueLocalCarneCriacao,
+        );
+      }
+
+      function cargaLocalEntregavelColonia() {
+        const rotas = [
+          ["estoqueLocalMadeira", "estoqueMadeira", capacidadeMadeiraColonia],
+          ["estoqueLocalErvas", "estoqueErvas", capacidadeErvasColonia],
+          [
+            "estoqueLocalCarneSelvagem",
+            "estoqueCarneSelvagem",
+            capacidadeCarneSelvagemColonia,
+          ],
+          [
+            "estoqueLocalCarneCriacao",
+            "estoqueCarneCriacao",
+            capacidadeCarneCriacaoColonia,
+          ],
+        ];
+        return arredondarOuro(
+          rotas.reduce(
+            (total, [origem, destino, capacidade]) =>
+              total +
+              Math.min(
+                estado[origem],
+                Math.max(0, capacidade - estado[destino]),
+              ),
+            0,
+          ),
         );
       }
 
@@ -3951,34 +4024,70 @@
         empregos = estado.empregosColonia,
       ) {
         if (!estado.companhiaTransportadoresConstruida) return 0;
+        const fluxoEficiente = (quantidade, chave) =>
+          aplicarEficienciaProducaoEstradasColonia(
+            quantidade,
+            empregos,
+            chave,
+          );
         const fluxoMadeira = estado.depositoMadeiraConstruido
-          ? estado.quantidadeCabanasLenhadores *
-            trabalhadoresPorCabanaLenhadores *
-            madeiraPorLenhador
+          ? Math.max(0, Math.min(
+              fluxoEficiente(
+                (empregos.lenhador || 0) * madeiraPorLenhador,
+                "lenhador",
+              ),
+              capacidadeEstoqueLocalMadeiraColonia -
+                estado.estoqueLocalMadeira,
+              capacidadeMadeiraColonia - estado.estoqueMadeira,
+            ))
           : 0;
         const fluxoErvas = estado.ervarioConstruido
-          ? estado.quantidadeCabanasColeta *
-            trabalhadoresPorCabanaColeta *
-            ervasPorColetor
+          ? Math.max(0, Math.min(
+              fluxoEficiente(
+                (empregos.coletor || 0) * ervasPorColetor,
+                "coletor",
+              ),
+              capacidadeEstoqueLocalErvasColonia -
+                estado.estoqueLocalErvas,
+              capacidadeErvasColonia - estado.estoqueErvas,
+            ))
           : 0;
         const fluxoCarneSelvagem = estado.cabanaCacadoresConstruida
-          ? maximoTrabalhadoresCacadores * carneSelvagemPorCacador
+          ? Math.max(0, Math.min(
+              fluxoEficiente(
+                (empregos.cacador || 0) * carneSelvagemPorCacador,
+                "cacador",
+              ),
+              capacidadeEstoqueLocalCarneSelvagemColonia -
+                estado.estoqueLocalCarneSelvagem,
+              capacidadeCarneSelvagemColonia -
+                estado.estoqueCarneSelvagem,
+            ))
           : 0;
         const fluxoCarneCriacao = estado.acougueConstruido
-          ? (empregos.pastagem || 0) * carneCriacaoPorPastor
+          ? Math.max(0, Math.min(
+              fluxoEficiente(
+                (empregos.pastagem || 0) * carneCriacaoPorPastor,
+                "pastagem",
+              ),
+              capacidadeEstoqueLocalCarneCriacaoColonia -
+                estado.estoqueLocalCarneCriacao,
+              capacidadeCarneCriacaoColonia - estado.estoqueCarneCriacao,
+            ))
           : 0;
         const fluxoTotal =
           fluxoMadeira +
           fluxoErvas +
           fluxoCarneSelvagem +
           fluxoCarneCriacao;
-        const cargaPendente = cargaLocalPendenteColonia();
+        const cargaPendente = cargaLocalEntregavelColonia();
         if (fluxoTotal <= 0 && cargaPendente <= 0) return 0;
         const demandaComAtraso =
           fluxoTotal + Math.min(cargaPendente, Math.max(fluxoTotal, 1));
-        const cargaPorCarroca =
-          capacidadeCargaCarrocaColonia *
-          multiplicadorMovimentoEstradasColonia();
+        const cargaPorCarroca = capacidadeCargaTransportadoresColonia({
+          ...empregos,
+          transportador: 1,
+        });
         return Math.min(
           maximoTransportadoresColonia,
           Math.max(
@@ -4106,6 +4215,35 @@
           estado.estoqueCarneDefumada * valorAlimentarCarneDefumada +
           estado.estoquePeixeSeco * valorAlimentarPeixeSeco
         );
+      }
+
+      function valorReservaDuravelColonia() {
+        return (
+          estado.estoqueCarneDefumada * valorAlimentarCarneDefumada +
+          estado.estoquePeixeSeco * valorAlimentarPeixeSeco
+        );
+      }
+
+      function reservaDuravelAlvoColonia() {
+        return Math.max(
+          60,
+          Math.ceil(necessidadeAlimentosColonia() * 0.25),
+        );
+      }
+
+      function alvoConserveirosReservaColonia() {
+        if (
+          !estado.defumadorioConstruido ||
+          !estado.adegaFriaConstruida ||
+          valorReservaDuravelColonia() >= reservaDuravelAlvoColonia()
+        ) return 0;
+        return minimoConserveirosReservaColonia;
+      }
+
+      function alvoBombeirosOperacionaisColonia() {
+        return estado.quartelBombeirosConstruido
+          ? minimoBombeirosOperacionaisColonia
+          : 0;
       }
 
       function consumirAlimentosColonia(necessidade) {
@@ -6382,7 +6520,7 @@
           estado.estoqueCouro = numeroValido(
             salvo.expansao?.economia?.estoques?.couro,
             0,
-            capacidadeCouroColonia,
+            capacidadeArmazemInternoColonia(capacidadeCouroColonia),
             0,
           );
           ["couro", "reforcada", "malha", "placas"].forEach((tipo) => {
@@ -7088,11 +7226,42 @@
           }
         }
 
+        const alvoConstrutoresAtivos = alvoConstrutoresObraColonia();
+        adicionarComLimite(
+          "construtor",
+          alvoConstrutoresAtivos,
+          Math.max(0, alvoConstrutoresAtivos - empregos.construtor),
+          limiteFolhaAlimentar,
+        );
         const alvoLogistica = alvoTransportadoresProducaoColonia(empregos);
+        adicionarComLimite(
+          "bombeiro",
+          alvoBombeirosOperacionaisColonia(),
+          Math.max(
+            0,
+            alvoBombeirosOperacionaisColonia() - empregos.bombeiro,
+          ),
+          limiteFolhaAlimentar,
+        );
         adicionarComLimite(
           "transportador",
           alvoLogistica,
           Math.max(0, alvoLogistica - empregos.transportador),
+          limiteFolhaAlimentar,
+        );
+        const alvoPedreiraPrioritaria =
+          alvoPedreiraObraPrioritariaColonia(empregos);
+        adicionarComLimite(
+          "pedreira",
+          alvoPedreiraPrioritaria,
+          Math.max(0, alvoPedreiraPrioritaria - empregos.pedreira),
+          limiteFolhaAlimentar,
+        );
+        const alvoConserveiros = alvoConserveirosReservaColonia();
+        adicionarComLimite(
+          "conserveiro",
+          alvoConserveiros,
+          Math.max(0, alvoConserveiros - empregos.conserveiro),
           limiteFolhaAlimentar,
         );
         ocupar("migracao", estado.quantidadeAdministradoresMigracao);
@@ -8270,13 +8439,9 @@
         );
       }
 
-      function podeFinanciarObraColonia(tipo) {
+      function obraFinanceiramenteProntaColonia(tipo) {
         const custo = custoObraAutomaticaColonia(tipo);
-        if (
-          !Number.isFinite(custo) ||
-          estado.tesouroColonia < custo ||
-          !materiaisDisponiveisObraColonia(tipo)
-        ) {
+        if (!Number.isFinite(custo) || estado.tesouroColonia < custo) {
           return false;
         }
         if (obraEmergencialColonia(tipo)) return true;
@@ -8285,6 +8450,48 @@
               manutencaoAdicionalObraColonia(tipo) >
             0 &&
           estado.tesouroColonia - custo >= reservaAposObraColonia(tipo)
+        );
+      }
+
+      function faltaPedraObraColonia(tipo) {
+        return Math.max(
+          0,
+          materiaisObraColonia(tipo).pedra - estado.estoquePedra,
+        );
+      }
+
+      function alvoPedreiraObraPrioritariaColonia(
+        empregos = estado.empregosColonia,
+      ) {
+        if (
+          !estado.pedreiraConstruida ||
+          estado.obraAutomaticaColonia
+        ) return 0;
+        const tipo = proximaObraAutomaticaColonia();
+        const faltaPedra = tipo ? faltaPedraObraColonia(tipo) : 0;
+        if (
+          faltaPedra <= 0 ||
+          !obraFinanceiramenteProntaColonia(tipo)
+        ) return 0;
+        const producaoPorTrabalhador =
+          aplicarEficienciaProducaoEstradasColonia(
+            pedraPorTrabalhadorPedreira,
+            { ...empregos, pedreira: 1 },
+            "pedreira",
+          );
+        return Math.min(
+          maximoTrabalhadoresPedreira,
+          Math.max(
+            1,
+            Math.ceil(faltaPedra / Math.max(1, producaoPorTrabalhador)),
+          ),
+        );
+      }
+
+      function podeFinanciarObraColonia(tipo) {
+        return (
+          obraFinanceiramenteProntaColonia(tipo) &&
+          materiaisDisponiveisObraColonia(tipo)
         );
       }
 
@@ -8561,8 +8768,21 @@
 
       function atualizarDefesaColonia(delta) {
         if (!estado.coloniaIniciada) return;
+        const armadurasRetrofitadas =
+          equiparArmadurasDefensoresAtuaisColonia();
         estado.tempoDefesaColonia += delta;
-        if (estado.tempoDefesaColonia < intervaloDefesaColonia) return;
+        if (estado.tempoDefesaColonia < intervaloDefesaColonia) {
+          if (armadurasRetrofitadas > 0) {
+            if (estado.mapaAtual === "expansao") {
+              definirMensagem(
+                `Casa de armaduras: ${armadurasRetrofitadas} defensores atuais receberam proteção disponível.`,
+              );
+            }
+            atualizarInterface();
+            salvarProgresso();
+          }
+          return;
+        }
 
         const ciclos = Math.floor(
           estado.tempoDefesaColonia / intervaloDefesaColonia,
@@ -8613,6 +8833,10 @@
         if (ultimaContratacao && estado.mapaAtual === "expansao") {
           definirMensagem(
             `Defesa municipal: ${ultimaContratacao}. A reserva e o limite de soldos foram preservados.`,
+          );
+        } else if (armadurasRetrofitadas > 0 && estado.mapaAtual === "expansao") {
+          definirMensagem(
+            `Casa de armaduras: ${armadurasRetrofitadas} defensores atuais receberam proteção disponível.`,
           );
         }
         atualizarInterface();
@@ -9023,6 +9247,13 @@
         }
         const proximaObra = proximaObraAutomaticaColonia();
         if (proximaObra) {
+          const faltaPedra = faltaPedraObraColonia(proximaObra);
+          if (
+            faltaPedra > 0 &&
+            obraFinanceiramenteProntaColonia(proximaObra)
+          ) {
+            return `Produzir ${formatarQuantidade(faltaPedra)} pedras para ${nomeObraAutomaticaColonia(proximaObra)} · pedreira ${estado.empregosColonia.pedreira || 0}/${alvoPedreiraObraPrioritariaColonia()}`;
+          }
           const custo = custoObraAutomaticaColonia(proximaObra);
           const saldoNecessario = obraEmergencialColonia(proximaObra)
             ? custo
@@ -9262,8 +9493,15 @@
           });
         const capacidadeCarga = capacidadeCargaTransportadoresColonia(empregos);
         const cargaPendente = cargaLocalPendenteColonia();
+        const cargaEntregavel = cargaLocalEntregavelColonia();
         const alvoTransportadores =
           alvoTransportadoresProducaoColonia(empregos);
+        const produtividadeTransportadores = Math.round(
+          multiplicadorFerramentasLocalColonia(
+            "transportador",
+            empregos,
+          ) * 100,
+        );
         const ultimaCarga = estado.ultimaCargaTransportadaColonia;
         const nivelFerramentaAtivo = nivelFerramentasAtivoColonia();
         const nomesFerramentas = ["Nenhuma", "Madeira", "Pedra", "Metal"];
@@ -9441,7 +9679,7 @@
         trabalhoCozinhaFeijaoEl.textContent =
           `${empregos.cozinhaFeijao} / ${maximoTrabalhadoresCozinhaFeijao} · ${feijaoPorOperacaoCozinha} feijões → ${refeicoesFeijaoPorCozinheiro} refeições`;
         trabalhoConserveiroEl.textContent =
-          `${empregos.conserveiro} / ${maximoTrabalhadoresConservacao} · carne defumada e peixe seco`;
+          `${empregos.conserveiro} / ${maximoTrabalhadoresConservacao} · reserva ${formatarQuantidade(valorReservaDuravelColonia())}/${formatarQuantidade(reservaDuravelAlvoColonia())}`;
         trabalhoLenhadorEl.textContent =
           `${empregos.lenhador} / ${2 * trabalhadoresPorCabanaLenhadores} · ${arvoresCortadasPorLenhador} árvores → ${madeiraPorLenhador} madeira`;
         trabalhoReflorestadorEl.textContent =
@@ -9471,7 +9709,7 @@
         trabalhoArmeiroEl.textContent =
           `${empregos.armeiro} / ${maximoArmeirosColonia} · próxima: ${nomeArmaduraColonia(tipoArmaduraProduzivelColonia())}`;
         trabalhoTransportadorEl.textContent =
-          `${empregos.transportador} / ${maximoTransportadoresColonia} · meta ${alvoTransportadores} · ${formatarQuantidade(capacidadeCarga)} cargas mistas / 60 s`;
+          `${empregos.transportador} / ${maximoTransportadoresColonia} · meta ${alvoTransportadores} · ${formatarQuantidade(capacidadeCarga)} cargas / 60 s · ferramentas ${produtividadeTransportadores}%`;
         trabalhoConstrutorEl.textContent =
           estado.obraAutomaticaColonia
             ? `${empregos.construtor} / ${maximoConstrutoresColonia} · ${ferramentasConstrutores}/${empregos.construtor} ferramentas · ${produtividadeConstrutores}% produtividade`
@@ -9969,9 +10207,9 @@
         registrosEls["auditoria-cozinhas"].textContent =
           `carne ${empregos.cozinhaCarne}/${maximoTrabalhadoresCozinhaCarne} · hortaliças ${empregos.cozinhaHortalicas}/${maximoTrabalhadoresCozinhaHortalicas} · feijão ${empregos.cozinhaFeijao}/${maximoTrabalhadoresCozinhaFeijao}`;
         registrosEls["auditoria-conservacao"].textContent =
-          `${empregos.conserveiro}/${maximoTrabalhadoresConservacao} conserveiros · ${formatarQuantidade(estado.estoqueCarneDefumada)} carne + ${formatarQuantidade(estado.estoquePeixeSeco)} peixe · consumo final`;
+          `${empregos.conserveiro}/${maximoTrabalhadoresConservacao} conserveiros · ${formatarQuantidade(estado.estoqueCarneDefumada)} carne + ${formatarQuantidade(estado.estoquePeixeSeco)} peixe · reserva ${formatarQuantidade(valorReservaDuravelColonia())}/${formatarQuantidade(reservaDuravelAlvoColonia())} · consumo final`;
         registrosEls["auditoria-logistica"].textContent =
-          `${empregos.transportador}/${maximoTransportadoresColonia} carroças · meta ${alvoTransportadores} · capacidade ${formatarQuantidade(capacidadeCarga)} · última: ${formatarQuantidade(ultimaCarga.madeira)} madeira, ${formatarQuantidade(ultimaCarga.carneSelvagem + ultimaCarga.carneCriacao)} carnes, ${formatarQuantidade(ultimaCarga.ervas)} ervas · ${formatarQuantidade(cargaPendente)} na origem`;
+          `${empregos.transportador}/${maximoTransportadoresColonia} carroças · meta ${alvoTransportadores} · capacidade ${formatarQuantidade(capacidadeCarga)} · ferramentas ${produtividadeTransportadores}% · última: ${formatarQuantidade(ultimaCarga.madeira)} madeira, ${formatarQuantidade(ultimaCarga.carneSelvagem + ultimaCarga.carneCriacao)} carnes, ${formatarQuantidade(ultimaCarga.ervas)} ervas · ${formatarQuantidade(cargaEntregavel)} entregáveis de ${formatarQuantidade(cargaPendente)} na origem`;
         registrosEls["auditoria-armaduras"].textContent =
           `${empregos.armeiro}/${maximoArmeirosColonia} armeiros · peles ${formatarQuantidade(estado.estoqueCouro)} · prioridade ${nomeArmaduraColonia(tipoArmaduraPrioritariaColonia())} · arsenal dentro das muralhas`;
         registrosEls.arvores.textContent = estoqueArvoresEl.textContent;
@@ -10035,7 +10273,7 @@
         registrosEls["bonus-ferramentas"].textContent =
           `${trabalhadoresFerramentados} trabalhadores · ${sinalBonusFerramentas}${Math.round(bonusFerramentas * 100)}% médio`;
         registrosEls.transportadores.textContent =
-          `${empregos.transportador} / ${maximoTransportadoresColonia} · meta ${alvoTransportadores} · ${formatarQuantidade(capacidadeCarga)} cargas/60 s · ${formatarQuantidade(cargaPendente)} aguardando coleta`;
+          `${empregos.transportador} / ${maximoTransportadoresColonia} · meta ${alvoTransportadores} · ${formatarQuantidade(capacidadeCarga)} cargas/60 s · ferramentas ${produtividadeTransportadores}% · ${formatarQuantidade(cargaEntregavel)} entregáveis`;
         registrosEls.construtores.textContent =
           estado.obraAutomaticaColonia
             ? `${empregos.construtor} / ${maximoConstrutoresColonia} · ${ferramentasConstrutores}/${empregos.construtor} ferramentas · ${produtividadeConstrutores}%`
