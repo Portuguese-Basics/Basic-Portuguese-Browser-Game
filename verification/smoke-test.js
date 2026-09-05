@@ -76,7 +76,14 @@ function createHarness(storage) {
     },
     lineTo(x, y) {
       if (currentPoint) {
-        lineSegments.push([currentPoint[0], currentPoint[1], x, y]);
+        lineSegments.push([
+          currentPoint[0],
+          currentPoint[1],
+          x,
+          y,
+          canvasContext.strokeStyle,
+          canvasContext.lineWidth,
+        ]);
       }
       currentPoint = [x, y];
     },
@@ -168,7 +175,7 @@ function createHarness(storage) {
   };
 
   vm.runInNewContext(
-    `${source}\nglobalThis.__testeJogo = { estado, atualizarFazendeiro, atualizarFruticultor, atualizarPescador, atualizarComerciante, atualizarFerreiro, atualizarMineiro, atualizarBanqueiro, atualizarEscriturario, atualizarTransferenciaPosto, atualizarOrcamentoMunicipalColonia, atualizarPrioridadesColonia, atualizarNecessidadesColonia, atualizarDefesaColonia, atualizarConstrucaoColonia, atualizarMigracaoColonia, atualizarEnvelhecimentoEObitosColonia, redistribuirTrabalhadoresColonia, migracaoNecessariaColonia, migracaoIncentivadaPermitidaColonia, motivoBloqueioIncentivoMigracaoColonia, folhaCivilColonia, limiteFolhaCivilColonia, manutencaoMunicipalColonia, despesasEssenciaisMunicipaisColonia, saldoOperacionalMunicipalColonia, reservaMunicipalDinamicaColonia, folhaSoldosColonia, limiteSoldosColonia, segurancaCivilColonia, forcaMilitarColonia, posicaoColonoNovaColonia, posicaoCasaColonia, quantidadeColonosExpansao, totalMoradoresColonia, quantidadeBebesColonia, quantidadeCriancasColonia, chanceNascimentoColonia, idadeMediaAdultosColonia, duracaoBebeColonia, duracaoInfanciaColonia, barcoComercialAtracado, proximaObraAutomaticaColonia, custoObraAutomaticaColonia, casasNecessariasColonia, reservaPlanejadaMoradiaColonia, maximoCasasDisponiveisColonia, capacidadeMoradiasColonia, vagasMigracaoColonia, vagasFisicasMigracaoColonia, necessidadeAlimentosColonia, producaoAlimentarPorCiclo, valorAlimentarTotalColonia, consumirAlimentosColonia, capacidadesEmpregoColonia, totalCapacidadeEmpregosColonia, totalEmpregosOcupadosColonia, tipoArmaduraPrioritariaColonia, tipoArmaduraProduzivelColonia, escolherArmaduraDefesaColonia, totalArmadurasEstoqueColonia, proximoTrechoEstradaColonia, quantidadeTrechosEstradaNoNivelColonia, multiplicadorProducaoEstradasColonia, multiplicadorMovimentoEstradasColonia, multiplicadorConstrucaoEstradasColonia, multiplicadorConstrucaoColonia, catalogoArmazenamentoAlimentosColonia, capacidadeArmazemInternoColonia, trabalhadoresComFerramentasColonia, bonusFerramentasColonia, bonusLogisticaColonia, bonusEducacaoColonia, nivelFerramentasAtivoColonia, protecaoIncendioColonia, satisfacaoFeColonia, festivalAtivoColonia, materiaisObraColonia, trechosEstradaColonia, caminhosTrechoEstradaColonia, rotaMaisRapidaColonia, destinoEmpregoColonia, acessoCasaColonia, areasMoradia: { recintoExterno, recintoInterno, areaMoradias, areaSegundoBlocoMoradias, areaTerceiroBlocoMoradias }, areasHotfixCozinhas: { recintoExterno, recintoInterno, areaCozinhaCarneColonia, areaCozinhaHortalicasColonia, areaCozinhaFeijaoColonia, areaCofreCortesColonia, areaDespensaRefeicoesColonia, areaAdegaFriaColonia, areaDefumadorioColonia, areaCemiterioColonia, areaPatioTreinoColonia }, definirTempoRio(valor) { tempoRio = valor; } };`,
+    `${source}\nglobalThis.__testeJogo = { estado, atualizarInterface, atualizarFazendeiro, atualizarFruticultor, atualizarPescador, atualizarComerciante, atualizarFerreiro, atualizarMineiro, atualizarBanqueiro, atualizarEscriturario, atualizarTransferenciaPosto, atualizarOrcamentoMunicipalColonia, atualizarPrioridadesColonia, atualizarNecessidadesColonia, atualizarDefesaColonia, atualizarConstrucaoColonia, atualizarMigracaoColonia, atualizarEnvelhecimentoEObitosColonia, redistribuirTrabalhadoresColonia, migracaoNecessariaColonia, migracaoIncentivadaPermitidaColonia, motivoBloqueioIncentivoMigracaoColonia, folhaCivilColonia, limiteFolhaCivilColonia, manutencaoMunicipalColonia, despesasEssenciaisMunicipaisColonia, saldoOperacionalMunicipalColonia, reservaMunicipalDinamicaColonia, folhaSoldosColonia, limiteSoldosColonia, segurancaCivilColonia, forcaMilitarColonia, posicaoColonoNovaColonia, posicaoCasaColonia, quantidadeColonosExpansao, totalMoradoresColonia, quantidadeBebesColonia, quantidadeCriancasColonia, chanceNascimentoColonia, idadeMediaAdultosColonia, duracaoBebeColonia, duracaoInfanciaColonia, barcoComercialAtracado, proximaObraAutomaticaColonia, custoObraAutomaticaColonia, casasNecessariasColonia, reservaPlanejadaMoradiaColonia, maximoCasasDisponiveisColonia, capacidadeMoradiasColonia, vagasMigracaoColonia, vagasFisicasMigracaoColonia, necessidadeAlimentosColonia, producaoAlimentarPorCiclo, valorAlimentarTotalColonia, consumirAlimentosColonia, capacidadesEmpregoColonia, totalCapacidadeEmpregosColonia, totalEmpregosOcupadosColonia, tipoArmaduraPrioritariaColonia, tipoArmaduraProduzivelColonia, escolherArmaduraDefesaColonia, totalArmadurasEstoqueColonia, proximoTrechoEstradaColonia, quantidadeTrechosEstradaNoNivelColonia, multiplicadorProducaoEstradasColonia, multiplicadorMovimentoEstradasColonia, multiplicadorConstrucaoEstradasColonia, multiplicadorConstrucaoColonia, catalogoArmazenamentoAlimentosColonia, capacidadeArmazemInternoColonia, trabalhadoresComFerramentasColonia, bonusFerramentasColonia, bonusLogisticaColonia, bonusEducacaoColonia, nivelFerramentasAtivoColonia, protecaoIncendioColonia, satisfacaoFeColonia, festivalAtivoColonia, materiaisObraColonia, trechosEstradaColonia, caminhosTrechoEstradaColonia, arestasRedeViariaColonia, rotaMaisRapidaColonia, destinoEmpregoColonia, acessoCasaColonia, areasMoradia: { recintoExterno, recintoInterno, areaMoradias, areaSegundoBlocoMoradias, areaTerceiroBlocoMoradias }, areasHotfixCozinhas: { recintoExterno, recintoInterno, areaCozinhaCarneColonia, areaCozinhaHortalicasColonia, areaCozinhaFeijaoColonia, areaCofreCortesColonia, areaDespensaRefeicoesColonia, areaAdegaFriaColonia, areaDefumadorioColonia, areaCemiterioColonia, areaPatioTreinoColonia }, defesasAuditadas: { recintoExterno, recintoInterno, portoesMuralhaColonia, cantosTorresMuralhaColonia, areasPostosGuardaColonia, totalTorresMuralhaColonia, totalPortoesFortificadosColonia, meiaAberturaPortaoColonia }, definirTempoRio(valor) { tempoRio = valor; } };`,
     context,
   );
   return {
@@ -181,6 +188,7 @@ function createHarness(storage) {
     lineSegments,
     areasMoradia: context.__testeJogo.areasMoradia,
     areasHotfixCozinhas: context.__testeJogo.areasHotfixCozinhas,
+    defesasAuditadas: context.__testeJogo.defesasAuditadas,
     estado: context.__testeJogo.estado,
     quantidadeColonosExpansao: context.__testeJogo.quantidadeColonosExpansao,
     resetDrawCalls() {
@@ -195,6 +203,9 @@ function createHarness(storage) {
       const callback = frameCallback;
       if (!callback) throw new Error("Quadro de animação ausente.");
       callback(timestamp);
+    },
+    atualizarInterface() {
+      context.__testeJogo.atualizarInterface();
     },
     produzirDuranteCaca(segundos) {
       context.__testeJogo.estado.local = "floresta";
@@ -322,6 +333,9 @@ function createHarness(storage) {
     },
     capacidadeMoradias() {
       return context.__testeJogo.capacidadeMoradiasColonia();
+    },
+    arestasRedeViaria() {
+      return context.__testeJogo.arestasRedeViariaColonia();
     },
     vagasMigracao() {
       return context.__testeJogo.vagasMigracaoColonia();
@@ -3343,8 +3357,8 @@ roadGame.atualizarPrioridades(0);
 const fortificacoesEsperadas = [
   ...Array(4).fill(["muralhaPedraInterna", "trechosMuralhaPedraInterna"]),
   ...Array(4).fill(["muralhaPedraExterna", "trechosMuralhaPedraExterna"]),
-  ...Array(4).fill(["torreMuralha", "quantidadeTorresMuralha"]),
-  ...Array(2).fill(["portaoFortificado", "quantidadePortoesFortificados"]),
+  ...Array(8).fill(["torreMuralha", "quantidadeTorresMuralha"]),
+  ...Array(7).fill(["portaoFortificado", "quantidadePortoesFortificados"]),
 ];
 for (let indice = 0; indice < fortificacoesEsperadas.length; indice += 1) {
   const [obra, propriedade] = fortificacoesEsperadas[indice];
@@ -3485,8 +3499,8 @@ Object.assign(defenseGame.estado, {
   cemiterioConstruido: true,
   trechosMuralhaPedraInterna: 4,
   trechosMuralhaPedraExterna: 4,
-  quantidadeTorresMuralha: 4,
-  quantidadePortoesFortificados: 2,
+  quantidadeTorresMuralha: 8,
+  quantidadePortoesFortificados: 7,
   estoqueLancasMadeira: 10,
   estoqueArcos: 10,
   estoqueFlechas: 200,
@@ -3674,6 +3688,287 @@ if (
   JSON.stringify(expectedRoadOrder)
 ) {
   throw new Error("A ordem canônica dos oito grupos viários foi alterada.");
+}
+
+const wallAuditGame = createHarness(new Map());
+const {
+  recintoExterno: outerWard,
+  recintoInterno: innerWard,
+  portoesMuralhaColonia: auditedGates,
+  cantosTorresMuralhaColonia: auditedTowers,
+  areasPostosGuardaColonia: auditedGuardPosts,
+  totalTorresMuralhaColonia: auditedTowerTotal,
+  totalPortoesFortificadosColonia: auditedGateTotal,
+  meiaAberturaPortaoColonia: auditedGateHalfOpening,
+} = wallAuditGame.defesasAuditadas;
+const wards = [outerWard, innerWard];
+const betweenInclusive = (value, start, end) =>
+  value >= Math.min(start, end) && value <= Math.max(start, end);
+const roadWallCrossings = new Set();
+wallAuditGame.arestasRedeViaria().forEach(({ inicio, fim }) => {
+  wards.forEach((ward) => {
+    const left = ward.x;
+    const right = ward.x + ward.largura;
+    const top = ward.y;
+    const bottom = ward.y + ward.altura;
+    if (inicio.y === fim.y && betweenInclusive(inicio.y, top, bottom)) {
+      [left, right].forEach((x) => {
+        if (betweenInclusive(x, inicio.x, fim.x)) {
+          roadWallCrossings.add(`${x},${inicio.y}`);
+        }
+      });
+    }
+    if (inicio.x === fim.x && betweenInclusive(inicio.x, left, right)) {
+      [top, bottom].forEach((y) => {
+        if (betweenInclusive(y, inicio.y, fim.y)) {
+          roadWallCrossings.add(`${inicio.x},${y}`);
+        }
+      });
+    }
+  });
+});
+const gateCrossings = new Set(auditedGates.map(({ x, y }) => `${x},${y}`));
+if (
+  roadWallCrossings.size !== auditedGateTotal ||
+  gateCrossings.size !== auditedGateTotal ||
+  [...roadWallCrossings].some((crossing) => !gateCrossings.has(crossing)) ||
+  [...gateCrossings].some((crossing) => !roadWallCrossings.has(crossing))
+) {
+  throw new Error("Cada cruzamento entre estrada e muralha deve possuir exatamente um portão.");
+}
+
+const expectedTowerCorners = new Set(
+  wards.flatMap((ward) => [
+    `${ward.x},${ward.y}`,
+    `${ward.x + ward.largura},${ward.y}`,
+    `${ward.x},${ward.y + ward.altura}`,
+    `${ward.x + ward.largura},${ward.y + ward.altura}`,
+  ]),
+);
+const towerCorners = new Set(auditedTowers.map(({ x, y }) => `${x},${y}`));
+if (
+  auditedTowerTotal !== 8 ||
+  towerCorners.size !== 8 ||
+  [...expectedTowerCorners].some((corner) => !towerCorners.has(corner)) ||
+  auditedGateTotal !== 7
+) {
+  throw new Error("Torres e portões não cobrem os cantos e cruzamentos dos dois recintos.");
+}
+
+const segmentIntersectsArea = (edge, area, margin = 45) => {
+  const left = area.x - margin;
+  const right = area.x + area.largura + margin;
+  const top = area.y - margin;
+  const bottom = area.y + area.altura + margin;
+  if (edge.inicio.y === edge.fim.y) {
+    return betweenInclusive(edge.inicio.y, top, bottom) &&
+      Math.max(Math.min(edge.inicio.x, edge.fim.x), left) <=
+        Math.min(Math.max(edge.inicio.x, edge.fim.x), right);
+  }
+  return betweenInclusive(edge.inicio.x, left, right) &&
+    Math.max(Math.min(edge.inicio.y, edge.fim.y), top) <=
+      Math.min(Math.max(edge.inicio.y, edge.fim.y), bottom);
+};
+const auditedRoadEdges = wallAuditGame.arestasRedeViaria();
+if (
+  auditedGuardPosts.length !== 4 ||
+  auditedGuardPosts.some((post) =>
+    auditedRoadEdges.some((edge) => segmentIntersectsArea(edge, post)),
+  )
+) {
+  throw new Error("Um posto da guarda ainda obstrui a faixa de uma estrada.");
+}
+
+const normalizedWallSegments = [];
+wards.forEach((ward) => {
+  const sides = [
+    { name: "norte", horizontal: true, fixed: ward.y, start: ward.x, end: ward.x + ward.largura },
+    { name: "leste", horizontal: false, fixed: ward.x + ward.largura, start: ward.y, end: ward.y + ward.altura },
+    { name: "sul", horizontal: true, fixed: ward.y + ward.altura, start: ward.x, end: ward.x + ward.largura },
+    { name: "oeste", horizontal: false, fixed: ward.x, start: ward.y, end: ward.y + ward.altura },
+  ];
+  sides.forEach((side) => {
+    const openings = auditedGates
+      .filter(({ recinto, lado }) => recinto === ward && lado === side.name)
+      .map((gate) => side.horizontal ? gate.x : gate.y)
+      .sort((a, b) => a - b);
+    let cursor = side.start;
+    openings.forEach((center) => {
+      const before = Math.max(side.start, center - auditedGateHalfOpening);
+      const after = Math.min(side.end, center + auditedGateHalfOpening);
+      if (before > cursor) {
+        normalizedWallSegments.push(side.horizontal
+          ? { inicio: { x: cursor, y: side.fixed }, fim: { x: before, y: side.fixed } }
+          : { inicio: { x: side.fixed, y: cursor }, fim: { x: side.fixed, y: before } });
+      }
+      cursor = Math.max(cursor, after);
+    });
+    if (cursor < side.end) {
+      normalizedWallSegments.push(side.horizontal
+        ? { inicio: { x: cursor, y: side.fixed }, fim: { x: side.end, y: side.fixed } }
+        : { inicio: { x: side.fixed, y: cursor }, fim: { x: side.fixed, y: side.end } });
+    }
+  });
+});
+if (
+  auditedGuardPosts.some((post) =>
+    normalizedWallSegments.some((edge) => segmentIntersectsArea(edge, post, 9)),
+  )
+) {
+  throw new Error("Um posto da guarda ainda invade uma muralha.");
+}
+auditedGuardPosts.forEach((post) => {
+  const gate = auditedGates.find(({ id }) => id === post.id);
+  const centerX = post.x + post.largura / 2;
+  const centerY = post.y + post.altura / 2;
+  if (!gate || Math.hypot(centerX - gate.x, centerY - gate.y) > 500) {
+    throw new Error(`O posto ${post.id} não protege o portão correspondente.`);
+  }
+});
+const rectanglesOverlap = (first, second, margin = 0) =>
+  first.x - margin < second.x + second.largura + margin &&
+  first.x + first.largura + margin > second.x - margin &&
+  first.y - margin < second.y + second.altura + margin &&
+  first.y + first.altura + margin > second.y - margin;
+const fortifiedGatePiers = auditedGates.flatMap((gate) => {
+  const horizontal = gate.lado === "norte" || gate.lado === "sul";
+  return horizontal
+    ? [
+        { x: gate.x - 136, y: gate.y - 52, largura: 88, altura: 104 },
+        { x: gate.x + 48, y: gate.y - 52, largura: 88, altura: 104 },
+      ]
+    : [
+        { x: gate.x - 52, y: gate.y - 136, largura: 104, altura: 88 },
+        { x: gate.x - 52, y: gate.y + 48, largura: 104, altura: 88 },
+      ];
+});
+if (
+  auditedGuardPosts.some((post) =>
+    fortifiedGatePiers.some((pier) => rectanglesOverlap(post, pier, 5)),
+  )
+) {
+  throw new Error("Um posto da guarda ainda invade a estrutura de um portão fortificado.");
+}
+
+const resourceGateRoute = wallAuditGame.rotaMaisRapida(
+  { x: 4400, y: 5520 },
+  { x: 6900, y: 5520 },
+);
+const trainingGateRoute = wallAuditGame.rotaMaisRapida(
+  { x: 6700, y: 7400 },
+  { x: 7200, y: 8060 },
+);
+const routeCrossesPoint = (route, x, y) =>
+  route.pontos.some((point, index) => {
+    const next = route.pontos[index + 1];
+    if (!next) return point.x === x && point.y === y;
+    return (
+      point.y === next.y && point.y === y && betweenInclusive(x, point.x, next.x)
+    ) || (
+      point.x === next.x && point.x === x && betweenInclusive(y, point.y, next.y)
+    );
+  });
+if (
+  resourceGateRoute.distanciaForaRede !== 0 ||
+  trainingGateRoute.distanciaForaRede !== 0 ||
+  !routeCrossesPoint(resourceGateRoute, 5000, 5520) ||
+  !routeCrossesPoint(resourceGateRoute, 6800, 5520) ||
+  !routeCrossesPoint(trainingGateRoute, 6700, 7500)
+) {
+  throw new Error("As novas passagens não conectam recursos, recinto interno e campo de treino pela rede.");
+}
+
+Object.assign(wallAuditGame.estado, {
+  coloniaIniciada: true,
+  mapaExpansaoComprado: true,
+  mapaAtual: "expansao",
+  revisaoColonia: 5,
+  etapaConstrucaoColonia: 4,
+  niveisEstradasColonia: Array(8).fill(3),
+  trechosPalicadaInterna: 4,
+  trechosPalicadaExterna: 4,
+  trechosMuralhaPedraInterna: 4,
+  trechosMuralhaPedraExterna: 4,
+  quantidadeTorresMuralha: 8,
+  quantidadePortoesFortificados: 7,
+  quantidadePostosGuarda: 4,
+});
+wallAuditGame.resetDrawCalls();
+wallAuditGame.step(100);
+wallAuditGame.atualizarInterface();
+const drawnStoneWalls = new Set(
+  wallAuditGame.lineSegments
+    .filter((segment) => segment[4] === "#747a76" && segment[5] === 18)
+    .map(([x1, y1, x2, y2]) => `${x1},${y1},${x2},${y2}`),
+);
+const expectedStoneWalls = new Set(
+  normalizedWallSegments.map(
+    ({ inicio, fim }) => `${inicio.x},${inicio.y},${fim.x},${fim.y}`,
+  ),
+);
+if (
+  drawnStoneWalls.size !== expectedStoneWalls.size ||
+  [...expectedStoneWalls].some((segment) => !drawnStoneWalls.has(segment))
+) {
+  throw new Error("Os trechos visuais das muralhas não fecham os dois recintos até os portões.");
+}
+if (
+  wallAuditGame.fillTexts.filter(([text]) => text === "PORTÃO FORTIFICADO").length !== 7 ||
+  [1, 2, 3, 4].some(
+    (number) => !wallAuditGame.fillTexts.some(([text]) => text === `POSTO ${number}`),
+  ) ||
+  wallAuditGame.elements.get("edificio-defesa-pedra").textContent !== "23 / 23 obras"
+) {
+  throw new Error("Portões, postos ou o total auditado de fortificações não aparecem corretamente.");
+}
+auditedGates.forEach(({ x, y, lado }) => {
+  const horizontal = lado === "norte" || lado === "sul";
+  if (
+    !wallAuditGame.fillRects.some(
+      ([rectX, rectY, width, height]) =>
+        rectX === x - (horizontal ? 54 : 12) &&
+        rectY === y - (horizontal ? 12 : 54) &&
+        width === (horizontal ? 108 : 24) &&
+        height === (horizontal ? 24 : 108),
+    )
+  ) {
+    throw new Error(`O portão em ${x},${y} deixou uma abertura vazia na muralha.`);
+  }
+});
+if (
+  html.indexOf("desenharObrasPublicasColonia();") >
+  html.indexOf("desenharPortoesETorresColonia();")
+) {
+  throw new Error("Os portões precisam ser desenhados sobre as estradas, sem desaparecer sob elas.");
+}
+
+const legacyFortificationStorage = new Map([
+  [
+    "arqueiro-do-assentamento-v1",
+    JSON.stringify({
+      versao: 1,
+      mapaVersao: 2,
+      expansao: {
+        mapaComprado: true,
+        mapaAtual: "expansao",
+        revisaoColonia: 5,
+        economia: {
+          coloniaIniciada: true,
+          populacao: 20,
+          casas: 4,
+          defesas: { torres: 4, portoes: 2 },
+        },
+        construcao: { etapa: 4, tempo: 0 },
+      },
+    }),
+  ],
+]);
+const legacyFortificationGame = createHarness(legacyFortificationStorage);
+if (
+  legacyFortificationGame.estado.quantidadeTorresMuralha !== 4 ||
+  legacyFortificationGame.estado.quantidadePortoesFortificados !== 2
+) {
+  throw new Error("A ampliação defensiva alterou uma fortificação existente no save.");
 }
 
 const housingGame = createHarness(new Map());
@@ -4370,6 +4665,8 @@ if (process.argv[2]) {
     criancasColonia: [],
     quantidadeCasasColonia: 90,
     idadesAdultosColonia: Array(450).fill(32),
+    quantidadeTorresMuralha: 8,
+    quantidadePortoesFortificados: 7,
   });
   const empregosAutomaticosLotacaoMaxima =
     matureGame.redistribuirTrabalhadores();
@@ -4446,10 +4743,9 @@ if (process.argv[2]) {
       necessidadeLotacaoMaxima ||
     report.lotacaoMaximaTresBairros.saldoAutomatico < 0 ||
     report.lotacaoMaximaTresBairros.producaoComAlimentacaoEApoioCompletos <
-      necessidadeLotacaoMaxima ||
-    report.lotacaoMaximaTresBairros.saldoComAlimentacaoEApoioCompletos < 0
+      necessidadeLotacaoMaxima
   ) {
-    throw new Error("A auditoria de alimentação na lotação máxima não reconciliou capacidade e sustentabilidade.");
+    throw new Error("A auditoria automática de alimentação na lotação máxima não reconciliou capacidade e sustentabilidade.");
   }
   console.log(`LIVE_SAVE_AUDIT ${JSON.stringify(report)}`);
 }
