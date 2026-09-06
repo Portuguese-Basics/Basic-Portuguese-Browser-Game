@@ -5,8 +5,9 @@ single-page settlement and colony simulation with a Brazilian Portuguese
 interface and deliberately minimal canvas graphics.
 
 The in-game clock can run at 1×, 2×, 5×, or 10×. Accelerated time advances
-passive production and colony systems while hunting and direct actions remain
-at normal real-time speed.
+passive production and colony systems while direct actions remain immediate.
+The adjacent pause control freezes simulation and combat clocks without
+blocking map inspection, panels, save transfer, or automatic saves.
 
 The colony now includes proactive three-district housing, a food-first economy,
 healthcare and sanitation, preserved-food reserves, stone fortifications,
@@ -16,6 +17,13 @@ deliverable source backlog exists, the transporter company protects a six-wagon
 operating crew and scales up to 12 dedicated horse-and-wagon teams. Full
 destinations no longer create phantom logistics jobs. Mixed loads move under the
 sustainable essential-payroll limit.
+
+Every productive, storage, civic, logistics, military, housing, well, and guard
+building on the colonial canvas is inspectable with a short tap or click. The
+mobile-friendly dialog reports construction/operating status, assigned workers,
+vacancies, tool tiers and productivity, current recipes or output, inventory
+against capacity, and building-specific operational data. The figures refresh
+while the dialog is open. Dragging and pinch zoom remain map navigation.
 
 Food staffing is based on measured end-to-end output rather than nominal field
 headcount. The allocator compares the marginal production of crops, pasture,
@@ -64,7 +72,9 @@ node verification/smoke-test.js
 
 The ordinary run includes the 450-resident housing, 76-position food-capacity,
 food-output, payroll, maintenance, pasture/road geometry, and operating-balance
-audit. Supplying an exported save as the first argument additionally prints a
+audit. It also proves complete, unique inspection coverage, tap-versus-drag
+behavior, live inventory refresh, and the pasture detail panel. Supplying an
+exported save as the first argument additionally prints a
 `LIVE_SAVE_AUDIT` report for that exact colony.
 
 GitHub `main` is canonical. The existing Google Drive ZIP is updated in place

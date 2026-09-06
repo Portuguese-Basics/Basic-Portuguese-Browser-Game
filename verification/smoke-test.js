@@ -184,7 +184,7 @@ function createHarness(storage) {
     context,
   );
   vm.runInNewContext(
-    "Object.assign(globalThis.__testeJogo, { alvoTransportadoresProducaoColonia, cargaLocalEntregavelColonia, valorReservaDuravelColonia, reservaDuravelAlvoColonia, alvoPedreiraObraPrioritariaColonia, multiplicadorReservaAlimentarColonia, metaProducaoAlimentarColonia, totalEmpregosAlimentaresColonia, totalVagasAlimentaresColonia, diagnosticoPrioridadeAlimentarColonia });",
+    "Object.assign(globalThis.__testeJogo, { alvoTransportadoresProducaoColonia, cargaLocalEntregavelColonia, valorReservaDuravelColonia, reservaDuravelAlvoColonia, alvoPedreiraObraPrioritariaColonia, multiplicadorReservaAlimentarColonia, metaProducaoAlimentarColonia, totalEmpregosAlimentaresColonia, totalVagasAlimentaresColonia, diagnosticoPrioridadeAlimentarColonia, edificiosInspecionaveisColonia, edificioNoPontoColonia, abrirInspecaoEdificioColonia, fecharInspecaoEdificioColonia, atualizarPainelEdificioSelecionadoColonia });",
     context,
   );
   return {
@@ -200,6 +200,23 @@ function createHarness(storage) {
     defesasAuditadas: context.__testeJogo.defesasAuditadas,
     infraestruturaHidricaAuditada:
       context.__testeJogo.infraestruturaHidricaAuditada,
+    edificiosInspecionaveis() {
+      return context.__testeJogo.edificiosInspecionaveisColonia();
+    },
+    abrirInspecaoPorId(id) {
+      const edificio = context.__testeJogo
+        .edificiosInspecionaveisColonia()
+        .find((item) => item.id === id);
+      if (!edificio) return false;
+      context.__testeJogo.abrirInspecaoEdificioColonia(edificio);
+      return true;
+    },
+    atualizarInspecao() {
+      return context.__testeJogo.atualizarPainelEdificioSelecionadoColonia();
+    },
+    fecharInspecao() {
+      context.__testeJogo.fecharInspecaoEdificioColonia();
+    },
     estado: context.__testeJogo.estado,
     quantidadeColonosExpansao: context.__testeJogo.quantidadeColonosExpansao,
     resetDrawCalls() {
@@ -697,6 +714,41 @@ if (
   throw new Error("A velocidade selecionada não foi restaurada do save.");
 }
 
+speedRestored.listeners.get("pausar-tempo:click")();
+let pausedSave = JSON.parse(
+  speedStorage.get("arqueiro-do-assentamento-v1"),
+);
+if (
+  speedRestored.estado.jogoPausado !== true ||
+  pausedSave.jogoPausado !== true ||
+  speedRestored.elements.get("pausar-tempo").textContent !== "Retomar" ||
+  speedRestored.elements.get("pausar-tempo").attributes["aria-pressed"] !==
+    "true"
+) {
+  throw new Error("A pausa não foi aplicada, indicada e salva.");
+}
+const ouroAntesDaPausa = speedRestored.estado.ouro;
+const tempoFazendeiroAntesDaPausa = speedRestored.estado.tempoFazendeiro;
+for (let frame = 1; frame <= 21; frame += 1) {
+  speedRestored.step(frame * 50);
+}
+if (
+  speedRestored.estado.ouro !== ouroAntesDaPausa ||
+  speedRestored.estado.tempoFazendeiro !== tempoFazendeiroAntesDaPausa
+) {
+  throw new Error("A pausa não congelou os relógios da simulação.");
+}
+speedRestored.listeners.get("pausar-tempo:click")();
+pausedSave = JSON.parse(speedStorage.get("arqueiro-do-assentamento-v1"));
+if (
+  speedRestored.estado.jogoPausado !== false ||
+  pausedSave.jogoPausado !== false ||
+  speedRestored.elements.get("pausar-tempo").textContent !== "Pausar" ||
+  !speedRestored.elements.get("mensagem").textContent.includes("10×")
+) {
+  throw new Error("Retomar não restaurou a velocidade selecionada.");
+}
+
 const invalidSpeedStorage = new Map([
   [
     "arqueiro-do-assentamento-v1",
@@ -714,6 +766,7 @@ const invalidSpeedStorage = new Map([
 const invalidSpeedGame = createHarness(invalidSpeedStorage);
 if (
   invalidSpeedGame.estado.velocidadeTempo !== 1 ||
+  invalidSpeedGame.estado.jogoPausado !== false ||
   invalidSpeedGame.elements.get("velocidade-tempo-1").attributes[
     "aria-pressed"
   ] !== "true"
@@ -1723,6 +1776,89 @@ expansionPurchaseGame.listeners.get("jogo:pointerup")({ pointerId: 3 });
 expansionPurchaseGame.listeners.get("jogo:pointerup")({ pointerId: 2 });
 if (expansionPurchaseGame.estado.cameraExpansao.zoom <= zoomDepoisDoBotao) {
   throw new Error("O gesto de pinça não ampliou a nova colônia.");
+}
+
+const inspectionGame = createHarness(new Map());
+inspectionGame.estado.mapaAtual = "expansao";
+inspectionGame.estado.mapaExpansaoComprado = true;
+inspectionGame.estado.pastagemConstruida = true;
+inspectionGame.estado.celeiroConstruido = true;
+inspectionGame.estado.empregosColonia.pastagem = 13;
+inspectionGame.estado.estoqueLocalCarneCriacao = 17;
+inspectionGame.estado.cameraExpansao.zoom = 1;
+inspectionGame.estado.cameraExpansao.x = 1240;
+inspectionGame.estado.cameraExpansao.y = 4395;
+const inspectionBuildings = inspectionGame.edificiosInspecionaveis();
+const inspectionIds = new Set(inspectionBuildings.map(({ id }) => id));
+const requiredInspectionIds = [
+  "administracao",
+  "moradias-oeste",
+  "lavoura",
+  "horta",
+  "feijoal",
+  "pastagem",
+  "cacadores",
+  "acougue",
+  "cozinha-carne",
+  "defumadorio",
+  "clinica",
+  "transportadores",
+  "construtores",
+  "oficina-ferramentas",
+  "mina",
+  "pedreira",
+  "cais-pesca-1",
+  "cais-comercial",
+  "estaleiro",
+  "armeiro",
+  "cemiterio",
+  "posto-guarda-4",
+  "poco-leste",
+];
+if (
+  inspectionBuildings.length < 50 ||
+  inspectionIds.size !== inspectionBuildings.length ||
+  !requiredInspectionIds.every((id) => inspectionIds.has(id)) ||
+  !html.includes("toque em um edifício para inspecioná-lo")
+) {
+  throw new Error("O catálogo clicável não cobre os edifícios produtivos, cívicos, logísticos e defensivos.");
+}
+inspectionGame.listeners.get("jogo:pointerdown")({
+  pointerId: 81,
+  pointerType: "touch",
+  clientX: 500,
+  clientY: 350,
+  preventDefault,
+});
+inspectionGame.listeners.get("jogo:pointerup")({ pointerId: 81 });
+if (
+  !inspectionGame.elements.get("inspecao-edificio").open ||
+  inspectionGame.elements.get("titulo-inspecao-edificio").textContent !==
+    "Pastagem ampliada" ||
+  !inspectionGame.elements
+    .get("dados-inspecao-empregados")
+    .innerHTML.includes("13 / 14") ||
+  !inspectionGame.elements
+    .get("dados-inspecao-producao")
+    .innerHTML.includes("Ritmo atual") ||
+  !inspectionGame.elements
+    .get("dados-inspecao-inventario")
+    .innerHTML.includes("17 / 60")
+) {
+  throw new Error("Um toque curto não abriu inventário, produção e empregados da pastagem.");
+}
+inspectionGame.estado.estoqueLocalCarneCriacao = 21;
+inspectionGame.atualizarInspecao();
+if (
+  !inspectionGame.elements
+    .get("dados-inspecao-inventario")
+    .innerHTML.includes("21 / 60")
+) {
+  throw new Error("A inspeção aberta não atualizou seus dados operacionais.");
+}
+inspectionGame.listeners.get("fechar-inspecao-edificio:click")();
+if (inspectionGame.elements.get("inspecao-edificio").open) {
+  throw new Error("A inspeção do edifício não fechou corretamente.");
 }
 
 const cameraRestoredGame = createHarness(storage);
@@ -5964,5 +6100,5 @@ if (process.argv[2]) {
 }
 
 console.log(
-  "Orthogonal roads, proactive housing, maximum-capacity food, sustainable healthcare, exclusive wagon logistics, retained jobs, tiered worksite tools, audited walls and symmetric posts, wells and hydraulic network, defense economy, families, saves, migration, speed control, and hunting: OK",
+  "Clickable building inspections, pause and speed controls, orthogonal roads, proactive housing, maximum-capacity food, sustainable healthcare, exclusive wagon logistics, retained jobs, tiered worksite tools, audited walls and symmetric posts, wells and hydraulic network, defense economy, families, saves, migration, and hunting: OK",
 );

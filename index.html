@@ -193,6 +193,10 @@
         cursor: grabbing;
       }
 
+      canvas[data-sobre-edificio="true"] {
+        cursor: pointer;
+      }
+
       .controles-mapa {
         position: absolute;
         top: 0.65rem;
@@ -477,6 +481,68 @@
         margin: 0.7rem 0 0;
       }
 
+      .inspecao-edificio-status {
+        display: inline-block;
+        margin: 0 0 0.7rem;
+        padding: 0.25rem 0.45rem;
+        border: 1px solid #8f7a4c;
+        border-radius: 999px;
+        background: #343426;
+        color: #f1dfad;
+        font-size: 0.76rem;
+        font-weight: 750;
+      }
+
+      .inspecao-edificio-resumo {
+        margin: 0 0 0.85rem;
+        color: #d4cbb4;
+        line-height: 1.45;
+      }
+
+      .grade-inspecao-edificio {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.65rem;
+      }
+
+      .cartao-inspecao-edificio {
+        min-width: 0;
+        padding: 0.7rem;
+        border: 1px solid #5f5847;
+        border-radius: 0.4rem;
+        background: #29261d;
+      }
+
+      .cartao-inspecao-edificio h3 {
+        margin: 0 0 0.45rem;
+        color: #f1cc69;
+        font-size: 0.9rem;
+      }
+
+      .lista-inspecao-edificio {
+        display: grid;
+        gap: 0.38rem;
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+
+      .lista-inspecao-edificio li {
+        display: flex;
+        align-items: start;
+        justify-content: space-between;
+        gap: 0.65rem;
+        color: #d4cbb4;
+        font-size: 0.78rem;
+        line-height: 1.35;
+      }
+
+      .lista-inspecao-edificio strong {
+        color: #fff9df;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+      }
+
       @media (max-width: 760px) {
         .barra {
           align-items: stretch;
@@ -550,6 +616,10 @@
         .painel-colonia-grade {
           grid-template-columns: 1fr;
         }
+
+        .grade-inspecao-edificio {
+          grid-template-columns: 1fr;
+        }
       }
     </style>
   </head>
@@ -600,6 +670,7 @@
           <button id="velocidade-tempo-2" type="button" aria-pressed="false">2×</button>
           <button id="velocidade-tempo-5" type="button" aria-pressed="false">5×</button>
           <button id="velocidade-tempo-10" type="button" aria-pressed="false">10×</button>
+          <button id="pausar-tempo" type="button" aria-pressed="false">Pausar</button>
         </div>
         <button id="cacar" class="acao-posto" type="button">Caçar</button>
         <button id="voltar" class="acao-posto" type="button" disabled>Voltar</button>
@@ -682,7 +753,7 @@
         <button id="centralizar-mapa" class="secundario" type="button">Centralizar</button>
         <button id="aumentar-zoom" class="secundario" type="button" aria-label="Aumentar zoom">+</button>
         <p id="nivel-zoom" class="nivel-zoom">Mapa 10× · Zoom 100%</p>
-        <p class="ajuda-mapa">Arraste para explorar. Use dois dedos para ampliar.</p>
+        <p class="ajuda-mapa">Arraste para explorar, use dois dedos para ampliar e toque em um edifício para inspecioná-lo.</p>
       </section>
       <p id="mensagem" class="mensagem" role="status" aria-live="polite">
         Você está seguro no assentamento.
@@ -738,12 +809,13 @@
             <li>Cada mineiro custa 100 de ouro e produz 1 de ouro a cada 10 segundos.</li>
             <li>Cada banqueiro custa 100 de ouro e rende 1% sobre o ouro atual a cada 60 segundos.</li>
             <li>Cada escriturário custa 100 de ouro e transfere 0,5% do ouro atual para o fundo de expansão a cada 60 segundos.</li>
-            <li>O controle Tempo acelera produção, obras, migração, necessidades, defesa e barcos em 2×, 5× ou 10×. Caçadas, cliques e salvamento automático continuam em tempo real.</li>
+            <li>O controle Tempo acelera produção, obras, migração, necessidades, defesa e barcos em 2×, 5× ou 10×. Pausar congela toda a simulação e o combate sem bloquear o mapa, os painéis ou o salvamento.</li>
             <li>Com 10.000 de ouro no fundo, o escritório pode comprar o mapa de uma nova colônia.</li>
             <li>A nova colônia começa com 2.500 de ouro pessoal e uma transferência municipal inicial de 3.000.</li>
             <li>A colônia começa com 120 provisões prontas. Grãos e farinha são ingredientes e não podem ser consumidos diretamente.</li>
             <li>O posto original continua financiando a colônia com 300 de ouro a cada 60 segundos: 270 para a cidade e 30 para o administrador.</li>
             <li>Os colonos escolhem sozinhos as obras e os empregos prioritários da cidade.</li>
+            <li>Toque ou clique em um edifício no mapa colonial para consultar empregados, ferramentas, produção, inventário, capacidade e dados operacionais atualizados.</li>
             <li>Cada morador consome 1 alimento por minuto e precisa de moradia. Cada casa abriga 5 pessoas; a cidade mantém antecipadamente pelo menos 10 vagas ou 10% da população, o que for maior.</li>
             <li>A reserva habitacional limita somente a migração espontânea. Um incentivo pago pode ocupar qualquer leito realmente livre se a saúde e a alimentação estiverem estáveis; sua embarcação leva 12 segundos e não depende dos pescadores.</li>
             <li>Há três bairros de até 30 casas cada. O segundo custa 2.500 de ouro municipal; o terceiro custa 3.500, ocupa o nordeste do recinto externo e é aberto antes de o segundo ficar cheio. Cada casa continua custando 250.</li>
@@ -1306,6 +1378,38 @@
       </section>
     </dialog>
 
+    <dialog id="inspecao-edificio" aria-labelledby="titulo-inspecao-edificio">
+      <section class="loja-conteudo">
+        <header class="loja-cabecalho">
+          <div>
+            <h2 id="titulo-inspecao-edificio">Edifício</h2>
+            <p>Dados operacionais atualizados da colônia.</p>
+          </div>
+          <button id="fechar-inspecao-edificio" class="secundario fechar-loja" type="button" aria-label="Fechar inspeção do edifício">×</button>
+        </header>
+        <p id="status-inspecao-edificio" class="inspecao-edificio-status">Planejado</p>
+        <p id="resumo-inspecao-edificio" class="inspecao-edificio-resumo"></p>
+        <div class="grade-inspecao-edificio">
+          <section class="cartao-inspecao-edificio" aria-labelledby="titulo-inspecao-empregados">
+            <h3 id="titulo-inspecao-empregados">Empregados e ferramentas</h3>
+            <ul id="dados-inspecao-empregados" class="lista-inspecao-edificio"></ul>
+          </section>
+          <section class="cartao-inspecao-edificio" aria-labelledby="titulo-inspecao-producao">
+            <h3 id="titulo-inspecao-producao">Produção</h3>
+            <ul id="dados-inspecao-producao" class="lista-inspecao-edificio"></ul>
+          </section>
+          <section class="cartao-inspecao-edificio" aria-labelledby="titulo-inspecao-inventario">
+            <h3 id="titulo-inspecao-inventario">Inventário</h3>
+            <ul id="dados-inspecao-inventario" class="lista-inspecao-edificio"></ul>
+          </section>
+          <section class="cartao-inspecao-edificio" aria-labelledby="titulo-inspecao-operacao">
+            <h3 id="titulo-inspecao-operacao">Operação e dados</h3>
+            <ul id="dados-inspecao-operacao" class="lista-inspecao-edificio"></ul>
+          </section>
+        </div>
+      </section>
+    </dialog>
+
     <dialog id="transferencia" aria-labelledby="titulo-transferencia">
       <section class="transferencia-conteudo">
         <header class="loja-cabecalho">
@@ -1498,6 +1602,7 @@
         velocidade,
         elemento: document.querySelector(`#velocidade-tempo-${velocidade}`),
       }));
+      const pausarTempoBotao = document.querySelector("#pausar-tempo");
       const painelColonia = document.querySelector("#painel-colonia");
       const fecharPainelColoniaBotao = document.querySelector(
         "#fechar-painel-colonia",
@@ -1505,6 +1610,31 @@
       const registrosColonia = document.querySelector("#registros-colonia");
       const fecharRegistrosBotao = document.querySelector(
         "#fechar-registros",
+      );
+      const inspecaoEdificio = document.querySelector("#inspecao-edificio");
+      const fecharInspecaoEdificioBotao = document.querySelector(
+        "#fechar-inspecao-edificio",
+      );
+      const tituloInspecaoEdificioEl = document.querySelector(
+        "#titulo-inspecao-edificio",
+      );
+      const statusInspecaoEdificioEl = document.querySelector(
+        "#status-inspecao-edificio",
+      );
+      const resumoInspecaoEdificioEl = document.querySelector(
+        "#resumo-inspecao-edificio",
+      );
+      const dadosInspecaoEmpregadosEl = document.querySelector(
+        "#dados-inspecao-empregados",
+      );
+      const dadosInspecaoProducaoEl = document.querySelector(
+        "#dados-inspecao-producao",
+      );
+      const dadosInspecaoInventarioEl = document.querySelector(
+        "#dados-inspecao-inventario",
+      );
+      const dadosInspecaoOperacaoEl = document.querySelector(
+        "#dados-inspecao-operacao",
       );
       const painelPopulacaoEl = document.querySelector("#painel-populacao");
       const painelCasasEl = document.querySelector("#painel-casas");
@@ -3127,6 +3257,7 @@
       const estado = {
         local: "assentamento",
         velocidadeTempo: 1,
+        jogoPausado: false,
         vida: vidaMaxima,
         ouro: 5,
         ataque: 1,
@@ -4839,6 +4970,7 @@
           mapaVersao: versaoMapa,
           salvoEm: Date.now(),
           velocidadeTempo: estado.velocidadeTempo,
+          jogoPausado: estado.jogoPausado,
           local: estado.local,
           vida: estado.vida,
           ouro: estado.ouro,
@@ -5353,6 +5485,7 @@
           )
             ? salvo.velocidadeTempo
             : 1;
+          estado.jogoPausado = salvo.jogoPausado === true;
           estado.local = salvo.local === "floresta" ? "floresta" : "assentamento";
           estado.vida = Math.round(
             numeroValido(salvo.vida, 0, vidaMaxima, vidaMaxima),
@@ -6712,6 +6845,7 @@
       function redefinirEstado() {
         estado.local = "assentamento";
         estado.velocidadeTempo = 1;
+        estado.jogoPausado = false;
         estado.vida = vidaMaxima;
         estado.ouro = 5;
         estado.ataque = 1;
@@ -9461,6 +9595,19 @@
               : `Usar velocidade ${velocidade} vezes`,
           );
         });
+        pausarTempoBotao.setAttribute(
+          "aria-pressed",
+          String(estado.jogoPausado),
+        );
+        pausarTempoBotao.textContent = estado.jogoPausado
+          ? "Retomar"
+          : "Pausar";
+        pausarTempoBotao.setAttribute(
+          "aria-label",
+          estado.jogoPausado
+            ? `Retomar o jogo em velocidade ${estado.velocidadeTempo} vezes`
+            : "Pausar o jogo",
+        );
       }
 
       function definirVelocidadeTempo(velocidade, anunciar = true) {
@@ -9477,6 +9624,20 @@
           salvarProgresso();
         }
         return true;
+      }
+
+      function alternarPausaTempo() {
+        estado.jogoPausado = !estado.jogoPausado;
+        estado.salvamentoAtivo = true;
+        sincronizarControleVelocidadeTempo();
+        definirMensagem(
+          estado.jogoPausado
+            ? "Jogo pausado. O mapa, os painéis e o salvamento continuam disponíveis."
+            : estado.velocidadeTempo === 1
+              ? "Jogo retomado em velocidade normal."
+              : `Jogo retomado em ${estado.velocidadeTempo}×.`,
+        );
+        salvarProgresso();
       }
 
       function statusEdificioColonia(tipo, construido) {
@@ -10552,16 +10713,21 @@
         canvas.setAttribute("data-interativo", String(naNovaColonia));
         if (!naNovaColonia) {
           canvas.setAttribute("data-arrastando", "false");
+          canvas.setAttribute("data-sobre-edificio", "false");
+          fecharInspecaoEdificioColonia();
         }
         atualizarLoja();
         canvas.setAttribute(
           "aria-label",
           naNovaColonia
-            ? `Mapa costeiro ampliado da nova colônia com ${estado.populacaoColonia} moradores. Arraste para explorar e use dois dedos para ampliar. O administrador é o ponto verde.`
+            ? `Mapa costeiro ampliado da nova colônia com ${estado.populacaoColonia} moradores. Arraste para explorar, use dois dedos para ampliar e toque em um edifício para consultar empregados, produção, inventário e operação. O administrador é o ponto verde.`
             : noAssentamento
             ? `Mapa do assentamento com rio, cais, ferraria, banco, minas, ${estado.quantidadeFazendeiros} fazendeiros, ${estado.quantidadeFruticultores} fruticultores, ${estado.quantidadePescadores} pescadores, ${estado.quantidadeComerciantes} comerciantes, ${estado.quantidadeFerreiros} ferreiros, ${estado.quantidadeMineiros} mineiros e ${estado.quantidadeBanqueiros} banqueiros. O arqueiro é o ponto verde.`
             : `Mapa da floresta com ${estado.inimigos.length} inimigos vermelhos. O arqueiro é o ponto verde.`,
         );
+        if (naNovaColonia && inspecaoEdificio.open) {
+          atualizarPainelEdificioSelecionadoColonia();
+        }
       }
 
       function criarInimigo() {
@@ -11206,9 +11372,383 @@
         limitarCameraExpansao();
       }
 
+      let edificioSelecionadoColoniaId = null;
+
+      function linhaInspecaoColonia(rotulo, valor) {
+        return [rotulo, String(valor)];
+      }
+
+      function quantidadeInspecaoColonia(valor, capacidade) {
+        return `${formatarQuantidade(valor)} / ${formatarQuantidade(capacidade)}`;
+      }
+
+      function estoqueInspecaoColonia(rotulo, valor, capacidade) {
+        return linhaInspecaoColonia(
+          rotulo,
+          quantidadeInspecaoColonia(valor, capacidade),
+        );
+      }
+
+      function escaparTextoInspecaoColonia(valor) {
+        return String(valor)
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function preencherListaInspecaoColonia(elemento, linhas, vazio) {
+        const itens = linhas.length > 0 ? linhas : [["Situação", vazio]];
+        elemento.innerHTML = itens
+          .map(
+            ([rotulo, valor]) =>
+              `<li><span>${escaparTextoInspecaoColonia(rotulo)}</span><strong>${escaparTextoInspecaoColonia(valor)}</strong></li>`,
+          )
+          .join("");
+      }
+
+      function ferramentasEmpregoInspecaoColonia(chave, ocupados) {
+        const local = estado.ferramentasLocaisColonia?.[chave] || {};
+        const metal = Math.min(ocupados, local.metal || 0);
+        const pedra = Math.min(Math.max(0, ocupados - metal), local.pedra || 0);
+        const madeira = Math.min(
+          Math.max(0, ocupados - metal - pedra),
+          local.madeira || 0,
+        );
+        const total = metal + pedra + madeira;
+        return [
+          linhaInspecaoColonia("Ferramentas", `${total} / ${ocupados}`),
+          linhaInspecaoColonia(
+            "Qualidades",
+            ocupados > 0
+              ? `${metal} metal · ${pedra} pedra · ${madeira} madeira`
+              : "Nenhuma em uso",
+          ),
+          linhaInspecaoColonia(
+            "Produtividade das ferramentas",
+            ocupados > 0
+              ? `${Math.round(multiplicadorFerramentasLocalColonia(chave) * 100)}%`
+              : "Sem equipe",
+          ),
+        ];
+      }
+
+      function ritmoSimplesInspecaoColonia(
+        chave,
+        quantidadePorTrabalhador,
+        unidade,
+        ocupados = estado.empregosColonia[chave] || 0,
+      ) {
+        const empregosProjetados = {
+          ...estado.empregosColonia,
+          [chave]: ocupados,
+        };
+        const quantidade = aplicarEficienciaProducaoEstradasColonia(
+          ocupados * quantidadePorTrabalhador,
+          empregosProjetados,
+          chave,
+        );
+        return [
+          linhaInspecaoColonia(
+            "Ritmo atual",
+            `${formatarQuantidade(quantidade)} ${unidade} / 60 s`,
+          ),
+          linhaInspecaoColonia(
+            "Base",
+            `${formatarQuantidade(quantidadePorTrabalhador)} ${unidade} por trabalhador`,
+          ),
+        ];
+      }
+
+      function empregadosEdificioInspecaoColonia(edificio) {
+        if (edificio.empregados) return edificio.empregados;
+        if (!edificio.emprego) {
+          return [linhaInspecaoColonia("Equipe", "Sem equipe própria")];
+        }
+        const ocupados = Math.max(
+          0,
+          edificio.emprego.ocupados ??
+            estado.empregosColonia[edificio.emprego.chave] ??
+            0,
+        );
+        const capacidade = Math.max(0, edificio.emprego.capacidade || 0);
+        return [
+          linhaInspecaoColonia("Equipe", `${ocupados} / ${capacidade}`),
+          linhaInspecaoColonia(
+            "Vagas livres",
+            Math.max(0, capacidade - ocupados),
+          ),
+          ...ferramentasEmpregoInspecaoColonia(
+            edificio.emprego.chave,
+            ocupados,
+          ),
+        ];
+      }
+
+      function edificiosInspecionaveisColonia() {
+        const lista = [];
+        const empregos = estado.empregosColonia;
+        const interno = capacidadeArmazemInternoColonia;
+        const adicionar = (
+          id,
+          nome,
+          area,
+          tipoObra,
+          construido,
+          resumo,
+          opcoes = {},
+        ) => lista.push({
+          id,
+          nome,
+          area,
+          tipoObra,
+          construido: Boolean(construido),
+          resumo,
+          producao: opcoes.producao || [],
+          inventario: opcoes.inventario || [],
+          operacao: opcoes.operacao || [],
+          emprego: opcoes.emprego || null,
+          empregados: opcoes.empregados || null,
+        });
+        const emprego = (chave, capacidade, ocupados) => ({
+          chave,
+          capacidade,
+          ...(ocupados === undefined ? {} : { ocupados }),
+        });
+        const estoque = estoqueInspecaoColonia;
+        const ritmo = ritmoSimplesInspecaoColonia;
+        const manutencao = (tipo) =>
+          linhaInspecaoColonia(
+            "Manutenção-base",
+            `${formatarOuro(manutencaoAdicionalObraColonia(tipo))} ouro / 60 s`,
+          );
+
+        adicionar("administracao", "Administração colonial", areaAdministracao, "administracao", estado.etapaConstrucaoColonia >= 2, "Coordena orçamento, prioridades, fiscalização e migração.", {
+          emprego: emprego("administracao", 2),
+          inventario: [linhaInspecaoColonia("Cofre municipal", `${formatarOuro(estado.tesouroColonia)} ouro`)],
+          operacao: [linhaInspecaoColonia("Saldo garantido", `${saldoOperacionalMunicipalColonia() >= 0 ? "+" : ""}${formatarOuro(saldoOperacionalMunicipalColonia())} ouro / 60 s`), linhaInspecaoColonia("Prioridade", prioridadeAtualColonia())],
+        });
+        const casasPrimeiro = Math.min(casasPorBlocoMoradiasColonia, estado.quantidadeCasasColonia);
+        const casasSegundo = Math.min(casasPorBlocoMoradiasColonia, Math.max(0, estado.quantidadeCasasColonia - casasPorBlocoMoradiasColonia));
+        const casasTerceiro = Math.min(casasPorBlocoMoradiasColonia, Math.max(0, estado.quantidadeCasasColonia - casasPorBlocoMoradiasColonia * 2));
+        [
+          ["moradias-oeste", "Bairro residencial oeste", areaMoradias, "moradias", estado.etapaConstrucaoColonia >= 3, casasPrimeiro],
+          ["moradias-sul", "Bairro residencial sul", areaSegundoBlocoMoradias, "segundoBlocoMoradias", estado.segundoBlocoMoradiasConstruido, casasSegundo],
+          ["moradias-nordeste", "Bairro residencial nordeste", areaTerceiroBlocoMoradias, "terceiroBlocoMoradias", estado.terceiroBlocoMoradiasConstruido, casasTerceiro],
+        ].forEach(([id, nome, area, tipo, construida, casas]) =>
+          adicionar(id, nome, area, tipo, construida, "Moradias familiares construídas antecipadamente para preservar leitos livres.", {
+            inventario: [linhaInspecaoColonia("Casas", `${casas} / ${casasPorBlocoMoradiasColonia}`), linhaInspecaoColonia("Leitos", `${casas * capacidadeCasaColonia}`)],
+            operacao: [linhaInspecaoColonia("Reserva planejada da cidade", `${reservaPlanejadaMoradiaColonia()} leitos`), linhaInspecaoColonia("Leitos livres totais", vagasFisicasMigracaoColonia())],
+          }),
+        );
+        adicionar("celeiro", "Celeiro central", areaCeleiro, "celeiro", estado.celeiroConstruido, "Armazena provisões de consumo imediato e coordena sua distribuição.", {
+          emprego: emprego("celeiro", 2),
+          inventario: [estoque("Provisões", estado.estoqueAlimentos, capacidadeCeleiroColonia)],
+          operacao: [linhaInspecaoColonia("Valor alimentar total", formatarQuantidade(valorAlimentarTotalColonia())), manutencao("celeiro")],
+        });
+        adicionar("lavoura", "Campo de grãos", areaLavoura, "lavoura", estado.lavouraConstruida, "Produz grãos para o moinho; grãos não são consumidos diretamente.", { emprego: emprego("lavoura", maximoTrabalhadoresLavoura), producao: ritmo("lavoura", graosPorAgricultor, "grãos"), inventario: [estoque("Silo de grãos", estado.estoqueGraos, capacidadeGraosColonia)], operacao: [manutencao("lavoura")] });
+        adicionar("horta", "Horta e pomar", areaHorta, "horta", estado.hortaConstruida, "Produz frutas e verduras para consumo ou para a cozinha de hortaliças.", { emprego: emprego("horta", maximoTrabalhadoresHorta), producao: ritmo("horta", hortalicasPorHorticultor, "cestas"), inventario: [estoque("Hortaliças", estado.estoqueHortalicas, capacidadeHortalicasColonia)], operacao: [linhaInspecaoColonia("Valor por cesta", `${valorAlimentarHortalica} alimentos`), manutencao("horta")] });
+        adicionar("feijoal", "Feijoal", areaFeijao, "feijao", estado.feijaoConstruido, "Produz feijão para consumo ou para a cozinha de feijão.", { emprego: emprego("feijao", maximoTrabalhadoresFeijao), producao: ritmo("feijao", feijaoPorProdutor, "sacas"), inventario: [estoque("Feijão", estado.estoqueFeijao, capacidadeFeijaoColonia)], operacao: [linhaInspecaoColonia("Valor por saca", `${valorAlimentarFeijao} alimentos`), manutencao("feijao")] });
+        adicionar("pastagem", "Pastagem ampliada", areaPastagem, "pastagem", estado.pastagemConstruida, "Cria animais e entrega provisões, carne e peles; o terreno alcança a estrada agrícola.", { emprego: emprego("pastagem", maximoTrabalhadoresPastagem), producao: [...ritmo("pastagem", alimentoPorPastor, "provisões"), linhaInspecaoColonia("Carne potencial", `${formatarQuantidade((empregos.pastagem || 0) * carneCriacaoPorPastor)} / 60 s`)], inventario: [estoque("Carne na origem", estado.estoqueLocalCarneCriacao, capacidadeEstoqueLocalCarneCriacaoColonia), estoque("Carne no açougue", estado.estoqueCarneCriacao, capacidadeCarneCriacaoColonia), estoque("Peles curtidas", estado.estoqueCouro, interno(capacidadeCouroColonia))], operacao: [manutencao("pastagem")] });
+
+        areasCabanasLenhadores.forEach((area, indice) => {
+          const ocupados = Math.min(trabalhadoresPorCabanaLenhadores, Math.max(0, (empregos.lenhador || 0) - indice * trabalhadoresPorCabanaLenhadores));
+          adicionar(`lenhadores-${indice + 1}`, `Cabana de lenhadores ${indice + 1}`, area, "cabanaLenhadores", estado.quantidadeCabanasLenhadores > indice, "Os lenhadores cortam árvores e empilham madeira na origem para as carroças.", { emprego: emprego("lenhador", trabalhadoresPorCabanaLenhadores, ocupados), producao: ritmo("lenhador", madeiraPorLenhador, "madeiras", ocupados), inventario: [estoque("Madeira nas cabanas", estado.estoqueLocalMadeira, capacidadeEstoqueLocalMadeiraColonia), estoque("Árvores em pé", estado.estoqueArvores, capacidadeArvoresColonia)], operacao: [manutencao("cabanaLenhadores")] });
+        });
+        adicionar("reflorestamento", "Cabana de reflorestamento", areaCabanaReflorestamento, "cabanaReflorestamento", estado.cabanaReflorestamentoConstruida, "Replanta a floresta e protege o estoque renovável de árvores.", { emprego: emprego("reflorestador", maximoTrabalhadoresReflorestamento), producao: ritmo("reflorestador", arvoresPlantadasPorReflorestador, "árvores"), inventario: [estoque("Árvores em pé", estado.estoqueArvores, capacidadeArvoresColonia)], operacao: [manutencao("cabanaReflorestamento")] });
+        areasCabanasColeta.forEach((area, indice) => {
+          const ocupados = Math.min(trabalhadoresPorCabanaColeta, Math.max(0, (empregos.coletor || 0) - indice * trabalhadoresPorCabanaColeta));
+          adicionar(`coleta-${indice + 1}`, `Cabana de coleta ${indice + 1}`, area, "cabanaColeta", estado.quantidadeCabanasColeta > indice, "Coletores juntam ervas medicinais e as deixam na origem para transporte.", { emprego: emprego("coletor", trabalhadoresPorCabanaColeta, ocupados), producao: ritmo("coletor", ervasPorColetor, "ervas", ocupados), inventario: [estoque("Ervas nas cabanas", estado.estoqueLocalErvas, capacidadeEstoqueLocalErvasColonia)], operacao: [manutencao("cabanaColeta")] });
+        });
+        adicionar("cacadores", "Cabana dos caçadores", areaCabanaCacadores, "cabanaCacadores", estado.cabanaCacadoresConstruida, "Caçadores recolhem carne selvagem e peles na floresta do noroeste.", { emprego: emprego("cacador", maximoTrabalhadoresCacadores), producao: [...ritmo("cacador", carneSelvagemPorCacador, "carnes"), linhaInspecaoColonia("Peles potenciais", `${formatarQuantidade((empregos.cacador || 0) * couroPorCacador)} / 60 s`)], inventario: [estoque("Carne na origem", estado.estoqueLocalCarneSelvagem, capacidadeEstoqueLocalCarneSelvagemColonia), estoque("Carne armazenada", estado.estoqueCarneSelvagem, capacidadeCarneSelvagemColonia)], operacao: [manutencao("cabanaCacadores")] });
+        adicionar("deposito-madeira", "Depósito de madeira", areaDepositoMadeira, "depositoMadeira", estado.depositoMadeiraConstruido, "Recebe das carroças a madeira usada por oficinas, navios e construções.", { inventario: [estoque("Madeira", estado.estoqueMadeira, capacidadeMadeiraColonia), estoque("Aguardando transporte", estado.estoqueLocalMadeira, capacidadeEstoqueLocalMadeiraColonia)], operacao: [linhaInspecaoColonia("Transportadores", `${empregos.transportador || 0}/${maximoTransportadoresColonia}`), manutencao("depositoMadeira")] });
+        adicionar("ervario", "Ervário", areaErvario, "ervario", estado.ervarioConstruido, "Armazena ervas entregues pelas carroças antes do uso clínico.", { inventario: [estoque("Ervas", estado.estoqueErvas, interno(capacidadeErvasColonia)), estoque("Aguardando transporte", estado.estoqueLocalErvas, capacidadeEstoqueLocalErvasColonia)], operacao: [linhaInspecaoColonia("Prioridade", estado.saudeColonia < saudePrioridadeEmergencialColonia ? "Medicamentos urgentes" : "Reserva sanitária"), manutencao("ervario")] });
+
+        adicionar("acougue", "Açougue", areaAcougueColonia, "acougue", estado.acougueConstruido, "Transforma carnes cruas em cortes e recebe carne de criação transportada da pastagem.", { emprego: emprego("acougue", maximoTrabalhadoresAcougue), producao: [linhaInspecaoColonia("Receita", `${carneCruaPorOperacaoAcougue} carnes → ${cortesPorOperacaoAcougue} cortes`), linhaInspecaoColonia("Operações possíveis", Math.min(empregos.acougue || 0, Math.floor((estado.estoqueCarneSelvagem + estado.estoqueCarneCriacao) / carneCruaPorOperacaoAcougue)))], inventario: [estoque("Carne selvagem", estado.estoqueCarneSelvagem, capacidadeCarneSelvagemColonia), estoque("Carne de criação", estado.estoqueCarneCriacao, capacidadeCarneCriacaoColonia)], operacao: [manutencao("acougue")] });
+        adicionar("cofre-cortes", "Cofre interno de cortes", areaCofreCortesColonia, "acougue", estado.acougueConstruido, "Protege cortes de carne dentro das muralhas internas.", { inventario: [estoque("Cortes", estado.estoqueCortesCarne, interno(capacidadeCortesCarneColonia))], operacao: [linhaInspecaoColonia("Destino", "Cozinhas ou defumadório"), linhaInspecaoColonia("Reforço", estado.armazensInternosPedraConstruidos ? "Pedra · capacidade +50%" : "Madeira")] });
+        adicionar("cozinha-carne", "Cozinha de carnes", areaCozinhaCarneColonia, "cozinhaCarne", estado.cozinhaCarneConstruida, "Prepara refeições frescas fora da muralha interna.", { emprego: emprego("cozinhaCarne", maximoTrabalhadoresCozinhaCarne), producao: [linhaInspecaoColonia("Receita", `${cortesPorRefeicaoCarne} cortes → ${refeicoesPorCozinheiro} refeições`), linhaInspecaoColonia("Valor por refeição", `${valorAlimentarRefeicaoCarne} alimentos`)], inventario: [estoque("Cortes disponíveis", estado.estoqueCortesCarne, interno(capacidadeCortesCarneColonia)), estoque("Refeições protegidas", estado.estoqueRefeicoesCarne, interno(capacidadeRefeicoesCarneColonia))], operacao: [manutencao("cozinhaCarne")] });
+        adicionar("cozinha-hortalicas", "Cozinha de hortaliças", areaCozinhaHortalicasColonia, "cozinhaHortalicas", estado.cozinhaHortalicasConstruida, "Transforma hortaliças em refeições de maior valor alimentar.", { emprego: emprego("cozinhaHortalicas", maximoTrabalhadoresCozinhaHortalicas), producao: [linhaInspecaoColonia("Receita", `${hortalicasPorOperacaoCozinha} cestas → ${refeicoesHortalicasPorCozinheiro} refeições`)], inventario: [estoque("Hortaliças", estado.estoqueHortalicas, capacidadeHortalicasColonia), estoque("Refeições", estado.estoqueRefeicoesHortalicas, interno(capacidadeRefeicoesHortalicasColonia))], operacao: [manutencao("cozinhaHortalicas")] });
+        adicionar("cozinha-feijao", "Cozinha de feijão", areaCozinhaFeijaoColonia, "cozinhaFeijao", estado.cozinhaFeijaoConstruida, "Transforma feijão em refeições de maior valor alimentar.", { emprego: emprego("cozinhaFeijao", maximoTrabalhadoresCozinhaFeijao), producao: [linhaInspecaoColonia("Receita", `${feijaoPorOperacaoCozinha} sacas → ${refeicoesFeijaoPorCozinheiro} refeições`)], inventario: [estoque("Feijão", estado.estoqueFeijao, capacidadeFeijaoColonia), estoque("Refeições", estado.estoqueRefeicoesFeijao, interno(capacidadeRefeicoesFeijaoColonia))], operacao: [manutencao("cozinhaFeijao")] });
+        adicionar("despensa-refeicoes", "Despensa interna de refeições", areaDespensaRefeicoesColonia, "cozinhaCarne", estado.cozinhaCarneConstruida, "Mantém refeições de carne protegidas dentro da muralha interna.", { inventario: [estoque("Refeições de carne", estado.estoqueRefeicoesCarne, interno(capacidadeRefeicoesCarneColonia))], operacao: [linhaInspecaoColonia("Consumo", "Antes das reservas duráveis"), linhaInspecaoColonia("Reforço", estado.armazensInternosPedraConstruidos ? "Pedra · capacidade +50%" : "Madeira")] });
+        adicionar("defumadorio", "Defumadório", areaDefumadorioColonia, "defumadorio", estado.defumadorioConstruido, "Produz carne defumada e peixe seco para a reserva alimentar final.", { emprego: emprego("conserveiro", maximoTrabalhadoresConservacao), producao: [linhaInspecaoColonia("Carne", `${cortesPorOperacaoDefumadorio} cortes → ${carneDefumadaPorOperacao} defumadas`), linhaInspecaoColonia("Peixe", `${peixesPorOperacaoSecagem} peixes → ${peixeSecoPorOperacao} secos`)], inventario: [estoque("Carne defumada", estado.estoqueCarneDefumada, interno(capacidadeCarneDefumadaColonia)), estoque("Peixe seco", estado.estoquePeixeSeco, interno(capacidadePeixeSecoColonia))], operacao: [linhaInspecaoColonia("Reserva durável", quantidadeInspecaoColonia(valorReservaDuravelColonia(), reservaDuravelAlvoColonia())), manutencao("defumadorio")] });
+        adicionar("adega-fria", "Adega fria", areaAdegaFriaColonia, "adegaFria", estado.adegaFriaConstruida, "Armazena cortes e refeições frescas protegidos dentro da muralha interna.", { inventario: [estoque("Cortes", estado.estoqueCortesCarne, interno(capacidadeCortesCarneColonia)), estoque("Refeições de hortaliças", estado.estoqueRefeicoesHortalicas, interno(capacidadeRefeicoesHortalicasColonia)), estoque("Refeições de feijão", estado.estoqueRefeicoesFeijao, interno(capacidadeRefeicoesFeijaoColonia))], operacao: [linhaInspecaoColonia("Aceita", "Cortes e refeições frescas"), linhaInspecaoColonia("Não aceita", "Peixe ou carne durável")] });
+
+        const armazensAlimentares = [
+          ["armazem-graos", "Silo de grãos", areaArmazemGraos, "armazemGraos", estado.armazemGraosConstruido, "Grãos", estado.estoqueGraos, capacidadeGraosColonia, "Moinho"],
+          ["armazem-hortalicas", "Armazém de hortaliças", areaArmazemHortalicas, "armazemHortalicas", estado.armazemHortalicasConstruido, "Hortaliças", estado.estoqueHortalicas, capacidadeHortalicasColonia, "Consumo ou cozinha"],
+          ["armazem-feijao", "Armazém de feijão", areaArmazemFeijao, "armazemFeijao", estado.armazemFeijaoConstruido, "Feijão", estado.estoqueFeijao, capacidadeFeijaoColonia, "Consumo ou cozinha"],
+          ["armazem-farinha", "Depósito de farinha", areaArmazemFarinha, "armazemFarinha", estado.armazemFarinhaConstruido, "Farinha", estado.estoqueFarinha, capacidadeFarinhaColonia, "Padaria"],
+          ["armazem-paes", "Despensa de pães", areaArmazemPaes, "armazemPaes", estado.armazemPaesConstruido, "Pães", estado.estoquePaes, capacidadePaesColonia, "Consumo direto"],
+        ];
+        armazensAlimentares.forEach(([id, nome, area, tipo, construido, rotulo, valor, capacidade, destino]) => adicionar(id, nome, area, tipo, construido, "Armazém dedicado de uma etapa da cadeia alimentar.", { inventario: [estoque(rotulo, valor, capacidade)], operacao: [linhaInspecaoColonia("Destino", destino), manutencao(tipo)] }));
+        adicionar("moinho", "Moinho", areaMoinhoColonia, "moinho", estado.moinhoConstruido, "Converte grãos do silo em farinha para a padaria.", { emprego: emprego("moinho", maximoTrabalhadoresMoinho), producao: [linhaInspecaoColonia("Receita", `${graosPorFarinha} grãos → ${farinhaProduzidaPorMoleiro} farinhas`), linhaInspecaoColonia("Operações pelo estoque", Math.floor(estado.estoqueGraos / graosPorFarinha))], inventario: [estoque("Grãos", estado.estoqueGraos, capacidadeGraosColonia), estoque("Farinha", estado.estoqueFarinha, capacidadeFarinhaColonia)], operacao: [manutencao("moinho")] });
+        adicionar("padaria", "Padaria", areaPadariaColonia, "padaria", estado.padariaConstruida, "Converte farinha em pães de alto valor alimentar.", { emprego: emprego("padaria", maximoTrabalhadoresPadaria), producao: [linhaInspecaoColonia("Receita", `${farinhaPorPao} farinhas → ${paesProduzidosPorPadeiro} pães`), linhaInspecaoColonia("Valor por pão", `${valorAlimentarPao} alimentos`)], inventario: [estoque("Farinha", estado.estoqueFarinha, capacidadeFarinhaColonia), estoque("Pães", estado.estoquePaes, capacidadePaesColonia)], operacao: [manutencao("padaria")] });
+
+        adicionar("clinica", "Clínica", areaClinicaColonia, "clinica", estado.clinicaConstruida, "Profissionais produzem medicamentos e tratam a saúde da população.", { emprego: emprego("clinica", maximoTrabalhadoresClinica), producao: [linhaInspecaoColonia("Receita", `${ervasPorMedicamento} ervas → ${medicamentosPorProfissionalClinica} medicamento`), linhaInspecaoColonia("Tratamento", `${saudePorMedicamento} saúde por medicamento`)], inventario: [estoque("Ervas", estado.estoqueErvas, interno(capacidadeErvasColonia)), estoque("Medicamentos", estado.estoqueMedicamentos, interno(capacidadeMedicamentosColonia))], operacao: [linhaInspecaoColonia("Saúde colonial", `${formatarQuantidade(estado.saudeColonia)} / ${saudeMaximaColonia}`), linhaInspecaoColonia("Meta de medicamentos", reservaMedicamentosAlvoColonia()), manutencao("clinica")] });
+        adicionar("farmacia", "Farmácia interna", areaFarmaciaColonia, "clinica", estado.clinicaConstruida, "Protege medicamentos junto à clínica dentro da muralha interna.", { inventario: [estoque("Medicamentos", estado.estoqueMedicamentos, interno(capacidadeMedicamentosColonia))], operacao: [linhaInspecaoColonia("Saúde", `${formatarQuantidade(estado.saudeColonia)} / 100`), linhaInspecaoColonia("Reforço", estado.armazensInternosPedraConstruidos ? "Pedra · capacidade +50%" : "Madeira")] });
+        adicionar("escola", "Escola", areaEscolaColonia, "escola", estado.escolaConstruida, "Educa os jovens antes de sua entrada na força de trabalho adulta.", { emprego: emprego("professor", 1), producao: [linhaInspecaoColonia("Jovens", quantidadeCriancasColonia()), linhaInspecaoColonia("Próxima maturidade", estado.criancasColonia.length > 0 ? "Em formação" : "Sem jovens")], operacao: [linhaInspecaoColonia("Bônus avançado", `${Math.round(bonusEducacaoColonia() * 100)}%`), manutencao("escola")] });
+        adicionar("banco", "Banco e cofres", areaBancoColonia, "banco", estado.bancoColoniaConstruido, "Protege o tesouro municipal e o patrimônio pessoal no recinto interno.", { inventario: [linhaInspecaoColonia("Municipal", `${formatarOuro(estado.tesouroColonia)} ouro`), linhaInspecaoColonia("Pessoal", `${formatarOuro(estado.ouro)} ouro`)], operacao: [linhaInspecaoColonia("Reserva municipal", `${formatarOuro(reservaMunicipalDinamicaColonia())} ouro`), manutencao("banco")] });
+        adicionar("biblioteca", "Biblioteca e escola avançada", areaBibliotecaColonia, "biblioteca", estado.bibliotecaConstruida, "Aumenta a produção de trabalhadores treinados e centraliza conhecimento.", { emprego: emprego("bibliotecario", maximoBibliotecariosColonia), producao: [linhaInspecaoColonia("Bônus educacional", `${Math.round(bonusEducacaoColonia() * 100)}%`)], operacao: [manutencao("biblioteca")] });
+        adicionar("igreja", "Igreja", areaIgrejaColonia, "igreja", estado.igrejaConstruida, "Atende a fé da comunidade e mantém o cuidado do cemitério distante.", { emprego: emprego("religioso", maximoReligiososColonia), producao: [linhaInspecaoColonia("Satisfação de fé", `${satisfacaoFeColonia()} / 100`)], operacao: [linhaInspecaoColonia("Cemitério", estado.cemiterioConstruido ? "Atendido pelo clero" : "Planejado"), manutencao("igreja")] });
+        adicionar("mercado-publico", "Mercado público", areaMercadoPublicoColonia, "mercadoPublico", estado.mercadoPublicoConstruido, "Organiza comércio costeiro, migração controlada e festivais.", { emprego: emprego("feirante", maximoFeirantesColonia), producao: [linhaInspecaoColonia("Festival", festivalAtivoColonia() ? "Ativo" : "Inativo")], inventario: [linhaInspecaoColonia("Cofre municipal", `${formatarOuro(estado.tesouroColonia)} ouro`)], operacao: [linhaInspecaoColonia("Custo de festival", `${custoFestivalColonia} ouro`), manutencao("mercadoPublico")] });
+        adicionar("cisterna", "Cisterna protegida", areaCisternaColonia, "cisterna", estado.cisternaConstruida, "Reserva central de água ligada à rede subterrânea de água e esgoto.", { inventario: [linhaInspecaoColonia("Rede básica", estado.saneamentoConstruido ? "Conectada" : "Planejada"), linhaInspecaoColonia("Rede ampliada", estado.saneamentoAvancadoConstruido ? "Conectada" : "Planejada")], operacao: [linhaInspecaoColonia("Proteção contra incêndio", `${protecaoIncendioColonia()} / 100`), manutencao("cisterna")] });
+        adicionar("bombeiros", "Quartel de bombeiros", areaBombeirosColonia, "quartelBombeiros", estado.quartelBombeirosConstruido, "Mantém brigadas de prevenção e resposta a incêndios.", { emprego: emprego("bombeiro", maximoBombeirosColonia), producao: [linhaInspecaoColonia("Proteção contra incêndio", `${protecaoIncendioColonia()} / 100`)], operacao: [manutencao("quartelBombeiros")] });
+
+        adicionar("transportadores", "Companhia de transportadores", areaTransportadoresColonia, "companhiaTransportadores", estado.companhiaTransportadoresConstruida, "Carroças com cavalos movem exclusivamente madeira, carnes e ervas das origens aos destinos.", { emprego: emprego("transportador", maximoTransportadoresColonia), producao: [linhaInspecaoColonia("Capacidade de carga", `${formatarQuantidade(capacidadeCargaTransportadoresColonia())} / viagem`), linhaInspecaoColonia("Carga entregável", formatarQuantidade(cargaLocalEntregavelColonia()))], inventario: [linhaInspecaoColonia("Carga nas origens", formatarQuantidade(cargaLocalPendenteColonia())), linhaInspecaoColonia("Lote misto", `${loteMistoCarrocaColonia} recursos por tipo`)], operacao: [linhaInspecaoColonia("Equipe mínima", minimoTransportadoresOperacionaisColonia), linhaInspecaoColonia("Bônus logístico", `${Math.round(bonusLogisticaColonia() * 100)}%`), manutencao("companhiaTransportadores")] });
+        adicionar("construtores", "Guilda dos construtores", areaConstrutoresColonia, "guildaConstrutores", estado.guildaConstrutoresConstruida, "Equipe exclusiva para obras; os demais trabalhadores conservam seus empregos.", { emprego: emprego("construtor", maximoConstrutoresColonia), producao: [linhaInspecaoColonia("Obra ativa", estado.obraAutomaticaColonia ? prioridadeAtualColonia() : "Nenhuma"), linhaInspecaoColonia("Multiplicador", `${Math.round(multiplicadorConstrucaoColonia() * 100)}%`)], inventario: [linhaInspecaoColonia("Materiais exigidos", estado.obraAutomaticaColonia ? textoMateriaisObraColonia(estado.obraAutomaticaColonia).replace(/^ e /, "") || "Somente ouro" : "Nenhum")], operacao: [manutencao("guildaConstrutores")] });
+        adicionar("oficina-ferramentas", "Oficina de ferramentas graduadas", areaOficinaFerramentasColonia, "oficinaFerramentasMetal", estado.nivelOficinaFerramentas > 0, "Produz e distribui ferramentas de madeira, pedra e metal, sempre usando primeiro a melhor qualidade.", { emprego: emprego("ferramenteiro", maximoFerramenteirosColonia), producao: [linhaInspecaoColonia("Nível", `${estado.nivelOficinaFerramentas} / 3`), linhaInspecaoColonia("Qualidade ativa", ["Nenhuma", "Madeira", "Pedra", "Metal"][nivelFerramentasAtivoColonia()] || "Nenhuma")], inventario: [estoque("Madeira", estado.estoqueFerramentasMadeira, interno(capacidadeFerramentasMadeiraColonia)), estoque("Pedra", estado.estoqueFerramentasPedra, interno(capacidadeFerramentasPedraColonia)), estoque("Metal", estado.estoqueFerramentas, interno(capacidadeFerramentasColonia))], operacao: [linhaInspecaoColonia("Trabalhadores equipados", trabalhadoresComFerramentasColonia()), manutencao("oficinaFerramentasMetal")] });
+
+        adicionar("mina", "Mina", areaMinaColonia, "mina", estado.minaConstruida, "Extrai minério para ferramentas, armas e armaduras avançadas.", { emprego: emprego("mina", maximoTrabalhadoresMina), producao: ritmo("mina", minerioPorMineiro, "minérios"), inventario: [estoque("Minério", estado.estoqueMinerio, capacidadeMinerioColonia)], operacao: [manutencao("mina")] });
+        adicionar("deposito-minerio", "Depósito de minério", areaDepositoMinerio, "mina", estado.minaConstruida, "Armazena minério para a indústria metalúrgica.", { inventario: [estoque("Minério", estado.estoqueMinerio, capacidadeMinerioColonia)], operacao: [linhaInspecaoColonia("Destinos", "Ferraria, forja e armaduras")] });
+        adicionar("pedreira", "Pedreira", areaPedreiraColonia, "pedreira", estado.pedreiraConstruida, "Extrai pedra para estradas, armazéns e fortificações.", { emprego: emprego("pedreira", maximoTrabalhadoresPedreira), producao: ritmo("pedreira", pedraPorTrabalhadorPedreira, "pedras"), inventario: [estoque("Pedra", estado.estoquePedra, capacidadePedraColonia)], operacao: [linhaInspecaoColonia("Demanda da próxima obra", estado.obraAutomaticaColonia ? faltaPedraObraColonia(estado.obraAutomaticaColonia) : 0), manutencao("pedreira")] });
+        adicionar("deposito-pedra", "Depósito de pedra", areaDepositoPedra, "pedreira", estado.pedreiraConstruida, "Mantém a reserva mineral destinada a obras e muralhas.", { inventario: [estoque("Pedra", estado.estoquePedra, capacidadePedraColonia)], operacao: [linhaInspecaoColonia("Próxima obra", prioridadeAtualColonia())] });
+
+        const trabalhadoresCais = (indice) => Math.min(trabalhadoresPorCaisPesca, Math.max(0, (empregos.pesca || 0) - indice * trabalhadoresPorCaisPesca));
+        [
+          ["cais-pesca-1", "Cais de pesca 1", areaCaisPescaColonia, "caisPesca", estado.caisPescaConstruido, 0],
+          ["cais-pesca-2", "Cais de pesca 2", areaSegundoCaisPescaColonia, "caisPesca2", estado.segundoCaisPescaConstruido, 1],
+        ].forEach(([id, nome, area, tipo, construido, indice]) => {
+          const ocupados = trabalhadoresCais(indice);
+          adicionar(id, nome, area, tipo, construido, "Pescadores e barcos produzem peixe para o mercado costeiro.", { emprego: emprego("pesca", trabalhadoresPorCaisPesca, ocupados), producao: [...ritmo("pesca", peixesPorPescador, "peixes", ocupados), linhaInspecaoColonia("Barcos totais", `${estado.barcosPesca}/${maximoBarcosPesca}`)], inventario: [estoque("Mercado de peixes", estado.estoquePeixes, capacidadePeixesColonia)], operacao: [manutencao(tipo)] });
+        });
+        adicionar("mercado-peixes", "Mercado de peixes", areaMercadoPeixesColonia, "mercadoPeixes", estado.mercadoPeixesConstruido, "Recebe a pesca costeira para consumo, venda ou conservação.", { inventario: [estoque("Peixes", estado.estoquePeixes, capacidadePeixesColonia), estoque("Peixe seco", estado.estoquePeixeSeco, interno(capacidadePeixeSecoColonia))], operacao: [linhaInspecaoColonia("Pescadores", `${empregos.pesca || 0}/${capacidadePescadoresColonia()}`), manutencao("mercadoPeixes")] });
+        adicionar("cais-comercial", "Cais comercial", areaCaisComercialColonia, "caisComercial", estado.caisComercialConstruido, "Opera navios mercantes e desembarque comercial na costa.", { emprego: emprego("comercio", capacidadeMercadoresColonia()), producao: [linhaInspecaoColonia("Mercadorias por mercador", `${mercadoriaPorMercador} / 60 s`), linhaInspecaoColonia("Navios", `${estado.naviosMercantes}/${maximoNaviosMercantes}`)], inventario: [estoque("Mercadorias", estado.estoqueMercadorias, estado.feitoriaConstruida ? capacidadeMercadoriasColonia * 2 : capacidadeMercadoriasColonia)], operacao: [manutencao("caisComercial")] });
+        adicionar("armazem-comercial", "Armazém comercial", areaArmazemComercial, "caisComercial", estado.caisComercialConstruido, "Guarda mercadorias produzidas pelos mercadores e navios.", { inventario: [estoque("Mercadorias", estado.estoqueMercadorias, estado.feitoriaConstruida ? capacidadeMercadoriasColonia * 2 : capacidadeMercadoriasColonia)], operacao: [linhaInspecaoColonia("Valor de venda", `${valorVendaMercadoria} ouro por unidade`)] });
+        adicionar("feitoria", "Feitoria mercantil", areaFeitoriaColonia, "feitoria", estado.feitoriaConstruida, "Amplia comércio, capacidade do armazém e vagas de mercadores.", { emprego: emprego("comercio", capacidadeMercadoresColonia()), producao: [linhaInspecaoColonia("Ritmo total", `${formatarQuantidade(producaoMercadoriasPorCiclo(empregos))} mercadorias / 60 s`)], inventario: [estoque("Mercadorias", estado.estoqueMercadorias, estado.feitoriaConstruida ? capacidadeMercadoriasColonia * 2 : capacidadeMercadoriasColonia)], operacao: [manutencao("feitoria")] });
+        adicionar("estaleiro", "Estaleiro", areaEstaleiroColonia, "estaleiro", estado.estaleiroConstruido, "Constrói barcos de pesca e navios mercantes com madeira e ferramentas.", { emprego: emprego("estaleiro", maximoTrabalhadoresEstaleiro), producao: [linhaInspecaoColonia("Receita por embarcação", `${madeiraPorNavio} madeiras + ${ferramentasPorNavio} ferramentas`), linhaInspecaoColonia("Frota", `${estado.barcosPesca} pesca · ${estado.naviosMercantes} comércio`)], inventario: [estoque("Madeira", estado.estoqueMadeira, capacidadeMadeiraColonia), estoque("Ferramentas de metal", estado.estoqueFerramentas, interno(capacidadeFerramentasColonia))], operacao: [manutencao("estaleiro")] });
+
+        adicionar("armas-madeira", "Oficina de armas de madeira", areaOficinaArmasMadeira, "oficinaArmasMadeira", estado.oficinaArmasMadeiraConstruida, "Produz lanças e arcos destinados primeiro à milícia.", { emprego: emprego("armeiroMadeira", maximoTrabalhadoresArmasMadeira), producao: [linhaInspecaoColonia("Lança", `${madeiraPorLanca} madeiras`), linhaInspecaoColonia("Arco", `${madeiraPorArco} madeiras`)], inventario: [estoque("Madeira", estado.estoqueMadeira, capacidadeMadeiraColonia), estoque("Lanças", estado.estoqueLancasMadeira, interno(capacidadeLancasMadeiraColonia)), estoque("Arcos", estado.estoqueArcos, interno(capacidadeArcosColonia))], operacao: [manutencao("oficinaArmasMadeira")] });
+        adicionar("arsenal-madeira", "Arsenal de madeira", areaArsenalMadeira, "arsenalMadeira", estado.arsenalMadeiraConstruido, "Protege lanças e arcos dentro da muralha interna.", { inventario: [estoque("Lanças", estado.estoqueLancasMadeira, interno(capacidadeLancasMadeiraColonia)), estoque("Arcos", estado.estoqueArcos, interno(capacidadeArcosColonia))], operacao: [linhaInspecaoColonia("Prioridade", "Equipar milícia antes de vender")] });
+        adicionar("flecharia", "Flecharia", areaFlecharia, "flecharia", estado.flechariaConstruida, "Transforma madeira em lotes de flechas para os arqueiros.", { emprego: emprego("flecheiro", maximoTrabalhadoresFlecharia), producao: [linhaInspecaoColonia("Receita", `${madeiraPorLoteFlechas} madeiras → ${flechasPorLote} flechas`)], inventario: [estoque("Madeira", estado.estoqueMadeira, capacidadeMadeiraColonia), estoque("Flechas", estado.estoqueFlechas, interno(capacidadeFlechasColonia))], operacao: [linhaInspecaoColonia("Aljavas completas", Math.floor(estado.estoqueFlechas / flechasPorAljava)), manutencao("flecharia")] });
+        adicionar("deposito-flechas", "Depósito de munição", areaDepositoFlechas, "depositoFlechas", estado.depositoFlechasConstruido, "Mantém flechas e aljavas protegidas dentro da muralha interna.", { inventario: [estoque("Flechas", estado.estoqueFlechas, interno(capacidadeFlechasColonia)), linhaInspecaoColonia("Aljavas de 20", Math.floor(estado.estoqueFlechas / flechasPorAljava))], operacao: [linhaInspecaoColonia("Prioridade", "Arqueiros antes de venda")] });
+        adicionar("ferraria", "Ferraria", areaFerrariaColonia, "ferraria", estado.ferrariaColoniaConstruida, "Transforma minério em ferramentas de metal de qualidade máxima.", { emprego: emprego("ferraria", maximoTrabalhadoresFerraria), producao: [linhaInspecaoColonia("Receita", `${minerioPorFerramenta} minérios → 1 ferramenta`)], inventario: [estoque("Minério", estado.estoqueMinerio, capacidadeMinerioColonia), estoque("Ferramentas", estado.estoqueFerramentas, interno(capacidadeFerramentasColonia))], operacao: [manutencao("ferraria")] });
+        adicionar("armazem-ferramentas", "Cofre de ferramentas", areaArmazemFerramentas, "ferraria", estado.ferrariaColoniaConstruida, "Distribui primeiro metal, depois pedra e por fim madeira às vagas ativas.", { inventario: [estoque("Metal", estado.estoqueFerramentas, interno(capacidadeFerramentasColonia)), estoque("Pedra", estado.estoqueFerramentasPedra, interno(capacidadeFerramentasPedraColonia)), estoque("Madeira", estado.estoqueFerramentasMadeira, interno(capacidadeFerramentasMadeiraColonia))], operacao: [linhaInspecaoColonia("Equipados", trabalhadoresComFerramentasColonia())] });
+        adicionar("forja", "Forja", areaForjaColonia, "forja", estado.forjaColoniaConstruida, "Transforma minério em armas de metal para a defesa.", { emprego: emprego("forja", maximoTrabalhadoresForja), producao: [linhaInspecaoColonia("Receita", `${minerioPorArma} minérios → 1 arma`)], inventario: [estoque("Minério", estado.estoqueMinerio, capacidadeMinerioColonia), estoque("Armas", estado.estoqueArmas, interno(capacidadeArmasColonia))], operacao: [manutencao("forja")] });
+        adicionar("arsenal-metal", "Arsenal de metal", areaArsenalColonia, "forja", estado.forjaColoniaConstruida, "Protege armas de metal dentro da muralha interna.", { inventario: [estoque("Armas de metal", estado.estoqueArmas, interno(capacidadeArmasColonia))], operacao: [linhaInspecaoColonia("Prioridade", "Guardas e soldados antes de venda")] });
+        adicionar("armeiro", "Casa de armaduras", areaArmeiroColonia, "armeiro", estado.armeiroConstruido, "Produz armaduras de couro, reforçadas, malha e placas para cada força.", { emprego: emprego("armeiro", maximoArmeirosColonia), producao: [linhaInspecaoColonia("Prioridade atual", nomeArmaduraColonia(tipoArmaduraPrioritariaColonia())), linhaInspecaoColonia("Qualidade produzível", nomeArmaduraColonia(tipoArmaduraProduzivelColonia() || "couro"))], inventario: [estoque("Peles curtidas", estado.estoqueCouro, interno(capacidadeCouroColonia)), ...["couro", "reforcada", "malha", "placas"].map((tipo) => estoque(nomeArmaduraColonia(tipo), estado.estoqueArmaduras[tipo], interno(capacidadeArmaduraPorTipoColonia)))], operacao: [manutencao("armeiro")] });
+
+        adicionar("patio-treino", estado.campoGuardaConstruido ? "Campo de treinamento da guarda" : "Pátio de treino da milícia", areaPatioTreinoColonia, estado.campoGuardaConstruido ? "campoGuarda" : "patioTreino", estado.patioTreinoConstruido, "Treina e equipa milicianos e guardas municipais.", { empregados: [linhaInspecaoColonia("Milicianos", `${estado.quantidadeMilicianos}/${maximoMilicianosColonia}`), linhaInspecaoColonia("Guardas", `${estado.quantidadeGuardas}/${maximoGuardasColonia}`)], inventario: [linhaInspecaoColonia("Equipamento da milícia", textoArmaduraDefesaColonia("milicia")), linhaInspecaoColonia("Equipamento da guarda", textoArmaduraDefesaColonia("guarda"))], operacao: [linhaInspecaoColonia("Segurança civil", `${segurancaCivilColonia()} / 100`), manutencao(estado.campoGuardaConstruido ? "campoGuarda" : "patioTreino")] });
+        adicionar("quartel", "Quartel militar", areaQuartelMilitarColonia, "quartelMilitar", estado.quartelMilitarConstruido, "Abriga e equipa soldados profissionais.", { empregados: [linhaInspecaoColonia("Soldados", `${estado.quantidadeSoldados}/${maximoSoldadosColonia}`)], inventario: [linhaInspecaoColonia("Armaduras", textoArmaduraDefesaColonia("soldado")), estoque("Armas de metal", estado.estoqueArmas, interno(capacidadeArmasColonia))], operacao: [linhaInspecaoColonia("Força militar", forcaMilitarColonia()), linhaInspecaoColonia("Soldos totais", `${formatarOuro(folhaSoldosColonia())} ouro / 60 s`), manutencao("quartelMilitar")] });
+        adicionar("cemiterio", "Cemitério municipal", areaCemiterioColonia, "cemiterio", estado.cemiterioConstruido, "Registra os falecidos no extremo sul e é atendido pelo clero da igreja.", { empregados: [linhaInspecaoColonia("Equipe", "Clero da igreja"), linhaInspecaoColonia("Religiosos", `${empregos.religioso || 0}/${maximoReligiososColonia}`)], inventario: [linhaInspecaoColonia("Sepultamentos registrados", estado.registrosObitosColonia.length)], operacao: [linhaInspecaoColonia("Créditos demográficos", estado.creditosObitosColonia), manutencao("cemiterio")] });
+        areasPostosGuardaColonia.forEach((area, indice) => adicionar(`posto-guarda-${indice + 1}`, `Posto da guarda ${indice + 1}`, area, "postoGuarda", estado.quantidadePostosGuarda > indice, "Posto distribuído simetricamente junto à muralha externa.", { empregados: [linhaInspecaoColonia("Guardas municipais totais", `${estado.quantidadeGuardas}/${maximoGuardasColonia}`)], operacao: [linhaInspecaoColonia("Setor", area.lado), linhaInspecaoColonia("Segurança civil", `${segurancaCivilColonia()} / 100`), manutencao("postoGuarda")] }));
+        posicoesPocosPublicosColonia.forEach((poco, indice) => adicionar(`poco-${poco.id}`, `Poço público · ${poco.nome.toLowerCase()}`, { x: poco.x - raioPocoPublicoColonia, y: poco.y - raioPocoPublicoColonia, largura: raioPocoPublicoColonia * 2, altura: raioPocoPublicoColonia * 2 }, "pocoPublico", estado.quantidadePocosPublicos > indice, "Poço público ligado às tubulações subterrâneas de água e esgoto.", { operacao: [linhaInspecaoColonia("Rede", estado.saneamentoAvancadoConstruido ? "Ampliada" : estado.saneamentoConstruido ? "Básica" : "Planejada"), linhaInspecaoColonia("Proteção contra incêndio", `${protecaoIncendioColonia()} / 100`), manutencao("pocoPublico")] }));
+
+        return lista;
+      }
+
+      function statusEdificioInspecaoColonia(edificio) {
+        if (edificio.construido) return "Operacional";
+        const progresso = edificio.tipoObra
+          ? progressoEdificioColonia(edificio.tipoObra, false)
+          : 0;
+        return progresso > 0
+          ? `Em construção · ${Math.round(progresso * 100)}%`
+          : "Planejado";
+      }
+
+      function atualizarPainelEdificioSelecionadoColonia() {
+        if (!edificioSelecionadoColoniaId) return false;
+        const edificio = edificiosInspecionaveisColonia().find(
+          ({ id }) => id === edificioSelecionadoColoniaId,
+        );
+        if (!edificio) return false;
+        tituloInspecaoEdificioEl.textContent = edificio.nome;
+        statusInspecaoEdificioEl.textContent = statusEdificioInspecaoColonia(edificio);
+        resumoInspecaoEdificioEl.textContent = edificio.resumo;
+        preencherListaInspecaoColonia(
+          dadosInspecaoEmpregadosEl,
+          empregadosEdificioInspecaoColonia(edificio),
+          "Sem equipe própria",
+        );
+        preencherListaInspecaoColonia(
+          dadosInspecaoProducaoEl,
+          edificio.producao,
+          edificio.construido ? "Sem produção própria" : "Aguardando construção",
+        );
+        preencherListaInspecaoColonia(
+          dadosInspecaoInventarioEl,
+          edificio.inventario,
+          edificio.construido ? "Sem estoque próprio" : "Aguardando construção",
+        );
+        preencherListaInspecaoColonia(
+          dadosInspecaoOperacaoEl,
+          edificio.operacao,
+          "Sem dados adicionais",
+        );
+        return true;
+      }
+
+      function abrirInspecaoEdificioColonia(edificio) {
+        edificioSelecionadoColoniaId = edificio.id;
+        atualizarPainelEdificioSelecionadoColonia();
+        if (typeof inspecaoEdificio.showModal === "function") {
+          if (!inspecaoEdificio.open) inspecaoEdificio.showModal();
+        } else {
+          inspecaoEdificio.setAttribute("open", "");
+        }
+      }
+
+      function fecharInspecaoEdificioColonia() {
+        edificioSelecionadoColoniaId = null;
+        if (typeof inspecaoEdificio.close === "function") {
+          if (inspecaoEdificio.open) inspecaoEdificio.close();
+        } else {
+          inspecaoEdificio.removeAttribute("open");
+        }
+      }
+
+      function edificioNoPontoColonia(ponto, folga = 0) {
+        const candidatos = edificiosInspecionaveisColonia()
+          .filter(({ area }) =>
+            ponto.x >= area.x - folga &&
+            ponto.x <= area.x + area.largura + folga &&
+            ponto.y >= area.y - folga &&
+            ponto.y <= area.y + area.altura + folga,
+          )
+          .map((edificio) => ({
+            edificio,
+            distancia: Math.hypot(
+              ponto.x - (edificio.area.x + edificio.area.largura / 2),
+              ponto.y - (edificio.area.y + edificio.area.altura / 2),
+            ),
+            area: edificio.area.largura * edificio.area.altura,
+          }))
+          .sort((a, b) => a.distancia - b.distancia || a.area - b.area);
+        return candidatos[0]?.edificio || null;
+      }
+
+      function pontoMundoDaTelaColonia(pontoTela) {
+        const retangulo = canvas.getBoundingClientRect();
+        const visao = dimensoesVisaoExpansao();
+        return {
+          x:
+            estado.cameraExpansao.x +
+            (pontoTela.x / Math.max(1, retangulo.width)) * visao.largura,
+          y:
+            estado.cameraExpansao.y +
+            (pontoTela.y / Math.max(1, retangulo.height)) * visao.altura,
+        };
+      }
+
+      function inspecionarEdificioNoPontoColonia(pontoTela) {
+        if (estado.mapaAtual !== "expansao") return false;
+        const folga = Math.min(140, 18 / Math.max(zoomMinimoExpansao, estado.cameraExpansao.zoom));
+        const edificio = edificioNoPontoColonia(
+          pontoMundoDaTelaColonia(pontoTela),
+          folga,
+        );
+        if (!edificio) return false;
+        abrirInspecaoEdificioColonia(edificio);
+        return true;
+      }
+
       const ponteirosMapa = new Map();
       let ultimoPontoMapa = null;
       let gestoPinchAnterior = null;
+      let inicioToqueMapa = null;
+      let distanciaToqueMapa = 0;
+      let toqueMapaCancelado = false;
 
       function pontoDoEvento(evento) {
         const retangulo = canvas.getBoundingClientRect();
@@ -11240,26 +11780,49 @@
         if (estado.mapaAtual !== "expansao") return;
         evento.preventDefault();
         canvas.setPointerCapture?.(evento.pointerId);
-        ponteirosMapa.set(evento.pointerId, pontoDoEvento(evento));
+        const pontoInicial = pontoDoEvento(evento);
+        ponteirosMapa.set(evento.pointerId, pontoInicial);
         canvas.setAttribute("data-arrastando", "true");
         if (ponteirosMapa.size === 1) {
-          ultimoPontoMapa = ponteirosMapa.get(evento.pointerId);
+          ultimoPontoMapa = pontoInicial;
           gestoPinchAnterior = null;
+          inicioToqueMapa = pontoInicial;
+          distanciaToqueMapa = 0;
+          toqueMapaCancelado = false;
         } else {
           gestoPinchAnterior = medidaPinch();
+          toqueMapaCancelado = true;
         }
       }
 
       function continuarNavegacaoMapa(evento) {
-        if (
-          estado.mapaAtual !== "expansao" ||
-          !ponteirosMapa.has(evento.pointerId)
-        ) {
+        if (estado.mapaAtual !== "expansao") return;
+        if (!ponteirosMapa.has(evento.pointerId)) {
+          if (evento.pointerType === "mouse") {
+            const pontoMundo = pontoMundoDaTelaColonia(pontoDoEvento(evento));
+            const sobreEdificio = Boolean(
+              edificioNoPontoColonia(pontoMundo, 30),
+            );
+            canvas.setAttribute(
+              "data-sobre-edificio",
+              String(sobreEdificio),
+            );
+          }
           return;
         }
         evento.preventDefault();
         const pontoAtual = pontoDoEvento(evento);
         ponteirosMapa.set(evento.pointerId, pontoAtual);
+
+        if (inicioToqueMapa) {
+          distanciaToqueMapa = Math.max(
+            distanciaToqueMapa,
+            Math.hypot(
+              pontoAtual.x - inicioToqueMapa.x,
+              pontoAtual.y - inicioToqueMapa.y,
+            ),
+          );
+        }
 
         if (ponteirosMapa.size === 1 && ultimoPontoMapa) {
           moverCameraExpansao(
@@ -11287,6 +11850,11 @@
 
       function terminarNavegacaoMapa(evento) {
         if (!ponteirosMapa.has(evento.pointerId)) return;
+        const pontoFinal = ponteirosMapa.get(evento.pointerId);
+        const abrirPorToque =
+          ponteirosMapa.size === 1 &&
+          !toqueMapaCancelado &&
+          distanciaToqueMapa <= 9;
         ponteirosMapa.delete(evento.pointerId);
         if (ponteirosMapa.size === 0) {
           ultimoPontoMapa = null;
@@ -11294,6 +11862,12 @@
           canvas.setAttribute("data-arrastando", "false");
           estado.salvamentoAtivo = true;
           salvarProgresso();
+          if (abrirPorToque && pontoFinal) {
+            inspecionarEdificioNoPontoColonia(pontoFinal);
+          }
+          inicioToqueMapa = null;
+          distanciaToqueMapa = 0;
+          toqueMapaCancelado = false;
         } else if (ponteirosMapa.size === 1) {
           ultimoPontoMapa = [...ponteirosMapa.values()][0];
           gestoPinchAnterior = null;
@@ -18739,12 +19313,13 @@
       let tempoRio = 0;
       function quadro(agora) {
         const deltaReal = Math.min((agora - tempoAnterior) / 1000, 0.05);
-        const deltaSimulacao = deltaReal * estado.velocidadeTempo;
+        const deltaJogo = estado.jogoPausado ? 0 : deltaReal;
+        const deltaSimulacao = deltaJogo * estado.velocidadeTempo;
         tempoAnterior = agora;
         tempoRio += deltaSimulacao;
 
         if (estado.local === "floresta") {
-          atualizarCacada(deltaReal);
+          atualizarCacada(deltaJogo);
         }
         atualizarFazendeiro(deltaSimulacao);
         atualizarFruticultor(deltaSimulacao);
@@ -18779,7 +19354,7 @@
             salvarProgresso();
           }
         }
-        estado.brilhoGolpe = Math.max(0, estado.brilhoGolpe - deltaReal);
+        estado.brilhoGolpe = Math.max(0, estado.brilhoGolpe - deltaJogo);
         desenhar();
         requestAnimationFrame(quadro);
       }
@@ -18825,6 +19400,10 @@
       fecharPainelColoniaBotao.addEventListener("click", fecharPainelColonia);
       abrirRegistrosBotao.addEventListener("click", abrirRegistros);
       fecharRegistrosBotao.addEventListener("click", fecharRegistros);
+      fecharInspecaoEdificioBotao.addEventListener(
+        "click",
+        fecharInspecaoEdificioColonia,
+      );
       contratarAdministradorMigracaoBotao.addEventListener(
         "click",
         contratarAdministradorMigracao,
@@ -18835,6 +19414,7 @@
           definirVelocidadeTempo(velocidade),
         );
       });
+      pausarTempoBotao.addEventListener("click", alternarPausaTempo);
       diminuirZoomBotao.addEventListener("click", () =>
         alterarZoomExpansao(0.8),
       );
