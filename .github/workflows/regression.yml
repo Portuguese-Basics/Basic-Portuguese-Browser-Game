@@ -1,0 +1,23 @@
+name: Game regression
+on:
+  push:
+    branches: [main, feature/militia-hunting-expeditions]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Complete simulation regression
+        run: node verification/smoke-test.js
+      - name: Expedition regression when present
+        run: |
+          if test -f verification/militia-hunts-test.js; then
+            node verification/militia-hunts-test.js
+          fi
