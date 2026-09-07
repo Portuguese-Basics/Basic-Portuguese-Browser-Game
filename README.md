@@ -25,6 +25,30 @@ vacancies, tool tiers and productivity, current recipes or output, inventory
 against capacity, and building-specific operational data. The figures refresh
 while the dialog is open. Dragging and pinch zoom remain map navigation.
 
+Militia hunting expeditions start at the flagged rally point immediately north
+of the hunting lodge in the northwest, or through **Caçada da milícia**. Choose
+1–10 available militia and 60, 120, or 240 seconds of actual hunting time. The
+party visibly gathers (45 seconds), leaves the map (18 seconds), hunts off-map,
+returns with animal silhouettes and meat/hide loads (18 seconds), unloads at the
+lodge (8 seconds), and walks back to the training yard (45 seconds). These are
+simulation seconds: all stages respect pause and the 1×/2×/5×/10× controls.
+
+Yield scales with militia-person-seconds spent hunting, with broad seeded
+variation, occasional nearly empty hunts, and occasional exceptional returns.
+The seed and progress are saved, so resuming cannot reroll a hunt or award its
+cargo twice. Deployed militia retain their wages and equipment but stop adding
+to town security until they return. Guards and professional soldiers stay home.
+
+Whole animals, raw meat, and hides are recorded separately. Up to two whole
+animals per colony cycle can be processed by staffed butchers; each costs one
+butcher operation and produces four raw meat and two hides. That labor is
+subtracted from ordinary meat processing and its food-output forecast. Meat
+enters the existing source stock and still needs wagon transport. Hides fill the
+existing capped hide stock. Overflow stays in a bounded, saved lodge backlog;
+it is neither silently discarded nor paid as gold. The next hunt waits for the
+previous cargo to clear. The panel reports each stage, pending cargo, and the
+last result. Hunts are optional windfalls, not guaranteed recurring food output.
+
 Food staffing is based on measured end-to-end output rather than nominal field
 headcount. The allocator compares the marginal production of crops, pasture,
 fishing, kitchens, preservation, bread and meat chains with their actual tool,
@@ -68,6 +92,7 @@ before publishing:
 
 ```sh
 node verification/smoke-test.js
+node verification/militia-hunts-test.js
 ```
 
 The ordinary run includes the 450-resident housing, 76-position food-capacity,
@@ -76,6 +101,22 @@ audit. It also proves complete, unique inspection coverage, tap-versus-drag
 behavior, live inventory refresh, and the pasture detail panel. Supplying an
 exported save as the first argument additionally prints a
 `LIVE_SAVE_AUDIT` report for that exact colony.
+
+The additional expedition suite covers input guards, militia reservation and
+payroll, all six movement stages, pause/speed, 1,000 deterministic yield samples,
+save/resume at every stage, exactly-once rewards, timestep equivalence, storage
+backlogs, butcher requirements, older/partial saves, reset, and rally geometry.
+Browser checks use isolated test saves on desktop and touch-mobile viewports:
+
+```sh
+python -m pip install playwright==1.57.0
+python -m playwright install --with-deps chromium
+python verification/browser-hunts.py
+```
+
+To verify a Pages release, pass its URL with `--url`; the browser verifier first
+requires the served HTML to match the checkout byte-for-byte. Test fixtures are
+created only inside the isolated browser contexts and never affect real saves.
 
 GitHub `main` is canonical. The existing Google Drive ZIP is updated in place
 only after the GitHub Pages release has been verified. Existing browser and
