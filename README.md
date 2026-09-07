@@ -178,3 +178,35 @@ gate-safe routes, recall/hunting handoff, ammunition and weapon conservation,
 read-only drawing, pause, deterministic stepping, malformed saves and mid-flight
 reloads. `verification/performance-walls.py --baseline PATH` records a controlled
 host comparison; it is not a physical-phone benchmark.
+
+## Citizen economy and taxes — stage 1
+
+Open **Moradores e impostos** for named residents, individual wallets, ages,
+gender, jobs, houses, wage claims, purchases and recent transaction records.
+Existing wages now transfer town money to real people. Military staff count
+inside the adult census, so 450 adults with 30 troops leave 420 civilian slots.
+
+Food costs 0.20 gold/nutritional unit before 9% town + 1% player tax (0.22 total).
+Available food remains free in kind for people without funds; healthcare, tools,
+weapons and armor stay free. Personal goods consume actual stock. Leisure services
+pay another resident, with the seller's income separate from both taxes.
+Occupied houses have a fixed 0.10 gold/cycle assessment (0.09 town / 0.01 player),
+with exemptions protecting food. These base prices and assessment are initial
+balance choices. Old external revenues are labelled separately, not double-taxed.
+
+New wallets start at zero; no retroactive cash is invented. Money uses integer
+micro-gold and saved sub-cent clearing. Census, accounts, inheritance, taxes and
+mid-cycle progress persist. The register is paginated and bounded; JSON export
+contains balances, totals and recent entries, not unlimited transaction history.
+The map/population limits are unchanged. Reload normally without clearing saves.
+
+See `docs/releases/citizen-economy-stage-1.md` for accounting boundaries, tests,
+prices, poverty protections and the remaining household/business/property stages.
+The economy is now transactional at resident level but is not a closed market
+or a full enterprise simulation. Wealth-sensitive family growth remains future work.
+
+```sh
+node verification/economy-test.js
+node verification/economy-soak-test.js
+python verification/browser-economy.py
+```

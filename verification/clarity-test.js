@@ -39,10 +39,10 @@ function mature(g, population = 450) {
 let groups = 0;
 function test(name, fn) { fn(); groups++; console.log('PASS ' + name); }
 
-test('allocator algorithm is byte-identical to the hunting release', () => {
+test('allocator only adds real-person military reservation to the prior algorithm', () => {
   const start=html.indexOf('      function recalcularTrabalhadoresColonia() {');
   const end=html.indexOf('\n      function ',start+15);
-  const body=html.slice(start,end).replace('recalcularTrabalhadoresColonia','ALLOCATOR');
+  const body=html.slice(start,end).replace('recalcularTrabalhadoresColonia','ALLOCATOR').replace('Math.max(0, estado.populacaoColonia - efetivosEconomiaColonia())', 'estado.populacaoColonia');
   assert.equal(crypto.createHash('sha256').update(body).digest('hex'),'93c18b5372aa86cba4daac5979b224219b0388e43b0bc504a10352c23fa7156b');
 });
 
@@ -56,7 +56,8 @@ test('allocator dependency closure is covered, including indirect decisions', ()
   const g=game();
   const covered = new Set([...g.eval('chavesDecisaoEmpregosColonia'),
     'armadurasEquipadasColonia','cacaMilicia','criancasColonia','empregosColonia',
-    'estoqueArmaduras','ferramentasLocaisColonia','migracoesPendentes','niveisEstradasColonia']);
+    'estoqueArmaduras','ferramentasLocaisColonia','migracoesPendentes','niveisEstradasColonia','economiaCidada']);
+  assert.ok(html.includes('estado.economiaCidada.ativa,\n        ]);'), 'Economy switch is an explicit staffing dependency');
   for(const m of closure.matchAll(/estado\.(\w+)/g))assert.ok(covered.has(m[1]), 'Missing staffing dependency: '+m[1]);
   // Only these two dynamically indexed top-level state accesses exist in closure.
   assert.deepEqual([...new Set([...closure.matchAll(/estado\[([^\]]+)\]/g)].map(m=>m[1]))].sort(), ['destino','origem']);
