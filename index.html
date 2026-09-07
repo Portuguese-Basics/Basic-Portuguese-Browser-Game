@@ -635,6 +635,17 @@
           grid-template-columns: 1fr;
         }
       }
+      #painel-economia-cidada { width:min(66rem,calc(100vw - 1rem)); max-height:90dvh; overflow:auto; }
+      #painel-economia-cidada p { line-height:1.5; overflow-wrap:anywhere; }
+      #painel-economia-cidada small { display:block; font-size:.78rem; opacity:.8; }
+      #painel-economia-cidada .tabela-cidada { overflow:auto; }
+      #painel-economia-cidada table { width:100%; border-collapse:collapse; font-size:.88rem; }
+      #painel-economia-cidada th, #painel-economia-cidada td { padding:.55rem .4rem; text-align:left; border-bottom:1px solid #68604f; }
+      #painel-economia-cidada button { min-height:44px; }
+      #painel-economia-cidada input { width:100%; min-height:44px; font:inherit; padding:.5rem; }
+      #painel-economia-cidada pre { white-space:pre-wrap; overflow-wrap:anywhere; font-size:.8rem; }
+      #painel-economia-cidada :focus-visible { outline:3px solid #ebc974; outline-offset:2px; }
+      @media(max-width:480px) { #painel-economia-cidada td, #painel-economia-cidada th { font-size:.74rem; padding:.25rem; } #painel-economia-cidada td button { padding:.35rem; font-size:.78rem; } }
     </style>
   </head>
   <body>
@@ -729,6 +740,7 @@
           Painel colonial
         </button>
         <button id="abrir-muralhas" class="acao-colonia secundario" type="button">Defesa das muralhas</button>
+        <button id="abrir-economia-cidada" class="acao-colonia secundario" type="button">Moradores e impostos</button>
         <button id="abrir-caca-milicia" class="acao-colonia secundario" type="button">Caçada da milícia</button>
         <button id="abrir-registros" class="acao-colonia secundario" type="button">
           Registros
@@ -888,7 +900,7 @@
             <li>O banco fica no recinto interno e representa, em cofres separados, o ouro municipal e o patrimônio pessoal.</li>
             <li>Armas de madeira: 4 madeiras por lança, 6 por arco. A flecharia usa 2 madeiras para fazer 12 flechas; uma aljava completa leva 20 flechas.</li>
             <li>Arsenais, munição, ferramentas, ervas e medicamentos ficam protegidos no recinto interno. Minério, pedra, madeira, alimentos e mercadorias permanecem junto às zonas produtivas. Quando um depósito enche, somente o excedente é vendido.</li>
-            <li>Toda venda colonial é dividida: 90% para o tesouro da cidade e 10% para o patrimônio pessoal do administrador.</li>
+            <li>Vendas externas legadas mantêm a divisão 90/10. Compras domésticas acrescentam imposto de 9% para a cidade e 1% para o administrador; o valor-base pertence ao produtor municipal.</li>
             <li>Um escriturário de migração custa 100 de ouro pessoal, consome alimento, ocupa moradia e libera um incentivo a cada 60 segundos.</li>
             <li>Adultos formam famílias. Cada família elegível tem apenas 0,1% de chance de ter um bebê por minuto quando saúde, alimento e moradia estão estáveis.</li>
             <li>Bebês levam 30 minutos para chegar à infância e 2 horas no total para virar colonos adultos. A escola custa 550 do cofre e exige um professor sempre que houver jovens.</li>
@@ -1338,7 +1350,7 @@
               <li>Bebês consomem 0,25 alimento; crianças consomem 0,5. Aos 30 minutos tornam-se crianças e, após 2 horas, adultos.</li>
               <li>Com bebês ou crianças, a escola vira prioridade municipal. Um professor é essencial; sem escola e professor, a maioridade fica pausada.</li>
               <li>O banco, a farmácia, os medicamentos, os arsenais, as ferramentas e a munição ficam protegidos no recinto interno.</li>
-              <li>Milícia, guarda e soldados são efetivos municipais separados dos empregos civis. A cidade contrata no máximo uma pessoa por ciclo de 60 segundos.</li>
+              <li>Milícia, guarda e soldados ocupam moradores reais, reservados fora dos empregos civis. A cidade contrata no máximo uma pessoa por ciclo de 60 segundos.</li>
               <li>Sem equipamento, reserva ou margem para soldos, o recrutamento pausa. Soldos atrasados suspendem novas contratações até o caixa se recuperar.</li>
               <li>A folha civil, os soldos e a manutenção são pagos antes de qualquer nova obra. A cidade só cria empregos não essenciais dentro do orçamento garantido.</li>
               <li>A reserva protegida equivale a pelo menos 2.500 de ouro ou cinco ciclos de despesas essenciais, o que for maior.</li>
@@ -1510,6 +1522,23 @@
         <p>Seis alvos móveis testam as posições e o tiro elevado. O exercício consome flechas reais, mas não provoca baixas, perdas civis, danos permanentes ou recompensas. Pausa e velocidade valem para a subida, os movimentos e os projéteis.</p>
         <div class="acoes-transferencia"><button id="exercicio-muralhas" type="button">Iniciar exercício de defesa</button><button id="encerrar-exercicio" class="secundario" type="button">Encerrar exercício</button></div>
         <p id="status-exercicio" role="status" aria-live="polite"></p>
+      </section>
+    </dialog>
+
+    <dialog id="painel-economia-cidada" aria-labelledby="titulo-economia-cidada">
+      <section class="loja-conteudo">
+        <header class="loja-cabecalho"><h2 id="titulo-economia-cidada">Moradores e impostos</h2><button id="fechar-economia-cidada" type="button" class="secundario">Fechar</button></header>
+        <p id="resumo-economia-cidada"></p><details id="balanco-cidada"><summary>Vendas, impostos (9% + 1%) e alimentação</summary><p id="tributos-economia-cidada"></p><p id="alimento-economia-cidada"></p></details>
+        <details><summary>Preços, proteção e limites desta etapa</summary><p>Uma ração adulta custa 0,20 ouro + 0,018 de imposto municipal (9%) + 0,002 para o administrador (1%): total 0,22. Menores consomem a fração alimentar já prevista no jogo. Quem não pode pagar recebe a comida disponível gratuitamente, sem imposto nem dívida. Dinheiro não cria alimentos se o estoque físico faltar.</p>
+          <p>Casa ocupada: 0,10 ouro por ciclo, repartido em 0,09 para a cidade e 0,01 para o administrador. Casas vazias são isentas. Famílias sem reserva alimentar recebem isenção, sem despejo nem dívida. As casas e os estoques produtivos continuam municipais nesta etapa; atendimentos autônomos na feira já pagam moradores individuais.</p>
+          <p>Artigos pessoais: 2 ouro + 10% de tributos, retirados das mercadorias do cais. Lazer na feira: 0,50 + 10%. O valor-base vai a um morador da reserva de trabalho por atendimento autônomo, no máximo um por prestador e de 2 a 12 por ciclo. Mercadorias exigem feirantes; serviços não criam um segundo turno para assalariados. Saúde, ferramentas, armas e armaduras são gratuitas. Salários não pagam imposto de venda. Empregados da defesa ocupam vagas reais do cadastro, sem segundo salário civil.</p>
+          <p>Carteiras antigas começam em zero: o jogo anterior não guardava salários individuais, portanto não há riqueza retroativa inventada. Repasse do posto, exportações, obras e manutenção legadas são fluxos externos identificados, não novos impostos. Natalidade e propriedade privada serão desenvolvidas em outra etapa.</p></details>
+        <div class="acoes-transferencia"><button id="alternar-compras-cidada" type="button">Pausar compras opcionais</button><button id="quitar-atrasados-cidada" class="secundario" type="button">Quitar salários atrasados com excedente</button><button id="exportar-economia-cidada" class="secundario" type="button">Exportar cadastro e livro</button></div>
+        <label for="buscar-cidadao">Buscar nome, identificação, gênero ou trabalho</label><input id="buscar-cidadao" type="search" placeholder="Buscar morador" autocomplete="off">
+        <div class="tabela-cidada"><table><caption>Cadastro individual — até 20 moradores por página</caption><thead><tr><th>Nome</th><th>Idade / casa</th><th>Trabalho</th><th>Riqueza / salário</th></tr></thead><tbody id="corpo-cidadaos"></tbody></table></div>
+        <div class="acoes-transferencia"><button id="pagina-cidadao-anterior" class="secundario" type="button">Anterior</button><span id="pagina-cidadao" role="status"></span><button id="pagina-cidadao-proxima" class="secundario" type="button">Próxima</button></div>
+        <p id="detalhe-cidadao" role="status"></p><details><summary>Casas e imposto do último ciclo</summary><p id="casas-cidada"></p></details>
+        <details><summary>Conferência e livro de movimentos recentes</summary><p id="auditoria-economia-cidada"></p><pre id="livro-cidada"></pre><p>O livro guarda os últimos 512 lançamentos; cada morador mantém 8 movimentos recentes e totais acumulados. Exporte para preservar um retrato; isto não é um histórico ilimitado.</p></details>
       </section>
     </dialog>
 
@@ -3451,6 +3480,7 @@
         tempoNecessidadesColonia: 0,
         colonosComFome: 0,
         populacaoColonia: 0,
+        economiaCidada: novaEconomiaCidada(),
         familiasColonia: [],
         criancasColonia: [],
         quantidadeCasasColonia: 0,
@@ -4248,6 +4278,359 @@
         contexto.restore();
       }
 
+      // CITIZEN_ECONOMY_V1: integer micro-gold, funded transfers, bounded journals.
+      const unidadeOuroCidada = 1000000;
+      const precoRacaoCidada = 200000; // 0.20 gold per nutritional unit, before sales tax.
+      const taxaCasaCidada = 100000; // 0.10 gold per occupied physical house per cycle.
+      const papeisPublicosCidada = new Set(['administracao','professor','clinica','bombeiro','bibliotecario','religioso','migracao']);
+      const papeisMilitaresCidada = ['milicia','guarda','soldado'];
+      const nomesPapeisCidada = {geral:'Reserva de trabalho',administracao:'Administração',professor:'Professor',migracao:'Escriturário',lavoura:'Lavrador',horta:'Horticultor',feijao:'Produtor de feijão',pastagem:'Pastor',celeiro:'Celeiro',moinho:'Moleiro',padaria:'Padeiro',cacador:'Caçador',acougue:'Açougueiro',cozinhaCarne:'Cozinha de carne',cozinhaHortalicas:'Cozinha de hortaliças',cozinhaFeijao:'Cozinha de feijão',conserveiro:'Conservação',lenhador:'Lenhador',reflorestador:'Reflorestamento',coletor:'Coletor',clinica:'Saúde',armeiroMadeira:'Armas de madeira',flecheiro:'Flecheiro',pesca:'Pescador',estaleiro:'Estaleiro',mina:'Mineiro',pedreira:'Pedreiro',comercio:'Comércio',ferraria:'Ferreiro',forja:'Forja',armeiro:'Armeiro',transportador:'Transportador',construtor:'Construtor',ferramenteiro:'Ferramenteiro',bombeiro:'Bombeiro',bibliotecario:'Bibliotecário',religioso:'Religioso',feirante:'Feirante',milicia:'Miliciano',guarda:'Guarda',soldado:'Soldado',crianca:'Criança'};
+      let assinaturaCadastroCidada = '';
+      let paginaCadastroCidada = 0;
+      let selecionadoCadastroCidada = '';
+      let ultimaTelaCidada = -Infinity;
+      const painelEconomiaCidada = document.querySelector('#painel-economia-cidada');
+
+      function novaEconomiaCidada() {
+        return {versao:1,ativa:true,opcionais:true,iniciada:false,proximoId:1,ciclo:0,folhas:0,
+          pessoas:{},adultos:[],jovens:Object.create(null),casas:[],falecidos:[],livro:[],sequencia:0,
+          compensacaoCidade:0,compensacaoPessoal:0,custodia:0,creditosCustodia:0,
+          abertura:0,entradasExternas:0,saidasExternas:0,observadoCidade:0,observadoPessoal:0,
+          totais:{salarios:0,atrasadosQuitados:0,vendasBase:0,tributoVendasCidade:0,tributoVendasPessoal:0,imovelCidade:0,imovelPessoal:0,alimentoPago:0,alimentoSocial:0,faltaFisica:0,imovelIsento:0,receitaProdutorMunicipal:0,rendasServicos:0},
+          ultimo:{},avisos:[]};
+      }
+      function economiaCidadaAtiva() { return estado.coloniaIniciada && estado.economiaCidada.ativa; }
+      function inteiroCidada(n, max = 9000000000000) { return Number.isSafeInteger(n) && n >= 0 && n <= max ? n : 0; }
+      function microsCidada(n) { return Math.round((Number.isFinite(n) ? n : 0) * unidadeOuroCidada); }
+      const formatoOuroCidada = new Intl.NumberFormat('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:4});
+      function textoOuroCidada(n) { return formatoOuroCidada.format(n/unidadeOuroCidada)+' ouro'; }
+      function textoSeguroCidada(s) { return String(s ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+      function efetivosEconomiaColonia() {
+        return estado.economiaCidada.ativa ? Math.min(estado.populacaoColonia, estado.quantidadeMilicianos + estado.quantidadeGuardas + estado.quantidadeSoldados) : 0;
+      }
+      function registrarLivroCidada(tipo, de, para, valor, detalhe = '') {
+        const e=estado.economiaCidada;
+        if(!Number.isSafeInteger(valor)||valor<0)throw new Error('Valor monetário inválido');
+        if(!valor && tipo!=='cadastro')return;
+        e.livro.push({id:++e.sequencia,ciclo:e.ciclo,tipo,de,para,valor,detalhe:String(detalhe).slice(0,160)});
+        if(e.livro.length>512)e.livro.splice(0,e.livro.length-512);
+      }
+      function observarContasCidada(motivo='Outros fluxos legados: obras, manutenção, repasses ou comércio externo') {
+        const e=estado.economiaCidada;
+        if(!economiaCidadaAtiva()||!e.iniciada)return;
+        for(const [campo,observado,conta] of [['tesouroColonia','observadoCidade','cidade'],['ouro','observadoPessoal','administrador']]) {
+          const valor=microsCidada(estado[campo]),delta=valor-e[observado];
+          if(delta){
+            if(delta>0)e.entradasExternas+=delta;else e.saidasExternas-=delta;
+            registrarLivroCidada(delta>0?'entrada_externa':'saida_externa',delta>0?'exterior':conta,delta>0?conta:'exterior',Math.abs(delta),motivo);
+          }
+          e[observado]=valor;
+        }
+      }
+      function marcarContasCidada() {
+        const e=estado.economiaCidada;
+        e.observadoCidade=microsCidada(estado.tesouroColonia);e.observadoPessoal=microsCidada(estado.ouro);
+      }
+      function liquidarCompensacaoCidada() {
+        const e=estado.economiaCidada;
+        // Legacy public balances are cent-gold. Fractions stay in saved clearing accounts.
+        for(const [conta,campo] of [['compensacaoCidade','tesouroColonia'],['compensacaoPessoal','ouro']]) {
+          const centavos=Math.floor(e[conta]/10000)*10000;
+          if(centavos){estado[campo]=arredondarOuro(estado[campo]+centavos/unidadeOuroCidada);e[conta]-=centavos;}
+        }
+        marcarContasCidada();
+      }
+      function patrimonioContabilCidada() {
+        const e=estado.economiaCidada;
+        return microsCidada(estado.tesouroColonia)+microsCidada(estado.ouro)+e.compensacaoCidade+e.compensacaoPessoal+e.custodia+Object.values(e.pessoas).reduce((n,p)=>n+p.saldo,0);
+      }
+      function auditoriaCidada() {
+        const e=estado.economiaCidada;
+        const saldo=patrimonioContabilCidada(),previsto=e.abertura+e.entradasExternas-e.saidasExternas;
+        return {saldo,previsto,diferenca:saldo-previsto,carteiras:Object.values(e.pessoas).reduce((n,p)=>n+p.saldo,0),atrasados:e.creditosCustodia+Object.values(e.pessoas).reduce((n,p)=>n+p.atrasados,0)};
+      }
+      function criarPessoaCidada(familiaId=null) {
+        const e=estado.economiaCidada;
+        if(!Number.isSafeInteger(e.proximoId)||e.proximoId<1||e.proximoId>999999999)e.proximoId=1;
+        while(e.pessoas['cid-'+e.proximoId])e.proximoId=e.proximoId>=999999999?1:e.proximoId+1;
+        const n=e.proximoId++;
+        const femininos=['Ana','Beatriz','Camila','Daniela','Elisa','Fernanda','Gabriela','Helena','Isabel','Joana','Larissa','Marina','Natália','Olívia','Paula','Renata','Sofia','Teresa','Valéria','Vitória'];
+        const masculinos=['André','Bruno','Caio','Diego','Eduardo','Felipe','Gabriel','Henrique','Igor','João','Lucas','Marcos','Nicolas','Otávio','Pedro','Rafael','Samuel','Tiago','Vinícius','Vítor'];
+        const sobrenomes=['Almeida','Barbosa','Costa','Dias','Esteves','Ferreira','Gomes','Lima','Machado','Nunes','Oliveira','Pereira','Ramos','Santos','Teixeira','Vieira','Azevedo','Cardoso','Duarte','Mendes','Rocha','Sousa','Freitas'];
+        const genero=n%2?'feminino':'masculino';
+        const nome=(genero==='feminino'?femininos:masculinos)[Math.floor((n-1)/2)%20]+' '+sobrenomes[Math.floor((n-1)/40)%sobrenomes.length];
+        const p={id:'cid-'+n,nome,genero,saldo:0,recebido:0,gasto:0,impostos:0,atrasados:0,heranca:0,
+          familiaId:familiaId||'',casa:0,emprego:'geral',vaga:0,salario:0,ultimaFolha:0,
+          alimento:0,assistencia:0,bens:0,lazer:0,rendaServicos:0,servicosPrestados:0,ultimaCompra:-5,movimentos:[]};
+        e.pessoas[p.id]=p;return p;
+      }
+      function registrarMovimentoPessoa(p,tipo,valor,contraparte) {
+        p.movimentos.push({ciclo:estado.economiaCidada.ciclo,tipo,valor,contraparte});
+        if(p.movimentos.length>8)p.movimentos.shift();
+      }
+      function sincronizarCensoCidada() {
+        const e=estado.economiaCidada;
+        if(!economiaCidadaAtiva())return;
+        if(!e.iniciada){e.iniciada=true;marcarContasCidada();e.abertura=patrimonioContabilCidada();}
+        while(e.adultos.length<estado.populacaoColonia) {
+          const i=e.adultos.length,p=criarPessoaCidada(estado.familiasColonia[Math.floor(i/2)]?.id || 'nucleo-'+Math.floor(i/2));
+          e.adultos.push(p.id);
+        }
+        // Normal deaths use their exact index. Truncated/malformed imports retain money in custody.
+        while(e.adultos.length>estado.populacaoColonia) {
+          const id=e.adultos.pop(),p=e.pessoas[id];if(p){e.custodia+=p.saldo;e.creditosCustodia+=p.atrasados;delete e.pessoas[id];}
+        }
+        const presentes=new Set();
+        for(const c of estado.criancasColonia){
+          presentes.add(c.id);
+          if(!e.jovens[c.id]||!e.pessoas[e.jovens[c.id]])e.jovens[c.id]=criarPessoaCidada(c.familiaId).id;
+          e.pessoas[e.jovens[c.id]].emprego='crianca';
+        }
+        for(const id of Object.keys(e.jovens))if(!presentes.has(id)) {
+          const p=e.pessoas[e.jovens[id]];if(p){e.custodia+=p.saldo;e.creditosCustodia+=p.atrasados;delete e.pessoas[p.id];}delete e.jovens[id];
+        }
+      }
+      function amadurecerPessoaCidada(crianca) {
+        const e=estado.economiaCidada;
+        if(!economiaCidadaAtiva())return;
+        const id=e.jovens[crianca.id];if(id&&e.pessoas[id]){e.adultos.push(id);e.pessoas[id].emprego='geral';delete e.jovens[crianca.id];}
+        assinaturaCadastroCidada='';
+      }
+      function falecerPessoaCidada(indice,causa) {
+        const e=estado.economiaCidada;if(!economiaCidadaAtiva())return;
+        sincronizarCensoCidada();const id=e.adultos[indice],p=e.pessoas[id];if(!p)return;
+        const herdeiros=Object.values(e.pessoas).filter(q=>q.id!==id&&q.familiaId===p.familiaId);
+        const herdeiro=herdeiros.find(q=>q.emprego!=='crianca')||herdeiros[0];
+        if(p.saldo){
+          if(herdeiro){herdeiro.saldo+=p.saldo;herdeiro.heranca+=p.saldo;registrarMovimentoPessoa(herdeiro,'herança',p.saldo,p.id);}
+          else e.custodia+=p.saldo;
+          registrarLivroCidada('heranca',id,herdeiro?.id||'custodia',p.saldo,'Transferência sem imposto de venda');
+        }
+        // Unpaid wage claims are inherited, not minted or lost on death.
+        if(p.atrasados){if(herdeiro)herdeiro.atrasados+=p.atrasados;else {e.creditosCustodia+=p.atrasados;e.avisos.push('Crédito salarial sem herdeiro preservado: '+p.id);}}
+        e.falecidos.unshift({id,nome:p.nome,causa:String(causa).slice(0,80),ciclo:e.ciclo,herdeiro:herdeiro?.id||'custodia',valor:p.saldo,credito:p.atrasados});
+        e.falecidos=e.falecidos.slice(0,100);e.avisos=e.avisos.slice(-20);
+        e.adultos.splice(indice,1);delete e.pessoas[id];assinaturaCadastroCidada='';
+      }
+      function atualizarCadastroCidada(forcar=false) {
+        if(!economiaCidadaAtiva())return;
+        const e=estado.economiaCidada;
+        const assinatura=JSON.stringify([estado.populacaoColonia,estado.criancasColonia.map(c=>c.id),estado.quantidadeCasasColonia,estado.etapaConstrucaoColonia,estado.empregosColonia,estado.quantidadeMilicianos,estado.quantidadeGuardas,estado.quantidadeSoldados,e.proximoId]);
+        if(!forcar&&assinaturaCadastroCidada===assinatura)return;
+        sincronizarCensoCidada();
+        const adultos=e.adultos.map(id=>e.pessoas[id]),livres=new Set(adultos.map(p=>p.id));
+        const alvos=[['milicia',estado.quantidadeMilicianos,soldoMilicianoColonia],['guarda',estado.quantidadeGuardas,soldoGuardaColonia],['soldado',estado.quantidadeSoldados,soldoSoldadoColonia],
+          ...Object.entries(estado.empregosColonia).filter(([k])=>k!=='geral').map(([k,n])=>[k,n,papeisPublicosCidada.has(k)?salarioServicoPublico:salarioCivilPadrao]),['geral',adultos.length,0]];
+        // Retain identities in their current jobs when possible, then fill vacancies.
+        const grupos=alvos.map(([tipo,n,salario])=>({tipo,n,salario,lista:[]}));
+        for(const g of grupos)for(const p of adultos)if(p.emprego===g.tipo&&g.lista.length<g.n&&livres.has(p.id)){g.lista.push(p);livres.delete(p.id);}
+        // The reserve must not monopolize people needed by real vacancies.
+        const reserva=grupos[grupos.length-1];for(const p of reserva.lista)livres.add(p.id);reserva.lista=[];
+        for(const g of grupos){
+          for(const p of adultos)if(g.lista.length<g.n&&livres.has(p.id)){g.lista.push(p);livres.delete(p.id);}
+          g.lista.forEach((p,i)=>{p.emprego=g.tipo;p.vaga=i;p.salario=microsCidada(g.salario);});
+        }
+        const casasProntas=estado.etapaConstrucaoColonia>=4?estado.quantidadeCasasColonia:0;
+        const casas=Array.from({length:casasProntas},(_,i)=>({id:i+1,membros:[],taxa:0,isenta:0}));
+        const pessoas=[...adultos,...estado.criancasColonia.map(c=>e.pessoas[e.jovens[c.id]])];
+        // Keep established addresses; allocate children close to their family where possible.
+        for(const p of pessoas){const h=casas[p.casa-1];if(h&&h.membros.length<capacidadeCasaColonia)h.membros.push(p.id);else p.casa=0;}
+        for(const p of pessoas)if(!p.casa){
+          const parente=pessoas.find(q=>q.id!==p.id&&q.familiaId===p.familiaId&&q.casa&&casas[q.casa-1].membros.length<capacidadeCasaColonia);
+          const h=parente?casas[parente.casa-1]:casas.find(h=>h.membros.length<capacidadeCasaColonia);
+          if(h){p.casa=h.id;h.membros.push(p.id);}
+        }
+        for(const h of casas){const anterior=e.casas[h.id-1];if(anterior){h.taxa=anterior.taxa;h.isenta=anterior.isenta;}}
+        e.casas=casas;assinaturaCadastroCidada=assinatura;
+      }
+      function salarioDevidoCidada() { return Object.values(estado.economiaCidada.pessoas).reduce((n,p)=>n+(p.emprego==='crianca'?0:p.salario),0); }
+      function pagarSalariosCidada(empregos) {
+        atualizarCadastroCidada(true);observarContasCidada();const e=estado.economiaCidada;
+        const pessoas=e.adultos.map(id=>e.pessoas[id]),devido=pessoas.reduce((n,p)=>n+p.salario,0);
+        const pago=Math.min(microsCidada(estado.tesouroColonia),devido);
+        let faltante=pago;
+        const valores=pessoas.map(p=>devido?Math.floor(pago*p.salario/devido):0);
+        faltante-=valores.reduce((a,b)=>a+b,0);
+        for(let i=0;faltante>0&&i<pessoas.length;i++)if(valores[i]<pessoas[i].salario){valores[i]++;faltante--;}
+        estado.tesouroColonia=arredondarOuro(estado.tesouroColonia-pago/unidadeOuroCidada);marcarContasCidada();
+        pessoas.forEach((p,i)=>{p.ultimaFolha=valores[i];p.saldo+=valores[i];p.recebido+=valores[i];p.atrasados+=p.salario-valores[i];
+          if(valores[i]){registrarLivroCidada('salario','cidade',p.id,valores[i],p.emprego);registrarMovimentoPessoa(p,'salário',valores[i],'cidade');}});
+        e.totais.salarios+=pago;e.folhas++;e.ultimo.folhaDevida=devido;e.ultimo.folhaPaga=pago;
+        return {pago:pago/unidadeOuroCidada,devido:devido/unidadeOuroCidada};
+      }
+      function quitarAtrasadosCidada() {
+        if(!economiaCidadaAtiva())return false;
+        atualizarCadastroCidada();observarContasCidada();const e=estado.economiaCidada;
+        let disponivel=Math.max(0,microsCidada(estado.tesouroColonia-reservaMunicipalDinamicaColonia())),total=0;
+        // Cent-sized payments keep the public account exact; residual claims remain saved.
+        for(const p of Object.values(e.pessoas)){
+          const valor=Math.floor(Math.min(p.atrasados,disponivel)/10000)*10000;
+          if(!valor)continue;p.atrasados-=valor;p.saldo+=valor;p.recebido+=valor;disponivel-=valor;total+=valor;
+          registrarLivroCidada('atrasados','cidade',p.id,valor);registrarMovimentoPessoa(p,'salário atrasado',valor,'cidade');
+        }
+        estado.tesouroColonia=arredondarOuro(estado.tesouroColonia-total/unidadeOuroCidada);marcarContasCidada();e.totais.atrasadosQuitados+=total;
+        atualizarPainelEconomiaCidada(true);salvarProgresso();return total>0;
+      }
+      function precoComTributosCidada(base) {
+        if(!Number.isSafeInteger(base)||base<0||base>9000000000000)throw new Error('Base de venda inválida');
+        const cidade=Math.floor(base*9/100),pessoal=Math.floor(base/100);return {base,cidade,pessoal,total:base+cidade+pessoal};
+      }
+      function vendaCidada(p,base,tipo,detalhe,vendedor=null) {
+        const e=estado.economiaCidada,t=precoComTributosCidada(base);
+        if(!p||base<=0||p.saldo<t.total||e.pessoas[p.id]!==p||(vendedor&&(vendedor.id===p.id||e.pessoas[vendedor.id]!==vendedor)))return false;
+        p.saldo-=t.total;p.gasto+=t.total;p.impostos+=t.cidade+t.pessoal;
+        e.compensacaoCidade+=t.cidade;e.compensacaoPessoal+=t.pessoal;
+        if(vendedor){vendedor.saldo+=t.base;vendedor.rendaServicos+=t.base;vendedor.servicosPrestados++;e.totais.rendasServicos+=t.base;registrarMovimentoPessoa(vendedor,'serviço prestado',t.base,p.id);}
+        else {e.compensacaoCidade+=t.base;e.totais.receitaProdutorMunicipal+=t.base;}
+        e.totais.vendasBase+=t.base;e.totais.tributoVendasCidade+=t.cidade;e.totais.tributoVendasPessoal+=t.pessoal;
+        // Separate principal from tax. Goods/food remain municipal; services pay actual residents.
+        registrarLivroCidada(tipo,p.id,vendedor?.id||'produtor_municipal',t.base,detalhe);
+        registrarLivroCidada('imposto_venda_cidade',p.id,'cidade',t.cidade,detalhe);
+        registrarLivroCidada('imposto_venda_pessoal',p.id,'administrador',t.pessoal,detalhe);
+        registrarMovimentoPessoa(p,tipo,-t.total,vendedor?.id||'mercado municipal');
+        return true;
+      }
+      function repartirPagamentoCidada(pagadores,base,tipo,detalhe) {
+        const t=precoComTributosCidada(base),capacidade=pagadores.reduce((n,p)=>n+p.saldo,0);
+        if(capacidade<t.total)return false;
+        // Family support is a transfer, not another taxable sale.
+        const comprador=pagadores[0];
+        for(const p of pagadores.slice(1)) {
+          const valor=Math.min(p.saldo,Math.max(0,t.total-comprador.saldo));if(!valor)continue;
+          p.saldo-=valor;comprador.saldo+=valor;registrarLivroCidada('apoio_familiar',p.id,comprador.id,valor,detalhe);
+          registrarMovimentoPessoa(p,'apoio familiar',-valor,comprador.id);registrarMovimentoPessoa(comprador,'apoio familiar',valor,p.id);
+        }
+        return vendaCidada(comprador,base,tipo,detalhe);
+      }
+      function liquidarAlimentacaoCidada(consumo,necessidade) {
+        if(!economiaCidadaAtiva())return;
+        atualizarCadastroCidada();observarContasCidada();const e=estado.economiaCidada;e.ciclo++;
+        const fracao=necessidade>0?Math.max(0,Math.min(1,consumo/necessidade)):0;
+        const necessidades=new Map(e.adultos.map(id=>[id,consumoAlimentoPorColono]));
+        for(const c of estado.criancasColonia)necessidades.set(e.jovens[c.id],c.idade<duracaoBebeColonia?consumoAlimentoPorBebe:consumoAlimentoPorCrianca);
+        const adultos=e.adultos.map(id=>e.pessoas[id]);let pagas=0,sociais=0;
+        const gruposFamiliares=new Map();for(const p of adultos){if(!gruposFamiliares.has(p.familiaId))gruposFamiliares.set(p.familiaId,[]);gruposFamiliares.get(p.familiaId).push(p);}
+        // Everyone receives the same available fraction; lack of money never destroys rations.
+        for(const [id,n] of necessidades){
+          const p=e.pessoas[id];if(!p)continue;const quantidade=n*fracao,base=Math.round(quantidade*precoRacaoCidada);
+          const parentes=gruposFamiliares.get(p.familiaId)||[];
+          const pagadores=p.emprego==='crianca'?parentes:[p,...parentes.filter(q=>q.id!==id)];
+          p.alimento=quantidade;p.assistencia=0;
+          if(base&&pagadores.length&&repartirPagamentoCidada(pagadores,base,'alimento',id+' · '+formatarQuantidade(quantidade)+' alimento'))pagas+=quantidade;
+          else {sociais+=quantidade;p.assistencia=quantidade;}
+        }
+        e.totais.alimentoPago+=pagas;e.totais.alimentoSocial+=sociais;e.totais.faltaFisica+=Math.max(0,necessidade-consumo);
+        e.ultimo={...e.ultimo,alimentoPago:pagas,alimentoSocial:sociais,faltaFisica:Math.max(0,necessidade-consumo),consumo,necessidade};
+        cobrarImoveisCidada();comprasOpcionaisCidada();liquidarCompensacaoCidada();
+      }
+      function cobrarImoveisCidada() {
+        const e=estado.economiaCidada;let arrecadado=0,isencoes=0;
+        for(const h of e.casas){
+          h.taxa=0;h.isenta=0;if(!h.membros.length)continue;
+          const pagadores=h.membros.map(id=>e.pessoas[id]).filter(p=>p.emprego!=='crianca');
+          const reserva=precoComTributosCidada(precoRacaoCidada*3).total; // protect three adult rations each.
+          const disponivel=pagadores.reduce((n,p)=>n+Math.max(0,p.saldo-reserva),0);
+          if(disponivel<taxaCasaCidada||(e.ultimo.faltaFisica||0)>0){h.isenta=taxaCasaCidada;isencoes++;continue;}
+          let restante=taxaCasaCidada;
+          for(const p of pagadores){const valor=Math.min(restante,Math.max(0,p.saldo-reserva));if(!valor)continue;
+            p.saldo-=valor;p.gasto+=valor;p.impostos+=valor;restante-=valor;
+            registrarLivroCidada('imposto_imovel',p.id,'reparticao_90_10',valor,'Casa '+h.id);registrarMovimentoPessoa(p,'imposto da casa',-valor,'Casa '+h.id);}
+          e.compensacaoCidade+=90000;e.compensacaoPessoal+=10000;e.totais.imovelCidade+=90000;e.totais.imovelPessoal+=10000;h.taxa=taxaCasaCidada;arrecadado+=taxaCasaCidada;
+        }
+        e.totais.imovelIsento+=isencoes;e.ultimo.imovel=arrecadado;e.ultimo.casasIsentas=isencoes;
+      }
+      function comprasOpcionaisCidada() {
+        const e=estado.economiaCidada;if(!e.opcionais||estado.colonosComFome>0||!estado.mercadoPublicoConstruido)return;
+        const feirantes=estado.empregosColonia.feirante||0;
+        let bens=feirantes;
+        const pessoas=e.adultos.map(id=>e.pessoas[id]);
+        // An idle adult may provide one optional leisure service, never a second paid shift.
+        const prestadores=pessoas.filter(p=>p.emprego==='geral');
+        if(prestadores.length){const giro=(e.ciclo*3)%prestadores.length;prestadores.push(...prestadores.splice(0,giro));}
+        let servicos=Math.min(prestadores.length,Math.max(2,feirantes*2));
+        const menoresPorFamilia=new Map();for(const id of Object.values(e.jovens)){const f=e.pessoas[id].familiaId;menoresPorFamilia.set(f,(menoresPorFamilia.get(f)||0)+1);}
+        for(let i=0;i<pessoas.length;i++) {
+          const p=pessoas[(i+e.ciclo*7)%pessoas.length];
+          const dependentes=menoresPorFamilia.get(p.familiaId)||0;
+          const reserva=precoComTributosCidada(precoRacaoCidada*3*(1+dependentes)).total+taxaCasaCidada;
+          if(p.atrasados||p.saldo<reserva||e.ciclo-p.ultimaCompra<5)continue;
+          if(bens>0&&estado.estoqueMercadorias>=1&&p.saldo>=reserva+2200000&&vendaCidada(p,2000000,'artigo_pessoal','1 mercadoria do estoque do cais')) {
+            estado.estoqueMercadorias-=1;p.bens++;bens--;p.ultimaCompra=e.ciclo;
+          } else if(servicos>0&&p.saldo>=reserva+550000) {
+            const j=prestadores.findIndex(v=>v.id!==p.id);
+            if(j>=0&&vendaCidada(p,500000,'lazer','Atendimento autônomo na feira',prestadores[j])) {
+              prestadores.splice(j,1);p.lazer++;servicos--;p.ultimaCompra=e.ciclo;
+            }
+          }
+          if(!servicos&&!bens)break;
+        }
+      }
+      function normalizarEconomiaCidada(raw) {
+        const e=novaEconomiaCidada();
+        if(!raw||raw.versao!==1)return e;
+        e.ativa=raw.ativa!==false;e.opcionais=raw.opcionais!==false;e.iniciada=raw.iniciada===true;
+        for(const k of ['proximoId','ciclo','folhas','sequencia','abertura','entradasExternas','saidasExternas','observadoCidade','observadoPessoal','compensacaoCidade','compensacaoPessoal','custodia','creditosCustodia'])e[k]=inteiroCidada(raw[k],Number.MAX_SAFE_INTEGER);
+        e.proximoId=Math.max(1,e.proximoId);e.avisos=[];
+        const ids=new Set();
+        for(const [id,p] of Object.entries(raw.pessoas||{}).slice(0,1000)) {
+          if(!/^cid-[1-9]\d{0,8}$/.test(id)||!p||typeof p!=='object'||ids.has(id))continue;
+          ids.add(id);e.proximoId=Math.max(e.proximoId,Number(id.slice(4))+1);
+          const q={id,nome:typeof p.nome==='string'?p.nome.slice(0,64):'Morador '+id,genero:['feminino','masculino','não binário','não informado'].includes(p.genero)?p.genero:'não informado',familiaId:typeof p.familiaId==='string'?p.familiaId.slice(0,160):'',emprego:Object.hasOwn(nomesPapeisCidada,p.emprego)?p.emprego:'geral'};
+          for(const k of ['saldo','recebido','gasto','impostos','atrasados','heranca','casa','vaga','salario','ultimaFolha','bens','lazer','rendaServicos','servicosPrestados'])q[k]=inteiroCidada(p[k]);
+          q.alimento=numeroValido(p.alimento,0,1,0);q.assistencia=numeroValido(p.assistencia,0,1,0);q.ultimaCompra=Number.isSafeInteger(p.ultimaCompra)?Math.max(-5,Math.min(e.ciclo,p.ultimaCompra)):-5;
+          q.movimentos=(Array.isArray(p.movimentos)?p.movimentos:[]).slice(-8).filter(r=>r&&Number.isSafeInteger(r.valor)).map(r=>({ciclo:inteiroCidada(r.ciclo),tipo:String(r.tipo||'').slice(0,40),valor:r.valor,contraparte:String(r.contraparte||'').slice(0,120)}));e.pessoas[id]=q;
+        }
+        e.adultos=[...new Set(Array.isArray(raw.adultos)?raw.adultos:[])].filter(id=>ids.has(id)).slice(0,450);
+        const usados=new Set(e.adultos);
+        for(const [key,id] of Object.entries(raw.jovens||{}).slice(0,450))if(key.length<=160&&ids.has(id)&&!usados.has(id)){e.jovens[key]=id;usados.add(id);}
+        for(const id of ids)if(!usados.has(id)){e.custodia+=e.pessoas[id].saldo;e.creditosCustodia+=e.pessoas[id].atrasados;delete e.pessoas[id];e.avisos.push('Saldo sem vínculo preservado em custódia.');}
+        e.livro=(Array.isArray(raw.livro)?raw.livro:[]).slice(-512).filter(r=>r&&Number.isSafeInteger(r.valor)&&r.valor>=0).map(r=>({id:inteiroCidada(r.id),ciclo:inteiroCidada(r.ciclo),tipo:String(r.tipo||'').slice(0,48),de:String(r.de||'').slice(0,100),para:String(r.para||'').slice(0,100),valor:r.valor,detalhe:String(r.detalhe||'').slice(0,160)}));
+        e.sequencia=Math.max(e.sequencia,...e.livro.map(r=>r.id));
+        e.falecidos=(Array.isArray(raw.falecidos)?raw.falecidos:[]).slice(0,100).map(r=>({id:String(r?.id||'').slice(0,40),nome:String(r?.nome||'').slice(0,64),causa:String(r?.causa||'').slice(0,80),ciclo:inteiroCidada(r?.ciclo),herdeiro:String(r?.herdeiro||'').slice(0,80),valor:inteiroCidada(r?.valor),credito:inteiroCidada(r?.credito)}));
+        for(const k of Object.keys(e.totais))e.totais[k]=numeroValido(raw.totais?.[k],0,Number.MAX_SAFE_INTEGER,0);
+        for(const [k,v] of Object.entries(raw.ultimo||{}))if(['folhaDevida','folhaPaga','alimentoPago','alimentoSocial','faltaFisica','consumo','necessidade','imovel','casasIsentas'].includes(k))e.ultimo[k]=numeroValido(v,0,Number.MAX_SAFE_INTEGER,0);
+        e.casas=(Array.isArray(raw.casas)?raw.casas:[]).slice(0,90).map((h,i)=>({id:i+1,membros:[],taxa:inteiroCidada(h?.taxa,taxaCasaCidada),isenta:inteiroCidada(h?.isenta,taxaCasaCidada)}));
+        assinaturaCadastroCidada='';return e;
+      }
+      function idadePessoaCidada(p) {
+        const e=estado.economiaCidada,i=e.adultos.indexOf(p.id);
+        if(i>=0)return estado.idadesAdultosColonia[i]??idadeAdultaColonia;
+        const c=estado.criancasColonia.find(c=>e.jovens[c.id]===p.id);return c?Math.min(17.99,c.idade/duracaoInfanciaColonia*idadeAdultaColonia):0;
+      }
+      function abrirEconomiaCidada() {
+        if(!estado.coloniaIniciada){definirMensagem('O cadastro econômico pertence à colônia.');return;}
+        atualizarCadastroCidada();observarContasCidada();atualizarPainelEconomiaCidada(true);
+        if(typeof painelEconomiaCidada.showModal==='function'){if(!painelEconomiaCidada.open)painelEconomiaCidada.showModal();}else painelEconomiaCidada.setAttribute('open','');
+      }
+      function atualizarPainelEconomiaCidada(forcar=false,agora=0) {
+        if(!forcar&&(!painelEconomiaCidada.open||agora-ultimaTelaCidada<250))return;
+        ultimaTelaCidada=agora;const e=estado.economiaCidada;if(!e.iniciada)return;
+        const audit=auditoriaCidada(),t=e.totais,u=e.ultimo,set=(id,text)=>{const el=document.querySelector(id);if(el.textContent!==text)el.textContent=text;};
+        set('#resumo-economia-cidada',`${e.adultos.length} adultos + ${Object.keys(e.jovens).length} menores · ${e.casas.filter(h=>h.membros.length).length} casas ocupadas · ciclo ${e.ciclo}. Riqueza nas carteiras: ${textoOuroCidada(audit.carteiras)}. Salários pagos: ${textoOuroCidada(u.folhaPaga||0)} / ${textoOuroCidada(u.folhaDevida||0)}; atrasados: ${textoOuroCidada(audit.atrasados)}.`);
+        set('#tributos-economia-cidada',`Vendas acumuladas: base ${textoOuroCidada(t.vendasBase)}; imposto municipal ${textoOuroCidada(t.tributoVendasCidade)}; seu imposto ${textoOuroCidada(t.tributoVendasPessoal)}. Imóveis: cidade ${textoOuroCidada(t.imovelCidade)}; você ${textoOuroCidada(t.imovelPessoal)}. Principal municipal ${textoOuroCidada(t.receitaProdutorMunicipal)}; renda de prestadores ${textoOuroCidada(t.rendasServicos)}. Tributos não se confundem com receitas dos vendedores.`);
+        set('#alimento-economia-cidada',`Último ciclo: ${formatarQuantidade(u.alimentoPago||0)} alimentos pagos; ${formatarQuantidade(u.alimentoSocial||0)} distribuídos gratuitamente por proteção social; falta física ${formatarQuantidade(u.faltaFisica||0)}. ${u.casasIsentas||0} casas isentas para preservar alimentação. Saúde, ferramentas, armas e armaduras continuam gratuitas.`);
+        set('#auditoria-economia-cidada',`Conferência monetária: diferença ${textoOuroCidada(audit.diferenca)}. Compensação fracionária: ${textoOuroCidada(e.compensacaoCidade+e.compensacaoPessoal)}; custódia ${textoOuroCidada(e.custodia)}. Fluxos externos legados: entradas ${textoOuroCidada(e.entradasExternas)}, saídas ${textoOuroCidada(e.saidasExternas)}.`);
+        const filtro=String(document.querySelector('#buscar-cidadao').value||'').toLocaleLowerCase('pt-BR');
+        const pessoas=Object.values(e.pessoas).filter(p=>(p.id+' '+p.nome+' '+p.genero+' '+(nomesPapeisCidada[p.emprego]||p.emprego)).toLocaleLowerCase('pt-BR').includes(filtro));
+        const paginas=Math.max(1,Math.ceil(pessoas.length/20));paginaCadastroCidada=Math.min(paginaCadastroCidada,paginas-1);
+        document.querySelector('#pagina-cidadao-anterior').disabled=paginaCadastroCidada===0;document.querySelector('#pagina-cidadao-proxima').disabled=paginaCadastroCidada>=paginas-1;
+        set('#pagina-cidadao',`Página ${paginaCadastroCidada+1}/${paginas} · ${pessoas.length} moradores`);
+        const rows=pessoas.slice(paginaCadastroCidada*20,paginaCadastroCidada*20+20).map(p=>`<tr><td><button type="button" data-cidadao="${p.id}">${textoSeguroCidada(p.nome)}</button><small>${p.id} · ${p.genero}</small></td><td>${idadePessoaCidada(p).toFixed(1)}<br>${p.casa?'Casa '+p.casa:'Sem casa'}</td><td>${textoSeguroCidada(nomesPapeisCidada[p.emprego])}</td><td>${textoOuroCidada(p.saldo)}<small>${textoOuroCidada(p.salario)} / ciclo</small></td></tr>`).join('');
+        const corpo=document.querySelector('#corpo-cidadaos');if(corpo.innerHTML!==rows)corpo.innerHTML=rows;
+        const p=e.pessoas[selecionadoCadastroCidada];
+        set('#detalhe-cidadao',p?`${p.nome} (${p.id}), ${p.genero}, ${idadePessoaCidada(p).toFixed(1)} anos. ${nomesPapeisCidada[p.emprego]}; família ${p.familiaId}; ${p.casa?'casa '+p.casa:'sem moradia'}. Saldo ${textoOuroCidada(p.saldo)}; salários recebidos ${textoOuroCidada(p.recebido)}; atrasados ${textoOuroCidada(p.atrasados)}; gastos ${textoOuroCidada(p.gasto)}; tributos ${textoOuroCidada(p.impostos)}; heranças ${textoOuroCidada(p.heranca)}; artigos pessoais ${p.bens}; visitas à feira ${p.lazer}; renda autônoma ${textoOuroCidada(p.rendaServicos)} por ${p.servicosPrestados} atendimentos. Alimentação recente ${formatarQuantidade(p.alimento)}, assistência ${formatarQuantidade(p.assistencia)}. Últimos movimentos: ${p.movimentos.map(r=>`${r.tipo}: ${textoOuroCidada(r.valor)}`).join(' · ')}`:'Toque em um nome para abrir seu extrato individual.');
+        set('#casas-cidada',e.casas.filter(h=>h.membros.length).map(h=>`Casa ${h.id}: ${h.membros.length}/${capacidadeCasaColonia} moradores; ${h.taxa?'pago '+textoOuroCidada(h.taxa):h.isenta?'isenta':'ainda não cobrada'}`).join(' · '));
+        set('#livro-cidada',e.livro.slice(-16).reverse().map(r=>`#${r.id} C${r.ciclo} ${r.tipo}: ${r.de} → ${r.para} · ${textoOuroCidada(r.valor)}${r.detalhe?' · '+r.detalhe:''}`).join('\n'));
+        set('#alternar-compras-cidada',e.opcionais?'Pausar compras opcionais':'Retomar compras opcionais');
+      }
+      function exportarEconomiaCidada() {
+        atualizarCadastroCidada();observarContasCidada();
+        const e=estado.economiaCidada;
+        const payload={versao:1,unidade:'micro-ouro (1 ouro = 1.000.000)',ciclo:e.ciclo,auditoria:auditoriaCidada(),economia:e,idades:estado.idadesAdultosColonia,nota:'Livro recente limitado a 512 lançamentos; totais e carteiras persistem. Não é um histórico completo de todas as transações.'};
+        const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');
+        a.href=url;a.download='economia-colonia-ciclo-'+e.ciclo+'.json';a.click();URL.revokeObjectURL(url);
+      }
+
       function definirMensagem(texto) {
         mensagemEl.textContent = texto;
       }
@@ -4360,6 +4743,7 @@
             : falecido.idade >= 60
               ? "idade avançada"
               : "acidente";
+        falecerPessoaCidada(falecido.indice, causa);
         estado.idadesAdultosColonia.splice(falecido.indice, 1);
         estado.populacaoColonia -= 1;
         estado.creditosObitosColonia = Math.max(
@@ -5433,6 +5817,7 @@
       }
 
       function atualizarFamiliasColonia() {
+        sincronizarCensoCidada();
         let maioridades = 0;
         let nascimentos = 0;
         estado.criancasColonia.forEach((crianca) => {
@@ -5449,6 +5834,7 @@
           const aindaCriancas = [];
           estado.criancasColonia.forEach((crianca) => {
             if (crianca.idade >= duracaoInfanciaColonia) {
+              amadurecerPessoaCidada(crianca);
               maioridades += 1;
             } else {
               aindaCriancas.push(crianca);
@@ -5483,6 +5869,8 @@
       }
 
       function reiniciarNovaColonia() {
+        estado.economiaCidada = novaEconomiaCidada();
+        assinaturaCadastroCidada = "";
         estado.coloniaIniciada = true;
         estado.revisaoColonia = versaoColonia;
         estado.ouro = ouroInicialAdministrador;
@@ -5769,6 +6157,7 @@
               terceiroBlocoMoradiasConstruido:
                 estado.terceiroBlocoMoradiasConstruido,
               cacaMilicia: estado.cacaMilicia,
+              economiaCidada: estado.economiaCidada,
               cadeiaCarne: {
                 cabanaCacadores: estado.cabanaCacadoresConstruida,
                 acougue: estado.acougueConstruido,
@@ -6173,6 +6562,7 @@
       }
 
       function salvarProgresso() {
+        if (estado.coloniaIniciada && estado.economiaCidada.ativa) { atualizarCadastroCidada(); observarContasCidada(); }
         if (!estado.salvamentoDisponivel || !estado.salvamentoAtivo) return;
 
         try {
@@ -7502,6 +7892,8 @@
           estado.trechosAdarveExterno = Math.floor(numeroValido(salvo.expansao?.economia?.defesas?.adarveExterno, 0, estado.trechosMuralhaPedraExterna, 0));
           estado.ampliacaoMuralhasAutorizada = salvo.expansao?.economia?.defesas?.ampliacaoAutorizada === true;
           estado.defesaPosicional = normalizarDefesaPosicional(salvo.expansao?.economia?.defesas?.guarnicao);
+          estado.economiaCidada = normalizarEconomiaCidada(salvo.expansao?.economia?.economiaCidada);
+          assinaturaCadastroCidada = "";
           const coloniaReiniciadaAoCarregar =
             estado.mapaAtual === "expansao" &&
             estado.revisaoColonia < versaoColonia;
@@ -7570,6 +7962,8 @@
       }
 
       function redefinirEstado() {
+        estado.economiaCidada = novaEconomiaCidada();
+        assinaturaCadastroCidada = "";
         estado.local = "assentamento";
         estado.velocidadeTempo = 1;
         estado.jogoPausado = false;
@@ -7946,6 +8340,7 @@
           quantidadeBebesColonia(),
           estado.migracoesPendentes.length,
           estado.cacaMilicia.carga,
+          estado.economiaCidada.ativa,
         ]);
       }
 
@@ -8004,7 +8399,7 @@
           armeiro: 0,
           geral: 0,
         };
-        let disponiveis = estado.populacaoColonia;
+        let disponiveis = Math.max(0, estado.populacaoColonia - efetivosEconomiaColonia());
         const ocupar = (chave, maximo) => {
           while (
             empregos[chave] < maximo &&
@@ -9319,7 +9714,8 @@
           (empregos.clinica || 0) +
           (empregos.bombeiro || 0) +
           (empregos.bibliotecario || 0) +
-          (empregos.religioso || 0);
+          (empregos.religioso || 0) +
+          (estado.economiaCidada.ativa ? (empregos.migracao || 0) : 0);
         const chavesProdutivas = [
           "lavoura",
           "horta",
@@ -9884,10 +10280,12 @@
           const salarios = arredondarOuro(folhaCivil + soldos);
           let pago = 0;
 
-          if (estado.tesouroColonia >= salarios) {
-            estado.tesouroColonia = arredondarOuro(
-              estado.tesouroColonia - salarios,
-            );
+          if (economiaCidadaAtiva()) {
+            const folha = pagarSalariosCidada(empregos);
+            pago += folha.pago;
+            estado.ciclosSoldosAtrasados = folha.pago + 0.000001 >= folha.devido ? 0 : estado.ciclosSoldosAtrasados + 1;
+          } else if (estado.tesouroColonia >= salarios) {
+            estado.tesouroColonia = arredondarOuro(estado.tesouroColonia - salarios);
             pago += salarios;
             estado.ciclosSoldosAtrasados = 0;
           } else {
@@ -9911,6 +10309,7 @@
           estado.ultimaFolhaCivil = folhaCivil;
           estado.ultimaManutencao = manutencao;
           estado.ultimaDespesaMunicipal = arredondarOuro(pago);
+          observarContasCidada("Manutenção municipal legada");
         }
 
         if (estado.mapaAtual === "expansao") {
@@ -9958,6 +10357,7 @@
             : reservaMunicipalDinamicaColonia();
           if (
             !proxima ||
+            (estado.economiaCidada.ativa && estado.quantidadeMilicianos + estado.quantidadeGuardas + estado.quantidadeSoldados >= estado.populacaoColonia) ||
             folhaSoldosColonia() + proxima.soldo > limiteSoldosColonia() ||
             saldoOperacionalMunicipalColonia() - proxima.soldo <= 0 ||
             estado.tesouroColonia - proxima.custo <
@@ -12930,6 +13330,10 @@
           );
           return;
         }
+        if (estado.economiaCidada.ativa && totalMoradoresColonia() >= maximoCasasColonia * capacidadeCasaColonia) {
+          definirMensagem("O cadastro atingiu o limite de 450 moradores; aguarde uma vaga antes de contratar outro escriturário.");
+          return;
+        }
         if (
           estado.quantidadeAdministradoresMigracao >=
           maximoAdministradoresMigracao
@@ -13176,6 +13580,7 @@
       }
 
       function dividirReceitaColonia(valorBruto) {
+        observarContasCidada();
         const ouroPessoal = arredondarOuro(
           valorBruto * taxaAdministrador,
         );
@@ -13184,6 +13589,7 @@
         estado.tesouroColonia = arredondarOuro(
           estado.tesouroColonia + ouroMunicipal,
         );
+        observarContasCidada("Repasse ou venda externa legada (90/10), não imposto de venda doméstica");
         return { ouroPessoal, ouroMunicipal };
       }
 
@@ -14088,6 +14494,7 @@
           const consumo = consumirAlimentosColonia(necessidade);
           alimentosConsumidos += consumo;
           estado.colonosComFome = Math.ceil(necessidade - consumo);
+          liquidarAlimentacaoCidada(consumo, necessidade);
 
           const excedenteProvisoes = estado.celeiroConstruido
             ? Math.max(
@@ -16141,6 +16548,8 @@
       }
 
       function empregoDoColono(indice) {
+        const pessoa = estado.economiaCidada.ativa ? estado.economiaCidada.pessoas[estado.economiaCidada.adultos[indice]] : null;
+        if (pessoa) return { tipo:pessoa.emprego, vaga:pessoa.vaga };
         const empregos = estado.empregosColonia;
         const ordem = [
           "administracao",
@@ -19393,8 +19802,9 @@
           indice < estado.populacaoColonia;
           indice += 1
         ) {
-          const posicao = posicaoColonoNovaColonia(indice);
           const emprego = empregoDoColono(indice);
+          if (papeisMilitaresCidada.includes(emprego.tipo)) continue;
+          const posicao = posicaoColonoNovaColonia(indice);
           if (emprego.tipo === "transportador") {
             desenharCarrocaTransportadorColonia(
               posicao.x,
@@ -20360,10 +20770,22 @@
         if (estado.mapaAtual === "expansao" && estado.coloniaIniciada) {
           redistribuirTrabalhadoresColonia();
         }
+        atualizarCadastroCidada();
+        observarContasCidada();
+        atualizarPainelEconomiaCidada(false, agora);
         desenhar();
         requestAnimationFrame(quadro);
       }
 
+      document.querySelector('#abrir-economia-cidada').addEventListener('click',abrirEconomiaCidada);
+      document.querySelector('#fechar-economia-cidada').addEventListener('click',()=>{ if(typeof painelEconomiaCidada.close==='function')painelEconomiaCidada.close();else painelEconomiaCidada.removeAttribute('open'); });
+      document.querySelector('#buscar-cidadao').addEventListener('input',()=>{paginaCadastroCidada=0;atualizarPainelEconomiaCidada(true);});
+      document.querySelector('#pagina-cidadao-anterior').addEventListener('click',()=>{paginaCadastroCidada=Math.max(0,paginaCadastroCidada-1);atualizarPainelEconomiaCidada(true);});
+      document.querySelector('#pagina-cidadao-proxima').addEventListener('click',()=>{paginaCadastroCidada++;atualizarPainelEconomiaCidada(true);});
+      document.querySelector('#corpo-cidadaos').addEventListener('click',ev=>{const botao=ev.target.closest?.('[data-cidadao]');if(botao){selecionadoCadastroCidada=botao.dataset.cidadao;atualizarPainelEconomiaCidada(true);}});
+      document.querySelector('#alternar-compras-cidada').addEventListener('click',()=>{estado.economiaCidada.opcionais=!estado.economiaCidada.opcionais;atualizarPainelEconomiaCidada(true);salvarProgresso();});
+      document.querySelector('#quitar-atrasados-cidada').addEventListener('click',()=>{if(!quitarAtrasadosCidada())definirMensagem('Não há excedente acima da reserva municipal para quitar atrasados.');});
+      document.querySelector('#exportar-economia-cidada').addEventListener('click',exportarEconomiaCidada);
       document.querySelector("#abrir-muralhas").addEventListener("click", () => abrirPainelMuralhas());
       document.querySelector("#fechar-muralhas").addEventListener("click", () => { if (typeof painelMuralhas.close === "function") painelMuralhas.close(); else painelMuralhas.removeAttribute("open"); });
       document.querySelector("#autorizar-adarves").addEventListener("click", autorizarAdarvesColonia);
