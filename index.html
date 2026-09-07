@@ -4302,7 +4302,8 @@
       function economiaCidadaAtiva() { return estado.coloniaIniciada && estado.economiaCidada.ativa; }
       function inteiroCidada(n, max = 9000000000000) { return Number.isSafeInteger(n) && n >= 0 && n <= max ? n : 0; }
       function microsCidada(n) { return Math.round((Number.isFinite(n) ? n : 0) * unidadeOuroCidada); }
-      function textoOuroCidada(n) { return (n/unidadeOuroCidada).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:4})+' ouro'; }
+      const formatoOuroCidada = new Intl.NumberFormat('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:4});
+      function textoOuroCidada(n) { return formatoOuroCidada.format(n/unidadeOuroCidada)+' ouro'; }
       function textoSeguroCidada(s) { return String(s ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
       function efetivosEconomiaColonia() {
         return estado.economiaCidada.ativa ? Math.min(estado.populacaoColonia, estado.quantidadeMilicianos + estado.quantidadeGuardas + estado.quantidadeSoldados) : 0;

@@ -46,4 +46,12 @@ test('malformed next-ID counters cannot overwrite an existing person',()=>{
   const g=fixture();const before=Object.keys(g.estado.economiaCidada.pessoas);g.eval('estado.economiaCidada.proximoId=Number.MAX_SAFE_INTEGER;criarPessoaCidada("test")');
   const after=Object.keys(g.estado.economiaCidada.pessoas);assert.equal(after.length,before.length+1);assert.ok(after.every(id=>/^cid-[1-9]\d{0,8}$/.test(id)));assert.ok(before.every(id=>after.includes(id)));
 });
+test('reused money formatter is identical and does not affect state',()=>{
+  const g=fixture(),before=plain(g.estado);
+  for(const value of [0,1,100,999,2000,10000,550000,1000000,999999999999,-1000]) {
+    g.context.moneySample=value;
+    assert.equal(g.eval('textoOuroCidada(moneySample)'),(value/1000000).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:4})+' ouro');
+  }
+  assert.deepEqual(plain(g.estado),before);
+});
 console.log('CITIZEN_ECONOMY_OK '+groups+' groups');
