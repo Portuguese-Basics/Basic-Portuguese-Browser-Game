@@ -55,6 +55,8 @@ jobs:
           python verification/browser-clarity.py --url "https://portuguese-basics.github.io/Basic-Portuguese-Browser-Game/?release=$RELEASE_SHA" | tee verification-output/clarity-browser.log
           python verification/browser-walls.py --url "https://portuguese-basics.github.io/Basic-Portuguese-Browser-Game/?release=$RELEASE_SHA" | tee verification-output/walls-browser.log
           python verification/browser-economy.py --url "https://portuguese-basics.github.io/Basic-Portuguese-Browser-Game/?release=$RELEASE_SHA" | tee verification-output/economy-browser.log
+          python verification/browser-daily-life.py --url "https://portuguese-basics.github.io/Basic-Portuguese-Browser-Game/?release=$RELEASE_SHA" | tee verification-output/daily-life-browser.log
+          python verification/daily-life-live-soak.py --url "https://portuguese-basics.github.io/Basic-Portuguese-Browser-Game/?release=$RELEASE_SHA" --seconds 65 | tee verification-output/minute-presence.log
       - name: Preserve source and git history for the Drive backup
         run: |
           git rev-parse HEAD > verification-output/release-commit.txt

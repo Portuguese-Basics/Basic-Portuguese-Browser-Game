@@ -34,6 +34,8 @@ jobs:
           node verification/economy-test.js | tee verification-output/economy-test.log
           node verification/economy-soak-test.js | tee verification-output/economy-soak.log
           PREVIOUS_RUNTIME_REF=a47830faae4c4c17e680dead01932e9014dbdf14 node verification/baseline-equivalence-test.js | tee verification-output/previous-walls-legacy-mode.log
+          node verification/daily-life-test.js | tee verification-output/daily-life-test.log
+          node verification/daily-life-equivalence-test.js | tee verification-output/daily-life-equivalence.log
       - name: Browser test dependencies
         run: |
           python -m pip install playwright==1.57.0
@@ -48,6 +50,7 @@ jobs:
           python verification/browser-clarity.py --url http://127.0.0.1:8765/ | tee verification-output/clarity-browser.log
           python verification/browser-walls.py --url http://127.0.0.1:8765/ | tee verification-output/walls-browser.log
           python verification/browser-economy.py --url http://127.0.0.1:8765/ | tee verification-output/economy-browser.log
+          python verification/browser-daily-life.py --url http://127.0.0.1:8765/ | tee verification-output/daily-life-browser.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:

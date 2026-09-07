@@ -210,3 +210,24 @@ node verification/economy-test.js
 node verification/economy-soak-test.js
 python verification/browser-economy.py
 ```
+
+### Settlers' daily visibility
+
+The established colony now draws identity-linked people instead of anonymous dots
+piled on doorways. Outdoor workers remain visible at their workplaces, indoor
+workers alternate interior work and exterior tasks, and reserve residents and
+children have staggered neighborhood routines. Each ordinary 56-second simulation
+cycle contains at most 14 seconds inside. These are bounded local presentation
+routines, not new wages, paid jobs or extra hauling. Real off-map hunts remain
+absent; camera zoom and panning still determine which part of the world is visible.
+
+Select a resident in **Moradores e impostos**, then **Localizar no mapa** to center
+and highlight the actual person or their doorway. The register reports interior,
+outdoor, military and off-map states. Cargo transport still uses the dedicated
+wagons, with one visible driver rather than a duplicated civilian. Save/reload
+preserves the visual clock and existing wallets, taxes, production and staffing.
+
+Daily-life acceptance: `node verification/daily-life-test.js`,
+`node verification/daily-life-equivalence-test.js`, and
+`python verification/browser-daily-life.py`. The separate
+`daily-life-live-soak.py` observes more than a minute of foreground 1x play.
