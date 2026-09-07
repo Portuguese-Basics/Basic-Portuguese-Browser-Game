@@ -4,7 +4,8 @@ const fs = require('node:fs');
 const vm = require('node:vm');
 const assert = require('node:assert/strict');
 const { execFileSync } = require('node:child_process');
-const base = execFileSync('git', ['show', 'd6c8ff05368d4ee5f030268bb376133ecd3c1522:index.html'], {encoding:'utf8'});
+const baselineRef = process.env.PREVIOUS_RUNTIME_REF || 'd6c8ff05368d4ee5f030268bb376133ecd3c1522';
+const base = execFileSync('git', ['show', `${baselineRef}:index.html`], {encoding:'utf8'});
 const current = fs.readFileSync('index.html','utf8');
 const testSource = fs.readFileSync('verification/clarity-test.js','utf8');
 const fixture = testSource.slice(testSource.indexOf('function mature('),testSource.indexOf('let groups ='));
@@ -20,7 +21,8 @@ function game(html,storage=new Map()){
  vm.runInNewContext(prefix+'\nglobalThis.makeGame=createHarness;\n'+fixture+'\nglobalThis.fixture=mature;',outer);
  const g=outer.makeGame(storage);g.eval=s=>vm.runInNewContext(s,g.context);g.storage=storage;g.fixture=()=>outer.fixture(g);return g;
 }
-const plain=x=>JSON.parse(JSON.stringify(x));
+// Only new feature fields are excluded; all pre-existing economy/save fields still compare exactly.
+const plain=x=>{const value=JSON.parse(JSON.stringify(x));for(const key of ['trechosAdarveInterno','trechosAdarveExterno','ampliacaoMuralhasAutorizada','defesaPosicional'])delete value[key];return value;};
 for(const scenario of ['mature','shortage','hunt']){
  const seed=game(base);seed.fixture();
  if(scenario==='shortage')Object.assign(seed.estado,{estoqueAlimentos:0,estoqueMedicamentos:0,saudeColonia:42,estoqueFerramentas:5,tesouroColonia:1200});

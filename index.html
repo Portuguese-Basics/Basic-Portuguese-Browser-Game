@@ -481,6 +481,11 @@
         margin: 0.7rem 0 0;
       }
 
+      #painel-muralhas { width: min(46rem, calc(100vw - 1.5rem)); max-height: 88dvh; overflow-y: auto; }
+      #painel-muralhas p { line-height: 1.5; }
+      #painel-muralhas button, #painel-muralhas select { min-height: 44px; white-space: normal; }
+      #painel-muralhas select { font: inherit; padding: 0.5rem; }
+      #painel-muralhas :focus-visible { outline: 3px solid #f1cc69; outline-offset: 2px; }
       #painel-caca-milicia { width: min(42rem, calc(100vw - 1.5rem)); max-height: 88dvh; overflow-y: auto; }
       #painel-caca-milicia p { line-height: 1.45; color: #d4cbb4; }
       #painel-caca-milicia label { display: flex; flex-direction: column; gap: 0.35rem; flex: 1 1 10rem; }
@@ -723,6 +728,7 @@
         <button id="abrir-painel-colonia" class="acao-colonia secundario" type="button">
           Painel colonial
         </button>
+        <button id="abrir-muralhas" class="acao-colonia secundario" type="button">Defesa das muralhas</button>
         <button id="abrir-caca-milicia" class="acao-colonia secundario" type="button">Caçada da milícia</button>
         <button id="abrir-registros" class="acao-colonia secundario" type="button">
           Registros
@@ -1099,6 +1105,7 @@
               <li>Biblioteca, igreja e mercado público <span id="edificio-vida-civica">Planejados</span></li>
               <li>Cemitério municipal ao sul <span id="edificio-cemiterio">Planejado</span></li>
               <li>Muralhas de pedra, torres e portões <span id="edificio-defesa-pedra">0 / 23 obras</span></li>
+              <li>Muralhas espessas com adarves <span id="edificio-adarves">0 / 8 lados</span></li>
             </ul>
           </section>
         </div>
@@ -1485,6 +1492,24 @@
           role="status"
           aria-live="polite"
         ></p>
+      </section>
+    </dialog>
+
+    <dialog id="painel-muralhas" aria-labelledby="titulo-muralhas">
+      <section class="loja-conteudo">
+        <header class="loja-cabecalho"><h2 id="titulo-muralhas">Torres e muralhas guarnecidas</h2><button id="fechar-muralhas" class="secundario" type="button">Fechar</button></header>
+        <p id="resumo-muralhas"></p><p id="selecionado-muralhas"></p>
+        <p>Estágio 3: paredes mais espessas, adarves e escadas. Cada lado externo custa 2.000 de ouro + 60 pedras; cada lado interno, 1.500 + 40. A manutenção aumenta 0,25 por lado e ciclo. As obras essenciais, a equipe e a reserva municipal continuam prioritárias.</p>
+        <p id="obras-muralhas"></p>
+        <div class="acoes-transferencia"><button id="autorizar-adarves" type="button">Autorizar muralhas estágio 3</button><button id="alternar-guarnicao" class="secundario" type="button">Recolher guarnição</button><button id="ver-guarnicao" class="secundario" type="button">Ver guarnição no mapa</button></div>
+        <p>Torres prontas comportam dois defensores. Cada lado ampliado comporta quatro. Arqueiros priorizam torres; lanceiros e soldados também vigiam os adarves. São os combatentes existentes, com os mesmos soldos, não novos trabalhadores. A milícia desce e retorna ao pátio antes de partir para uma caça.</p>
+        <p id="municao-muralhas"></p>
+        <div class="acoes-transferencia"><label for="categoria-arqueiro-muralha">Reequipar <select id="categoria-arqueiro-muralha"><option value="milicia">Milícia</option><option value="guarda">Guarda</option><option value="soldado">Soldados</option></select></label><button id="equipar-arqueiro-muralha" type="button">Equipar 1 arqueiro · 1 arco + 20 flechas</button></div>
+        <p>A arma anterior volta ao arsenal se houver espaço. Cada disparo gasta uma flecha. Aljavas vazias são reabastecidas do depósito durante o combate; sem flechas, não há disparos. Somente arqueiros em posição podem atirar, com alcance limitado e sem atravessar outra muralha.</p>
+        <h3>Exercício de defesa opcional</h3>
+        <p>Seis alvos móveis testam as posições e o tiro elevado. O exercício consome flechas reais, mas não provoca baixas, perdas civis, danos permanentes ou recompensas. Pausa e velocidade valem para a subida, os movimentos e os projéteis.</p>
+        <div class="acoes-transferencia"><button id="exercicio-muralhas" type="button">Iniciar exercício de defesa</button><button id="encerrar-exercicio" class="secundario" type="button">Encerrar exercício</button></div>
+        <p id="status-exercicio" role="status" aria-live="polite"></p>
       </section>
     </dialog>
 
@@ -3363,6 +3388,10 @@
         tempoFestivalColonia: 0,
         ciclosFestivalRestantes: 0,
         festivaisRealizados: 0,
+        trechosAdarveInterno: 0,
+        trechosAdarveExterno: 0,
+        ampliacaoMuralhasAutorizada: false,
+        defesaPosicional: novaDefesaPosicional(),
         trechosMuralhaPedraInterna: 0,
         trechosMuralhaPedraExterna: 0,
         quantidadeTorresMuralha: 0,
@@ -3693,6 +3722,7 @@
       function atualizarExpedicaoMilicia(delta) {
         if (!estado.coloniaIniciada || estado.jogoPausado || !Number.isFinite(delta) || delta <= 0) return;
         escoarCargaCacaMilicia();
+        if (estado.cacaMilicia.expedicao?.fase === "reunindo" && estado.defesaPosicional.unidades.some(u => u.categoria === "milicia" && u.indice < estado.cacaMilicia.expedicao.quantidade)) return;
         let restante = delta;
         let mudou = false;
         // At most six transitions; no wall-clock catch-up or repeated rewards on load.
@@ -3732,7 +3762,7 @@
         iniciarCacaMiliciaBotao.disabled = Boolean(motivoBloqueioCacaMilicia());
         const presente = Math.max(0, n - milicianosEmCacaColonia());
         statusCacaMiliciaEl.textContent = e
-          ? `${nomesFasesCacaMilicia[e.fase]} · ${e.quantidade} milicianos · ${Math.ceil(Math.max(0, duracaoFaseCacaMilicia(e.fase, e) - e.tempo))} s nesta etapa${estado.jogoPausado ? " · PAUSADO" : ""}. ${presente} milicianos permanecem na cidade.`
+          ? `${nomesFasesCacaMilicia[e.fase]}${e.fase === "reunindo" && estado.defesaPosicional.unidades.some(u => u.categoria === "milicia" && u.indice < e.quantidade) ? " · aguardando a guarnição descer e retornar" : ""} · ${e.quantidade} milicianos · ${Math.ceil(Math.max(0, duracaoFaseCacaMilicia(e.fase, e) - e.tempo))} s nesta etapa${estado.jogoPausado ? " · PAUSADO" : ""}. ${presente} milicianos permanecem na cidade.`
           : (motivoBloqueioCacaMilicia() || `${n} milicianos disponíveis. Escolha o tamanho da equipe e inicie a caça.`);
         const c = estado.cacaMilicia.carga;
         cargaCacaMiliciaEl.textContent = `Carga aguardando: ${formatarQuantidade(c.animais)} animais · ${formatarQuantidade(c.carne)} carnes · ${formatarQuantidade(c.peles)} peles. Carne na origem: ${formatarQuantidade(estado.estoqueLocalCarneSelvagem)} / ${capacidadeEstoqueLocalCarneSelvagemColonia}.`;
@@ -3814,6 +3844,407 @@
         }
         if (carga.carne > 0) { contexto.fillStyle = "#a85447"; contexto.fillRect(p.x - 50, p.y + 35, 32, 26); }
         if (carga.peles > 0) { contexto.fillStyle = "#b9915c"; contexto.fillRect(p.x - 90, p.y + 37, 32, 22); }
+        contexto.restore();
+      }
+
+      // MANNED_WALLS_V1: bounded, simulation-owned garrison and projectile state.
+      const categoriasGuarnicao = ["milicia", "guarda", "soldado"];
+      const nomesGuarnicao = { milicia: "Milícia", guarda: "Guarda", soldado: "Soldados" };
+      const fasesGuarnicao = ["indo", "subindo", "posto", "descendo", "voltando"];
+      const normaisMuralhas = [{x:0,y:-1},{x:1,y:0},{x:0,y:1},{x:-1,y:0}];
+      const painelMuralhas = document.querySelector("#painel-muralhas");
+      let cachePostosMuralhas = { chave: "", postos: [] };
+      let assinaturaGuarnicao = "";
+      let focoMuralhas = null;
+      let tempoPainelMuralhas = 0;
+
+      function novaDefesaPosicional() {
+        return { ativa: true, unidades: [], aljavas: {}, passo: 0, exercicio: null, ultimo: null, exercicios: 0 };
+      }
+      function quantidadeCategoriaGuarnicao(categoria) {
+        return categoria === "milicia" ? estado.quantidadeMilicianos : categoria === "guarda" ? estado.quantidadeGuardas : estado.quantidadeSoldados;
+      }
+      function arqueirosCategoriaGuarnicao(categoria) {
+        return categoria === "milicia" ? estado.arqueirosMilicia : categoria === "guarda" ? estado.arqueirosGuarda : estado.arqueirosSoldados;
+      }
+      function pontoSeguroGuarnicao(p) {
+        return { x: numeroValido(p?.x, 0, larguraMundoExpansao, 7000), y: numeroValido(p?.y, 0, alturaMundoExpansao, 7500) };
+      }
+      function normalizarDefesaPosicional(dados) {
+        const d = novaDefesaPosicional();
+        d.ativa = dados?.ativa !== false;
+        const postos = new Map(postosElevadosColonia().map(p => [p.id, p]));
+        for (const cat of categoriasGuarnicao) for (let i=0; i<arqueirosCategoriaGuarnicao(cat); i++) {
+          const id = `${cat}:${i}`;
+          // Legacy bows already consumed one 20-arrow quiver when issued. Migrate once.
+          d.aljavas[id] = dados == null ? flechasPorAljava : Math.floor(numeroValido(dados.aljavas?.[id], 0, flechasPorAljava, 0));
+        }
+        const usados = new Set(), posicoesUsadas = new Set();
+        for (const raw of (Array.isArray(dados?.unidades) ? dados.unidades : []).slice(0,30)) {
+          if (!raw || !categoriasGuarnicao.includes(raw.categoria) || !Number.isInteger(raw.indice) || raw.indice<0 || raw.indice>=quantidadeCategoriaGuarnicao(raw.categoria)) continue;
+          const id = `${raw.categoria}:${raw.indice}`, posto = postos.get(raw.posto);
+          if (usados.has(id) || !posto || !fasesGuarnicao.includes(raw.fase)) continue;
+          if (!Array.isArray(raw.rota) || raw.rota.length<2 || raw.rota.length>64) continue;
+          if (!raw.retirar && posicoesUsadas.has(posto.id)) continue;
+          usados.add(id); if(!raw.retirar)posicoesUsadas.add(posto.id);
+          d.unidades.push({ id, categoria:raw.categoria, indice:raw.indice, posto:posto.id,
+            fase:raw.fase, x:pontoSeguroGuarnicao(raw).x, y:pontoSeguroGuarnicao(raw).y,
+            altura:numeroValido(raw.altura,0,1,0), trecho:Math.floor(numeroValido(raw.trecho,1,raw.rota.length,1)),
+            rota:raw.rota.map(pontoSeguroGuarnicao), recarga:numeroValido(raw.recarga,0,3,0), retirar:raw.retirar===true });
+        }
+        d.passo = numeroValido(dados?.passo,0,0.1,0);
+        d.exercicios = Math.floor(numeroValido(dados?.exercicios,0,1000000,0));
+        const resumo = r => r && typeof r === "object" ? { abatidos:Math.floor(numeroValido(r.abatidos,0,6,0)), disparos:Math.floor(numeroValido(r.disparos,0,2000,0)), integridade:numeroValido(r.integridade,0,100,100), tempo:numeroValido(r.tempo,0,90,0) } : null;
+        d.ultimo = resumo(dados?.ultimo);
+        const e = dados?.exercicio;
+        if (e && postos.has(e.posto) && Array.isArray(e.alvos)) {
+          const ids = new Set();
+          d.exercicio = { ...resumo(e), posto:e.posto, alvos:[], flechas:[] };
+          for (const a of e.alvos.slice(0,6)) if(a && Number.isInteger(a.id) && a.id>=0 && a.id<6 && !ids.has(a.id)) {
+            ids.add(a.id); d.exercicio.alvos.push({id:a.id,...pontoSeguroGuarnicao(a),vida:numeroValido(a.vida,0,24,24), ataque:numeroValido(a.ataque,0,3,0)});
+          }
+          for (const f of (Array.isArray(e.flechas) ? e.flechas : []).slice(0,64)) if(f && ids.has(f.alvo)) {
+            d.exercicio.flechas.push({alvo:f.alvo,origem:pontoSeguroGuarnicao(f.origem),destino:pontoSeguroGuarnicao(f.destino),tempo:numeroValido(f.tempo,0,2.5,0),duracao:numeroValido(f.duracao,0.1,2.5,1),dano:8});
+          }
+        }
+        assinaturaGuarnicao = "";
+        return d;
+      }
+      function catalogoTrechosAdarve() {
+        const trechos = [];
+        for (const [nome,r,quantidade] of [["externo",recintoExterno,estado.trechosAdarveExterno],["interno",recintoInterno,estado.trechosAdarveInterno]]) {
+          for(let lado=0;lado<4;lado++) trechos.push({nome,recinto:r,lado,normal:normaisMuralhas[lado],pronto:lado<quantidade,segmentos:segmentosTrechoPalicadaColonia(r,lado)});
+        }
+        return trechos;
+      }
+      function postosElevadosColonia() {
+        const chave = [estado.quantidadeTorresMuralha,estado.trechosAdarveExterno,estado.trechosAdarveInterno].join("|");
+        if (chave === cachePostosMuralhas.chave) return cachePostosMuralhas.postos;
+        const torres = [], muros = [];
+        cantosTorresMuralhaColonia.forEach((c,i)=>{
+          if(i>=estado.quantidadeTorresMuralha)return;
+          const r=c.recinto==="externo"?recintoExterno:recintoInterno;
+          const sx=c.x===r.x?1:-1, sy=c.y===r.y?1:-1;
+          for(let s=0;s<2;s++)torres.push({id:`torre-${i}-${s}`,estrutura:`fort-torre-${i}`,tipo:"torre",recinto:r,nome:c.recinto,
+            x:c.x+(s?20:-20),y:c.y,pe:{x:c.x+sx*100,y:c.y+sy*100},corredor:{x:c.x+sx*14,y:c.y+sy*14},normal:{x:-sx/Math.SQRT2,y:-sy/Math.SQRT2},alcance:1200});
+        });
+        for(const t of catalogoTrechosAdarve()) if(t.pronto) {
+          const comprimentos=t.segmentos.map(s=>Math.hypot(s.x2-s.x1,s.y2-s.y1)-140);
+          const total=comprimentos.reduce((a,b)=>a+Math.max(0,b),0);
+          for(let i=0;i<4;i++) {
+            let d=total*(i+0.5)/4, seg=t.segmentos[0];
+            for(let j=0;j<t.segmentos.length;j++){seg=t.segmentos[j];if(d<=comprimentos[j])break;d-=comprimentos[j];}
+            const horizontal=seg.y1===seg.y2;
+            const x=seg.x1+(horizontal?70+d:0),y=seg.y1+(horizontal?0:70+d);
+            muros.push({id:`adarve-${t.nome}-${t.lado}-${i}`,estrutura:`fort-muro-${t.nome}-${t.lado}`,tipo:"muro",recinto:t.recinto,nome:t.nome,
+              x:x+t.normal.x*36,y:y+t.normal.y*36,pe:{x:x-t.normal.x*100,y:y-t.normal.y*100},corredor:{x:x-t.normal.x*14,y:y-t.normal.y*14},normal:t.normal,alcance:950});
+          }
+        }
+        // Interleave the two rings/sides: do not fill an entire wall before another.
+        const postos=[];
+        for(let s=0;s<2;s++) for(const i of [4,5,6,7,0,1,2,3]) {const p=torres.find(p=>p.id===`torre-${i}-${s}`);if(p)postos.push(p);}
+        const espalhados=[];
+        for(let s=0;s<4;s++) for(const nome of ["externo","interno"]) for(let lado=0;lado<4;lado++){const p=muros.find(p=>p.id===`adarve-${nome}-${lado}-${s}`);if(p)espalhados.push(p);}
+        cachePostosMuralhas={chave,postos:[...postos,...espalhados]};
+        return cachePostosMuralhas.postos;
+      }
+      function origemDefensorColonia(cat,i) {
+        if(cat==="milicia") return posicaoPatioMiliciano(i);
+        if(cat==="soldado") return {x:areaQuartelMilitarColonia.x+95+(i%5)*125,y:areaQuartelMilitarColonia.y+areaQuartelMilitarColonia.altura+75+Math.floor(i/5)*75};
+        return {x:6900,y:2800+i*30};
+      }
+      function caminhoCorredorMuralha(r,de,ate) {
+        const x=r.x+14,y=r.y+14,w=r.largura-28,h=r.altura-28,L=2*(w+h);
+        const escalar=p=>Math.abs(p.y-y)<1?p.x-x:Math.abs(p.x-x-w)<1?w+p.y-y:Math.abs(p.y-y-h)<1?w+h+x+w-p.x:2*w+h+y+h-p.y;
+        const ponto=s=>{s=((s%L)+L)%L;return s<=w?{x:x+s,y}:s<=w+h?{x:x+w,y:y+s-w}:s<=2*w+h?{x:x+2*w+h-s,y:y+h}:{x,y:y+L-s};};
+        let a=escalar(de), b=escalar(ate), frente=(b-a+L)%L, sinal=frente<=L/2?1:-1;
+        const distancia=sinal===1?frente:L-frente, cortes=[0,w,w+h,2*w+h,L];
+        const meio=[];
+        for(const c of cortes){const d=sinal===1?(c-a+L)%L:(a-c+L)%L;if(d>0.01&&d<distancia-0.01)meio.push({d,p:ponto(c)});}
+        return [de,...meio.sort((a,b)=>a.d-b.d).filter((v,i,a)=>!i||Math.abs(v.d-a[i-1].d)>0.01).map(v=>v.p),ate];
+      }
+      function rotaAcessoGuarnicao(origem,posto) {
+        // The existing road snap can cross a wall on its first connector. Use
+        // explicit gate crossings and the clear inner-edge patrol corridors.
+        const dentro=(r,p)=>p.x>r.x&&p.x<r.x+r.largura&&p.y>r.y&&p.y<r.y+r.altura;
+        const interno=dentro(recintoInterno,origem), externo=dentro(recintoExterno,origem);
+        const rota=[origem];let pe;
+        if(interno){
+          pe={x:recintoInterno.x+14,y:origem.y};rota.push(pe);
+          if(posto.recinto===recintoExterno){
+            const saida={x:recintoInterno.x+14,y:yEstradaCampoColonia};
+            rota.push(...caminhoCorredorMuralha(recintoInterno,pe,saida),{x:recintoInterno.x,y:yEstradaCampoColonia});
+            pe={x:recintoExterno.x+14,y:yEstradaCampoColonia};rota.push(pe);
+          }
+        }else{
+          if(externo){pe={x:origem.x,y:recintoExterno.y+recintoExterno.altura-14};rota.push(pe);}
+          else{rota.push({x:origem.x,y:8460},{x:6700,y:8460},{x:6700,y:7500});pe={x:6700,y:7486};rota.push(pe);}
+          if(posto.recinto===recintoInterno){
+            const leste=origem.x>recintoInterno.x+recintoInterno.largura;
+            const corredor={x:leste?11186:5014,y:yEstradaCampoColonia};
+            rota.push(...caminhoCorredorMuralha(recintoExterno,pe,corredor));
+            const portao={x:leste?10300:6800,y:yEstradaCampoColonia};rota.push(portao);
+            pe={x:portao.x+(leste?-14:14),y:portao.y};rota.push(pe);
+          }
+        }
+        rota.push(...caminhoCorredorMuralha(posto.recinto,pe,posto.corredor || posto.pe), posto.pe);
+        return rota.filter((p,i,a)=>!i||Math.hypot(p.x-a[i-1].x,p.y-a[i-1].y)>0.01);
+      }
+      function sincronizarGuarnicaoColonia() {
+        const d=estado.defesaPosicional, postos=postosElevadosColonia();
+        const chave=[d.ativa,cachePostosMuralhas.chave,milicianosEmCacaColonia(),...categoriasGuarnicao.flatMap(c=>[quantidadeCategoriaGuarnicao(c),arqueirosCategoriaGuarnicao(c)])].join("|");
+        if(chave===assinaturaGuarnicao)return;
+        assinaturaGuarnicao=chave;
+        const catalogo=new Map(postos.map(p=>[p.id,p])),ocupados=new Set();
+        d.unidades=d.unidades.filter(u=>u.indice<quantidadeCategoriaGuarnicao(u.categoria));
+        for(const u of d.unidades){
+          if(!d.ativa || !catalogo.has(u.posto) || (u.categoria==="milicia"&&u.indice<milicianosEmCacaColonia()))u.retirar=true;
+          if(!u.retirar)ocupados.add(u.posto);
+        }
+        if(!d.ativa||!estado.coloniaIniciada)return;
+        const candidatos=[];
+        for(const c of categoriasGuarnicao) for(let i=0;i<quantidadeCategoriaGuarnicao(c);i++) {
+          if(c==="milicia"&&i<milicianosEmCacaColonia())continue;
+          if(!d.unidades.some(u=>u.id===`${c}:${i}`))candidatos.push({c,i,arco:tipoEquipamentoEfetivoColonia(c,i)==="arco"});
+        }
+        candidatos.sort((a,b)=>Number(b.arco)-Number(a.arco));
+        for(const a of candidatos){
+          // Reserve tower positions for archers when possible; melee sentries use wall walks.
+          const livres=postos.filter(p=>!ocupados.has(p.id));
+          const posto=livres.find(p=>p.tipo===(a.arco?"torre":"muro"))||livres[0];
+          if(!posto)break;
+          const origem=origemDefensorColonia(a.c,a.i),rota=rotaAcessoGuarnicao(origem,posto);
+          d.unidades.push({id:`${a.c}:${a.i}`,categoria:a.c,indice:a.i,posto:posto.id,fase:"indo",...origem,altura:0,rota,trecho:1,recarga:0,retirar:false});
+          ocupados.add(posto.id);
+        }
+      }
+      function retirarUnidadeGuarnicao(u) {
+        if(u.fase==="descendo"||u.fase==="voltando")return;
+        if(u.fase==="posto"||u.fase==="subindo")u.fase="descendo";
+        else {u.rota=[{x:u.x,y:u.y},...u.rota.slice(0,u.trecho).reverse()];u.trecho=1;u.fase="voltando";}
+      }
+      function moverUnidadeGuarnicao(u,delta) {
+        const p=postosElevadosColonia().find(p=>p.id===u.posto);
+        if(!p)return true;
+        if(u.retirar)retirarUnidadeGuarnicao(u);
+        if(u.fase==="subindo"||u.fase==="descendo") {
+          u.altura=Math.max(0,Math.min(1,u.altura+(u.fase==="subindo"?1:-1)*delta/2.5));
+          u.x=p.pe.x+(p.x-p.pe.x)*u.altura;u.y=p.pe.y+(p.y-p.pe.y)*u.altura;
+          if(u.fase==="subindo"&&u.altura===1)u.fase="posto";
+          if(u.fase==="descendo"&&u.altura===0){u.rota=[...u.rota].reverse();u.trecho=1;u.fase="voltando";}
+        } else if(u.fase==="indo"||u.fase==="voltando") {
+          let distancia=180*delta;
+          while(distancia>0.00001 && u.trecho<u.rota.length){
+            const a=u.rota[u.trecho],dx=a.x-u.x,dy=a.y-u.y,len=Math.hypot(dx,dy);
+            if(len<=distancia){u.x=a.x;u.y=a.y;u.trecho++;distancia-=len;}
+            else{u.x+=dx/len*distancia;u.y+=dy/len*distancia;distancia=0;}
+          }
+          if(u.trecho>=u.rota.length){if(u.fase==="voltando")return true;u.fase="subindo";}
+        }
+        u.recarga=Math.max(0,u.recarga-delta);
+        return false;
+      }
+      function atualizarGuarnicaoColonia(delta) {
+        if(!estado.coloniaIniciada||estado.jogoPausado||!Number.isFinite(delta)||delta<=0)return;
+        const d=estado.defesaPosicional;
+        d.passo+=delta;
+        // Fixed steps make projectile hits and ammunition independent of 1x/10x rendering.
+        while(d.passo+1e-9>=0.1){
+          d.passo=Math.max(0,d.passo-0.1);
+          sincronizarGuarnicaoColonia();
+          d.unidades=d.unidades.filter(u=>{const saiu=moverUnidadeGuarnicao(u,0.1);if(saiu)assinaturaGuarnicao="";return !saiu;});
+          atualizarCombateMuralhas(0.1);
+        }
+        tempoPainelMuralhas+=delta/Math.max(1,estado.velocidadeTempo);
+        if(painelMuralhas.open && tempoPainelMuralhas>=0.25){tempoPainelMuralhas=0;atualizarPainelMuralhas();}
+      }
+      function reabastecerArqueiroMuralha(u) {
+        const d=estado.defesaPosicional;
+        if(!Object.prototype.hasOwnProperty.call(d.aljavas,u.id))d.aljavas[u.id]=0;
+        if(d.aljavas[u.id]===0 && estado.depositoFlechasConstruido){
+          const carga=Math.min(flechasPorAljava,Math.floor(estado.estoqueFlechas));
+          estado.estoqueFlechas-=carga;d.aljavas[u.id]+=carga;
+        }
+        return d.aljavas[u.id];
+      }
+      function linhaTiroMuralhaLivre(p,alvo) {
+        // Outward fire only; a shot cannot pass through another enclosure wall.
+        if((alvo.x-p.x)*p.normal.x+(alvo.y-p.y)*p.normal.y<=0)return false;
+        for(const [r,n] of [[recintoInterno,Math.max(estado.trechosPalicadaInterna,estado.trechosMuralhaPedraInterna)],[recintoExterno,Math.max(estado.trechosPalicadaExterna,estado.trechosMuralhaPedraExterna)]]){
+          for(let i=0;i<n;i++)for(const s of segmentosTrechoPalicadaColonia(r,i)){
+            const vertical=s.x1===s.x2, diff=vertical?alvo.x-p.x:alvo.y-p.y;
+            if(Math.abs(diff)<0.00001)continue;
+            const t=((vertical?s.x1:s.y1)-(vertical?p.x:p.y))/diff;
+            const cruz=vertical?p.y+t*(alvo.y-p.y):p.x+t*(alvo.x-p.x);
+            if(t>0&&t<1 && cruz>=(vertical?s.y1:s.x1)&&cruz<=(vertical?s.y2:s.x2) && Math.hypot((alvo.x-p.x)*t,(alvo.y-p.y)*t)>120)return false;
+          }
+        }
+        return true;
+      }
+      function atualizarCombateMuralhas(delta) {
+        const d=estado.defesaPosicional,e=d.exercicio;
+        if(!e)return;
+        const base=postosElevadosColonia().find(p=>p.id===e.posto);
+        if(!base){terminarExercicioMuralhas();return;}
+        e.tempo+=delta;
+        for(const a of e.alvos) if(a.vida>0){
+          const dx=base.x+base.normal.x*130-a.x,dy=base.y+base.normal.y*130-a.y,dist=Math.hypot(dx,dy);
+          if(dist>2){const k=Math.min(1,delta*55/dist);a.x+=dx*k;a.y+=dy*k;}
+          else{a.ataque+=delta;if(a.ataque>=3){a.ataque-=3;e.integridade=Math.max(0,e.integridade-(base.tipo==="muro"?4:7));}}
+        }
+        const pendentes=[];
+        for(const f of e.flechas){
+          f.tempo+=delta;
+          const alvoMovel=e.alvos.find(a=>a.id===f.alvo); if(alvoMovel?.vida>0)f.destino={x:alvoMovel.x,y:alvoMovel.y};
+          if(f.tempo+1e-9>=f.duracao){const a=e.alvos.find(a=>a.id===f.alvo);if(a&&a.vida>0){a.vida=Math.max(0,a.vida-f.dano);if(a.vida===0)e.abatidos++;}}
+          else pendentes.push(f);
+        }
+        e.flechas=pendentes;
+        for(const u of d.unidades){
+          if(u.retirar||u.fase!=="posto"||u.recarga>0||tipoEquipamentoEfetivoColonia(u.categoria,u.indice)!=="arco"||e.flechas.length>=64)continue;
+          const p=postosElevadosColonia().find(p=>p.id===u.posto);
+          const alvo=e.alvos.filter(a=>a.vida>0&&a.vida>e.flechas.filter(f=>f.alvo===a.id).length*8&&Math.hypot(a.x-p.x,a.y-p.y)<=p.alcance&&linhaTiroMuralhaLivre(p,a)).sort((a,b)=>Math.hypot(a.x-p.x,a.y-p.y)-Math.hypot(b.x-p.x,b.y-p.y))[0];
+          if(!alvo||reabastecerArqueiroMuralha(u)<1)continue;
+          d.aljavas[u.id]--;u.recarga=2;e.disparos++;
+          e.flechas.push({alvo:alvo.id,origem:{x:p.x,y:p.y-36},destino:{x:alvo.x,y:alvo.y},tempo:0,duracao:Math.max(0.1,Math.hypot(alvo.x-p.x,alvo.y-p.y)/550),dano:8});
+        }
+        if(e.abatidos>=6||e.integridade<=0||e.tempo>=90)terminarExercicioMuralhas();
+      }
+      function iniciarExercicioMuralhas() {
+        const d=estado.defesaPosicional;
+        if(!estado.coloniaIniciada||d.exercicio)return false;
+        const prontos=d.unidades.filter(u=>u.fase==="posto"&&!u.retirar&&tipoEquipamentoEfetivoColonia(u.categoria,u.indice)==="arco"&&(d.aljavas[u.id]>0||(estado.depositoFlechasConstruido&&estado.estoqueFlechas>=1)));
+        const u=prontos.find(u=>postosElevadosColonia().find(p=>p.id===u.posto)?.nome==="externo")||prontos[0];
+        if(!u){definirMensagem("Aguarde um arqueiro com flechas chegar a uma torre ou adarve.");return false;}
+        const p=postosElevadosColonia().find(p=>p.id===u.posto),alvos=[];
+        for(let i=0;i<6;i++){const lateral=(i-2.5)*65;alvos.push({id:i,x:p.x+p.normal.x*820-p.normal.y*lateral,y:p.y+p.normal.y*820+p.normal.x*lateral,vida:24,ataque:0});}
+        d.exercicio={posto:p.id,alvos,flechas:[],tempo:0,integridade:100,abatidos:0,disparos:0};
+        focoMuralhas=p.estrutura;verGuarnicaoColonia();
+        definirMensagem("Exercício iniciado: alvos móveis, flechas reais; sem perdas civis, baixas, danos permanentes ou recompensa.");
+        atualizarPainelMuralhas();salvarProgresso();return true;
+      }
+      function terminarExercicioMuralhas() {
+        const d=estado.defesaPosicional,e=d.exercicio;if(!e)return false;
+        d.ultimo={abatidos:e.abatidos,disparos:e.disparos,integridade:e.integridade,tempo:e.tempo};
+        d.exercicio=null;d.exercicios++;
+        definirMensagem(`Exercício encerrado: ${e.abatidos}/6 alvos, ${e.disparos} flechas utilizadas. Nenhuma perda civil ou dano permanente.`);
+        atualizarPainelMuralhas();salvarProgresso();return true;
+      }
+      function equiparArqueiroMuralhas(categoria) {
+        if(!categoriasGuarnicao.includes(categoria))return false;
+        if(categoria==="milicia"&&estado.cacaMilicia.expedicao){definirMensagem("Aguarde o retorno da caçada para trocar as armas da milícia.");return false;}
+        const n=arqueirosCategoriaGuarnicao(categoria);
+        if(n>=quantidadeCategoriaGuarnicao(categoria)||!equipamentoDisponivelDefesaColonia("arco"))return false;
+        const metal=categoria==="milicia"?"armasMetalMilicia":categoria==="guarda"?"armasMetalGuarda":"armasMetalSoldados";
+        const tipo=estado[metal]>0?"arma":"lanca",estoque=tipo==="arma"?"estoqueArmas":"estoqueLancasMadeira";
+        const cap=capacidadeArmazemInternoColonia(tipo==="arma"?capacidadeArmasColonia:capacidadeLancasMadeiraColonia);
+        if(estado[estoque]+1>cap){definirMensagem("Libere espaço no arsenal para guardar a arma devolvida.");return false;}
+        consumirEquipamentoDefesaColonia(categoria,"arco");
+        if(tipo==="arma")estado[metal]--;estado[estoque]++;
+        assinaturaGuarnicao="";atualizarInterface();atualizarPainelMuralhas();salvarProgresso();return true;
+      }
+      function autorizarAdarvesColonia() {
+        if(!estado.coloniaIniciada||estado.trechosMuralhaPedraInterna<4||estado.trechosMuralhaPedraExterna<4)return false;
+        estado.ampliacaoMuralhasAutorizada=!estado.ampliacaoMuralhasAutorizada;
+        definirMensagem(estado.ampliacaoMuralhasAutorizada?"Estágio 3 autorizado: a guilda amplia os oito lados, após as prioridades essenciais e respeitando materiais, caixa e manutenção.":"Novas ampliações suspensas; a obra já financiada será concluída.");
+        atualizarInterface();atualizarPainelMuralhas();salvarProgresso();return true;
+      }
+      function alternarGuarnicaoColonia() {
+        estado.defesaPosicional.ativa=!estado.defesaPosicional.ativa;assinaturaGuarnicao="";
+        sincronizarGuarnicaoColonia();atualizarPainelMuralhas();salvarProgresso();
+      }
+      function verGuarnicaoColonia() {
+        const postos=postosElevadosColonia();
+        const p=postos.find(p=>p.estrutura===focoMuralhas)||postos.find(p=>p.nome==="externo")||postos[0];
+        if(!p)return;
+        estado.mapaAtual="expansao";estado.cameraExpansao.zoom=0.6;
+        const v=dimensoesVisaoExpansao();estado.cameraExpansao.x=p.x-v.largura/2;estado.cameraExpansao.y=p.y-v.altura/2;limitarCameraExpansao();desenhar();
+      }
+      function abrirPainelMuralhas(foco=null) {
+        focoMuralhas=typeof foco==="string"?foco:null;atualizarPainelMuralhas();
+        if(typeof painelMuralhas.showModal==="function"){if(!painelMuralhas.open)painelMuralhas.showModal();}else painelMuralhas.setAttribute("open","");
+      }
+      function atualizarPainelMuralhas() {
+        const d=estado.defesaPosicional,postos=postosElevadosColonia();
+        const prontos=d.unidades.filter(u=>u.fase==="posto"&&!u.retirar);
+        const arqueiros=prontos.filter(u=>tipoEquipamentoEfetivoColonia(u.categoria,u.indice)==="arco");
+        const set=(id,texto)=>{document.querySelector(id).textContent=texto;};
+        set("#resumo-muralhas",`Estágio 3: ${estado.trechosAdarveExterno}/4 lados externos · ${estado.trechosAdarveInterno}/4 internos. Torres construídas: ${estado.quantidadeTorresMuralha}/8. ${prontos.length}/${postos.length} posições ocupadas; ${d.unidades.length-prontos.length} em deslocamento. Arqueiros em posição: ${arqueiros.length}.`);
+        set("#municao-muralhas",`Aljavas em posição: ${arqueiros.reduce((n,u)=>n+(d.aljavas[u.id]||0),0)} flechas · depósito: ${formatarQuantidade(estado.estoqueFlechas)}. Milícia em caça: ${milicianosEmCacaColonia()}. Soldos mantidos: ${formatarOuro(folhaSoldosColonia())}/60 s.`);
+        set("#selecionado-muralhas",focoMuralhas?`Posição selecionada: ${focoMuralhas.replace("fort-","")}. ${prontos.filter(u=>postos.find(p=>p.id===u.posto)?.estrutura===focoMuralhas).length} defensores em posição.`:"Toque em uma torre ou muralha para consultar a guarnição.");
+        const total=estado.trechosAdarveExterno+estado.trechosAdarveInterno;
+        const obra=estado.obraAutomaticaColonia;
+        set("#obras-muralhas",total===8?"Espessamento concluído: oito lados com adarves e escadas.":`Restam ${(4-estado.trechosAdarveExterno)*2000+(4-estado.trechosAdarveInterno)*1500} de ouro e ${(4-estado.trechosAdarveExterno)*60+(4-estado.trechosAdarveInterno)*40} pedras no programa (inclui eventual trecho já pago). ${obra?`Obra atual: ${nomeObraAutomaticaColonia(obra)}.`:"A guilda segue a fila municipal."}`);
+        set("#autorizar-adarves",estado.ampliacaoMuralhasAutorizada?"Suspender novas ampliações":"Autorizar muralhas estágio 3");
+        document.querySelector("#autorizar-adarves").disabled=!estado.coloniaIniciada||estado.trechosMuralhaPedraInterna<4||estado.trechosMuralhaPedraExterna<4||total===8;
+        set("#alternar-guarnicao",d.ativa?"Recolher guarnição":"Guarnecer torres e muralhas");
+        document.querySelector("#alternar-guarnicao").disabled=!estado.coloniaIniciada;
+        document.querySelector("#exercicio-muralhas").disabled=Boolean(d.exercicio)||!arqueiros.some(u=>(d.aljavas[u.id]||0)>0||(estado.depositoFlechasConstruido&&estado.estoqueFlechas>=1));
+        document.querySelector("#encerrar-exercicio").disabled=!d.exercicio;
+        const e=d.exercicio,u=d.ultimo;
+        set("#status-exercicio",e?`Exercício: ${e.abatidos}/6 alvos · ${e.disparos} disparos · defesa simulada ${Math.round(e.integridade)}% · ${Math.round(e.tempo)} s.`:u?`Último exercício: ${u.abatidos}/6 alvos, ${u.disparos} flechas; defesa simulada ${Math.round(u.integridade)}%.`:"Nenhum exercício em andamento. Não há ataques automáticos nesta atualização.");
+      }
+      function estruturasGuarnicaoInspecionaveis() {
+        const r=[];
+        cantosTorresMuralhaColonia.forEach((p,i)=>r.push({id:`fort-torre-${i}`,nome:`Torre ${p.recinto} ${p.canto}`,area:{x:p.x-58,y:p.y-58,largura:116,altura:116},construido:i<estado.quantidadeTorresMuralha}));
+        for(const t of catalogoTrechosAdarve())for(const [j,s] of t.segmentos.entries()){
+          const dx=t.normal.x*72,dy=t.normal.y*72;
+          r.push({id:`fort-muro-${t.nome}-${t.lado}-${j}`,estrutura:`fort-muro-${t.nome}-${t.lado}`,nome:`Muralha ${t.nome} · ${["norte","leste","sul","oeste"][t.lado]}`,area:{x:Math.min(s.x1,s.x2,s.x1+dx)-10,y:Math.min(s.y1,s.y2,s.y1+dy)-10,largura:Math.abs(s.x2-s.x1)+Math.abs(dx)+20,altura:Math.abs(s.y2-s.y1)+Math.abs(dy)+20},construido:t.pronto});
+        }
+        return r;
+      }
+      function areaVisivelMuralhas(x,y,w,h) {
+        const c=estado.cameraExpansao,v=dimensoesVisaoExpansao();return x+w>=c.x&&y+h>=c.y&&x<=c.x+v.largura&&y<=c.y+v.altura;
+      }
+      function desenharAdarvesColonia() {
+        if(estado.etapaConstrucaoColonia<4)return;
+        contexto.save();
+        for(const t of catalogoTrechosAdarve()){
+          const tipo=t.nome==="externo"?"adarveExterno":"adarveInterno";
+          const n=t.nome==="externo"?estado.trechosAdarveExterno:estado.trechosAdarveInterno;
+          const progresso=progressoTrechoDefesaColonia(tipo,n,t.lado);if(progresso<=0)continue;
+          contexto.globalAlpha=t.pronto?1:0.55;
+          for(const s of t.segmentos){
+            const horizontal=s.y1===s.y2,x=Math.min(s.x1,s.x1+t.normal.x*72),y=Math.min(s.y1,s.y1+t.normal.y*72);
+            const w=horizontal?s.x2-s.x1:72,h=horizontal?72:s.y2-s.y1;
+            if(!areaVisivelMuralhas(x,y,w,h))continue;
+            contexto.fillStyle="#424d4b";contexto.fillRect(x+5,y+9,w,h);
+            contexto.fillStyle="#a3aaa1";contexto.fillRect(x,y,w*(horizontal?progresso:1),h*(horizontal?1:progresso));
+            contexto.strokeStyle="#505b57";contexto.lineWidth=5;contexto.strokeRect(x,y,w,h);
+            const passo=estado.cameraExpansao.zoom<0.25?180:90,comprimento=(horizontal?w:h)*progresso;
+            contexto.fillStyle="#c7cec3";
+            for(let d=12;d<comprimento-16;d+=passo){const bx=horizontal?x+d:x+(t.normal.x>0?52:0),by=horizontal?y+(t.normal.y>0?52:0):y+d;if(areaVisivelMuralhas(bx,by,22,22))contexto.fillRect(bx,by,horizontal?32:20,horizontal?20:32);}
+          }
+        }
+        contexto.globalAlpha=1;
+        for(const p of postosElevadosColonia()){
+          if(p.tipo==="torre"&&!p.id.endsWith("-0"))continue;
+          if(!areaVisivelMuralhas(p.x-70,p.y-70,140,140))continue;
+          contexto.strokeStyle="#705232";contexto.lineWidth=5;
+          const dx=p.x-p.pe.x,dy=p.y-p.pe.y,len=Math.hypot(dx,dy)||1,tx=-dy/len*12,ty=dx/len*12;
+          for(const k of [-1,1]){contexto.beginPath();contexto.moveTo(p.pe.x+tx*k,p.pe.y+ty*k);contexto.lineTo(p.x+tx*k,p.y+ty*k);contexto.stroke();}
+          for(let f=0;f<=1;f+=0.2){contexto.beginPath();contexto.moveTo(p.pe.x+dx*f-tx,p.pe.y+dy*f-ty);contexto.lineTo(p.pe.x+dx*f+tx,p.pe.y+dy*f+ty);contexto.stroke();}
+        }
+        contexto.restore();
+      }
+      function desenharDefensorGuarnecido(cat,indice) {
+        const u=estado.defesaPosicional.unidades.find(u=>u.categoria===cat&&u.indice===indice);if(!u)return false;
+        if(!areaVisivelMuralhas(u.x-40,u.y-70,80,100))return true;
+        contexto.save();
+        contexto.fillStyle="rgba(0,0,0,0.28)";contexto.fillRect(u.x-10,u.y+5,20,7);
+        const y=u.y-u.altura*28;
+        desenharEfetivoDefesaColonia(u.x,y,{milicia:"#6f7a3f",guarda:"#355d82",soldado:"#7b3f3f"}[cat],tipoEquipamentoEfetivoColonia(cat,indice),cat==="guarda");
+        if(u.altura>0.9){contexto.fillStyle="#d8c177";contexto.fillRect(u.x-6,y-13,12,4);}
+        contexto.restore();return true;
+      }
+      function desenharCombateMuralhas() {
+        const e=estado.defesaPosicional.exercicio;if(!e)return;
+        contexto.save();
+        for(const a of e.alvos)if(a.vida>0&&areaVisivelMuralhas(a.x-25,a.y-35,50,65)){
+          desenharEfetivoDefesaColonia(a.x,a.y,"#934e37","lanca");contexto.fillStyle="#382c23";contexto.fillRect(a.x-14,a.y-23,28,4);contexto.fillStyle="#a5bd76";contexto.fillRect(a.x-14,a.y-23,28*a.vida/24,4);
+        }
+        contexto.strokeStyle="#f4dfac";contexto.lineWidth=3;
+        for(const f of e.flechas){const t=Math.min(1,f.tempo/f.duracao),q=Math.max(0,t-0.04);const x=f.origem.x+(f.destino.x-f.origem.x)*t,y=f.origem.y+(f.destino.y-f.origem.y)*t-55*4*t*(1-t);if(!areaVisivelMuralhas(x-25,y-25,50,50))continue;contexto.beginPath();contexto.moveTo(f.origem.x+(f.destino.x-f.origem.x)*q,f.origem.y+(f.destino.y-f.origem.y)*q-55*4*q*(1-q));contexto.lineTo(x,y);contexto.stroke();}
         contexto.restore();
       }
 
@@ -5095,6 +5526,11 @@
         estado.tempoFestivalColonia = 0;
         estado.ciclosFestivalRestantes = 0;
         estado.festivaisRealizados = 0;
+        estado.trechosAdarveInterno = 0;
+        estado.trechosAdarveExterno = 0;
+        estado.ampliacaoMuralhasAutorizada = false;
+        estado.defesaPosicional = novaDefesaPosicional();
+        assinaturaGuarnicao = "";
         estado.trechosMuralhaPedraInterna = 0;
         estado.trechosMuralhaPedraExterna = 0;
         estado.quantidadeTorresMuralha = 0;
@@ -5423,6 +5859,10 @@
                   estado.trechosPalicadaExterna === totalTrechosPalicadaColonia
                     ? 1
                     : 0,
+                adarveInterno: estado.trechosAdarveInterno,
+                adarveExterno: estado.trechosAdarveExterno,
+                ampliacaoAutorizada: estado.ampliacaoMuralhasAutorizada,
+                guarnicao: estado.defesaPosicional,
                 pedraInterna: estado.trechosMuralhaPedraInterna,
                 pedraExterna: estado.trechosMuralhaPedraExterna,
                 torres: estado.quantidadeTorresMuralha,
@@ -6428,6 +6868,8 @@
               "muralhaPedraInterna" ||
             salvo.expansao?.economia?.obraAutomatica ===
               "muralhaPedraExterna" ||
+            salvo.expansao?.economia?.obraAutomatica === "adarveInterno" ||
+            salvo.expansao?.economia?.obraAutomatica === "adarveExterno" ||
             salvo.expansao?.economia?.obraAutomatica === "torreMuralha" ||
             salvo.expansao?.economia?.obraAutomatica ===
               "portaoFortificado" ||
@@ -7056,6 +7498,10 @@
             estado.mapaAtual = "expansao";
           }
           estado.cacaMilicia = normalizarCacaMilicia(salvo.expansao?.economia?.cacaMilicia);
+          estado.trechosAdarveInterno = Math.floor(numeroValido(salvo.expansao?.economia?.defesas?.adarveInterno, 0, estado.trechosMuralhaPedraInterna, 0));
+          estado.trechosAdarveExterno = Math.floor(numeroValido(salvo.expansao?.economia?.defesas?.adarveExterno, 0, estado.trechosMuralhaPedraExterna, 0));
+          estado.ampliacaoMuralhasAutorizada = salvo.expansao?.economia?.defesas?.ampliacaoAutorizada === true;
+          estado.defesaPosicional = normalizarDefesaPosicional(salvo.expansao?.economia?.defesas?.guarnicao);
           const coloniaReiniciadaAoCarregar =
             estado.mapaAtual === "expansao" &&
             estado.revisaoColonia < versaoColonia;
@@ -7199,6 +7645,11 @@
         estado.tempoFestivalColonia = 0;
         estado.ciclosFestivalRestantes = 0;
         estado.festivaisRealizados = 0;
+        estado.trechosAdarveInterno = 0;
+        estado.trechosAdarveExterno = 0;
+        estado.ampliacaoMuralhasAutorizada = false;
+        estado.defesaPosicional = novaDefesaPosicional();
+        assinaturaGuarnicao = "";
         estado.trechosMuralhaPedraInterna = 0;
         estado.trechosMuralhaPedraExterna = 0;
         estado.quantidadeTorresMuralha = 0;
@@ -7472,6 +7923,9 @@
         "terceiroBlocoMoradiasConstruido",
         "tesouroColonia",
         "trechoEstradaEmObra",
+        "trechosAdarveExterno",
+        "trechosAdarveInterno",
+        "ampliacaoMuralhasAutorizada",
         "trechosMuralhaPedraExterna",
         "trechosMuralhaPedraInterna",
         "trechosPalicadaExterna",
@@ -8807,6 +9261,7 @@
           (estado.trechosMuralhaPedraInterna +
             estado.trechosMuralhaPedraExterna) *
           0.25;
+        total += (estado.trechosAdarveInterno + estado.trechosAdarveExterno) * 0.25;
         total += estado.quantidadeTorresMuralha * 0.25;
         total += estado.quantidadePortoesFortificados * 0.5;
         total += [
@@ -9014,6 +9469,8 @@
           cemiterio: 0.5,
           muralhaPedraInterna: 0.25,
           muralhaPedraExterna: 0.25,
+          adarveInterno: 0.25,
+          adarveExterno: 0.25,
           torreMuralha: 0.25,
           portaoFortificado: 0.5,
           lavoura: 0.75,
@@ -9087,6 +9544,10 @@
           materiais.pedra = pedraTrechoMuralhaInternaColonia;
         } else if (tipo === "muralhaPedraExterna") {
           materiais.pedra = pedraTrechoMuralhaExternaColonia;
+        } else if (tipo === "adarveInterno") {
+          materiais.pedra = 40;
+        } else if (tipo === "adarveExterno") {
+          materiais.pedra = 60;
         } else if (tipo === "torreMuralha") {
           materiais.pedra = pedraTorreMuralhaColonia;
         } else if (tipo === "portaoFortificado") {
@@ -9340,6 +9801,7 @@
           if (categoria === "milicia") estado.arqueirosMilicia += 1;
           else if (categoria === "guarda") estado.arqueirosGuarda += 1;
           else estado.arqueirosSoldados += 1;
+          estado.defesaPosicional.aljavas[`${categoria}:${arqueirosCategoriaGuarnicao(categoria) - 1}`] = flechasPorAljava;
           return "arco e aljava";
         }
         if (tipo === "arma") {
@@ -9626,6 +10088,8 @@
         if (tipo === "muralhaPedraExterna") {
           return `trecho ${estado.trechosMuralhaPedraExterna + 1}/${totalTrechosPalicadaColonia} da muralha externa de pedra`;
         }
+        if (tipo === "adarveInterno") return `adarve interno ${estado.trechosAdarveInterno + 1}/4 · estágio 3`;
+        if (tipo === "adarveExterno") return `adarve externo ${estado.trechosAdarveExterno + 1}/4 · estágio 3`;
         if (tipo === "torreMuralha") {
           return `torre ${estado.quantidadeTorresMuralha + 1}/${totalTorresMuralhaColonia}`;
         }
@@ -9716,6 +10180,8 @@
           cemiterio: custoCemiterioColonia,
           muralhaPedraInterna: custoTrechoMuralhaPedraInternaColonia,
           muralhaPedraExterna: custoTrechoMuralhaPedraExternaColonia,
+          adarveInterno: 1500,
+          adarveExterno: 2000,
           torreMuralha: custoTorreMuralhaColonia,
           portaoFortificado: custoPortaoFortificadoColonia,
           mina: custoMinaColonia,
@@ -9906,6 +10372,10 @@
         if (!estado.campoGuardaConstruido) return "campoGuarda";
         if (estado.quantidadeGuardas < 5) return null;
         if (!estado.quartelMilitarConstruido) return "quartelMilitar";
+        if (estado.ampliacaoMuralhasAutorizada) {
+          if (estado.trechosAdarveExterno < 4) return "adarveExterno";
+          if (estado.trechosAdarveInterno < 4) return "adarveInterno";
+        }
         return null;
       }
 
@@ -10106,6 +10576,8 @@
       }
 
       function atualizarInterface() {
+        document.querySelector("#edificio-adarves").textContent = `${estado.trechosAdarveExterno + estado.trechosAdarveInterno} / 8 lados · ${estado.ampliacaoMuralhasAutorizada ? "programa autorizado" : "autorize em Defesa das muralhas"}`;
+        if (painelMuralhas.open) atualizarPainelMuralhas();
         atualizarPainelCacaMilicia();
         const noPostoAvancado = estado.mapaAtual === "posto";
         const noAssentamento =
@@ -11990,6 +12462,7 @@
           const ocupados = Math.min(trabalhadoresPorCabanaColeta, Math.max(0, (empregos.coletor || 0) - indice * trabalhadoresPorCabanaColeta));
           adicionar(`coleta-${indice + 1}`, `Cabana de coleta ${indice + 1}`, area, "cabanaColeta", estado.quantidadeCabanasColeta > indice, "Coletores juntam ervas medicinais e as deixam na origem para transporte.", { emprego: emprego("coletor", trabalhadoresPorCabanaColeta, ocupados), producao: ritmo("coletor", ervasPorColetor, "ervas", ocupados), inventario: [estoque("Ervas nas cabanas", estado.estoqueLocalErvas, capacidadeEstoqueLocalErvasColonia)], operacao: [manutencao("cabanaColeta")] });
         });
+        for (const f of estruturasGuarnicaoInspecionaveis()) adicionar(f.id, f.nome, f.area, null, f.construido, "Torres e adarves da guarnição; toque para ver posições e ordens.");
         adicionar("expedicao-milicia", "Ponto de caça da milícia", areaPontoCacaMilicia, null, estado.cabanaCacadoresConstruida, "Reúna a milícia e organize uma expedição fora do mapa.", { empregados: [linhaInspecaoColonia("Na expedição", milicianosEmCacaColonia())], inventario: [estoque("Animais aguardando", estado.cacaMilicia.carga.animais, 24), estoque("Carne aguardando", estado.cacaMilicia.carga.carne, 320), estoque("Peles aguardando", estado.cacaMilicia.carga.peles, 160)] });
         adicionar("cacadores", "Cabana dos caçadores", areaCabanaCacadores, "cabanaCacadores", estado.cabanaCacadoresConstruida, "Caçadores recolhem carne selvagem e peles na floresta do noroeste.", { emprego: emprego("cacador", maximoTrabalhadoresCacadores), producao: [...ritmo("cacador", carneSelvagemPorCacador, "carnes"), linhaInspecaoColonia("Peles potenciais", `${formatarQuantidade((empregos.cacador || 0) * couroPorCacador)} / 60 s`)], inventario: [estoque("Carne na origem", estado.estoqueLocalCarneSelvagem, capacidadeEstoqueLocalCarneSelvagemColonia), estoque("Carne armazenada", estado.estoqueCarneSelvagem, capacidadeCarneSelvagemColonia)], operacao: [manutencao("cabanaCacadores")] });
         adicionar("deposito-madeira", "Depósito de madeira", areaDepositoMadeira, "depositoMadeira", estado.depositoMadeiraConstruido, "Recebe das carroças a madeira usada por oficinas, navios e construções.", { inventario: [estoque("Madeira", estado.estoqueMadeira, capacidadeMadeiraColonia), estoque("Aguardando transporte", estado.estoqueLocalMadeira, capacidadeEstoqueLocalMadeiraColonia)], operacao: [linhaInspecaoColonia("Transportadores", `${empregos.transportador || 0}/${maximoTransportadoresColonia}`), manutencao("depositoMadeira")] });
@@ -12169,7 +12642,8 @@
           folga,
         );
         if (!edificio) return false;
-        if (edificio.id === "expedicao-milicia") abrirPainelCacaMilicia();
+        if (edificio.id.startsWith("fort-")) abrirPainelMuralhas(edificio.id.startsWith("fort-muro-") ? edificio.id.replace(/-\d+$/, "") : edificio.id);
+        else if (edificio.id === "expedicao-milicia") abrirPainelCacaMilicia();
         else abrirInspecaoEdificioColonia(edificio);
         return true;
       }
@@ -12748,6 +13222,12 @@
       }
 
       function iniciarObraAutomaticaColonia(tipo) {
+        if (estado.obraAutomaticaColonia) return false;
+        if (tipo === "adarveInterno" || tipo === "adarveExterno") {
+          const n = tipo === "adarveInterno" ? estado.trechosAdarveInterno : estado.trechosAdarveExterno;
+          const pedra = tipo === "adarveInterno" ? estado.trechosMuralhaPedraInterna : estado.trechosMuralhaPedraExterna;
+          if (!estado.ampliacaoMuralhasAutorizada || n >= 4 || pedra < 4) return false;
+        }
         if (tipo === "estradasTerra") tipo = "estradaSegmento";
         if (tipo === "estradaSegmento" && !Number.isInteger(estado.trechoEstradaEmObra)) {
           const proximoTrecho = proximoTrechoEstradaColonia();
@@ -13199,6 +13679,10 @@
             totalTrechosPalicadaColonia,
             estado.trechosMuralhaPedraExterna + 1,
           );
+        } else if (obraConcluida === "adarveInterno") {
+          estado.trechosAdarveInterno = Math.min(4, estado.trechosMuralhaPedraInterna, estado.trechosAdarveInterno + 1);
+        } else if (obraConcluida === "adarveExterno") {
+          estado.trechosAdarveExterno = Math.min(4, estado.trechosMuralhaPedraExterna, estado.trechosAdarveExterno + 1);
         } else if (obraConcluida === "torreMuralha") {
           estado.quantidadeTorresMuralha = Math.min(
             totalTorresMuralhaColonia,
@@ -16026,6 +16510,8 @@
             recintoExterno,
             estado.trechosMuralhaPedraExterna,
           ),
+          adarveInterno: centroTrechoPalicadaColonia(recintoInterno, estado.trechosAdarveInterno),
+          adarveExterno: centroTrechoPalicadaColonia(recintoExterno, estado.trechosAdarveExterno),
           torreMuralha: {
             x:
               cantosTorresMuralhaColonia[
@@ -16556,9 +17042,13 @@
         contexto.textAlign = "center";
         contexto.textBaseline = "middle";
         contexto.fillText(
-          trechos === totalTrechosPalicadaColonia
-            ? `${nome} · PALIÇADA ESTÁGIO 1`
-            : `${nome} · PLANO DE PALIÇADA ${trechos}/${totalTrechosPalicadaColonia}`,
+          (recinto === recintoExterno ? estado.trechosAdarveExterno : estado.trechosAdarveInterno) > 0
+            ? `${nome} · ADARVES ESTÁGIO 3 ${(recinto === recintoExterno ? estado.trechosAdarveExterno : estado.trechosAdarveInterno)}/4`
+            : (recinto === recintoExterno ? estado.trechosMuralhaPedraExterna : estado.trechosMuralhaPedraInterna) === 4
+              ? `${nome} · MURALHA DE PEDRA ESTÁGIO 2`
+              : trechos === totalTrechosPalicadaColonia
+                ? `${nome} · PALIÇADA ESTÁGIO 1`
+                : `${nome} · PLANO DE PALIÇADA ${trechos}/${totalTrechosPalicadaColonia}`,
           recinto.x + recinto.largura / 2,
           recinto.y - 62,
         );
@@ -16666,6 +17156,12 @@
           contexto.strokeStyle = "#3e4544";
           contexto.lineWidth = 8;
           contexto.strokeRect(canto.x - 48, canto.y - 48, 96, 96);
+          if (progresso >= 1) {
+            contexto.fillStyle = "#9aa298";
+            contexto.fillRect(canto.x - 34, canto.y - 34, 68, 68);
+            contexto.fillStyle = "#c4cbbf";
+            for (const dx of [-48, 26]) for (const dy of [-48, 26]) contexto.fillRect(canto.x + dx, canto.y + dy, 22, 22);
+          }
         });
 
         portoesMuralhaColonia.forEach((portao, indice) => {
@@ -19028,6 +19524,7 @@
 
       function desenharEfetivosDefesaColonia() {
         for (let indice = 0; indice < estado.quantidadeMilicianos; indice += 1) {
+          if (desenharDefensorGuarnecido("milicia", indice)) continue;
           if (indice < milicianosEmCacaColonia()) {
             const ponto = posicaoMilicianoExpedicao(indice);
             if (ponto) desenharEfetivoDefesaColonia(ponto.x, ponto.y, "#6f7a3f", tipoEquipamentoEfetivoColonia("milicia", indice));
@@ -19057,6 +19554,7 @@
           { x: 6900, y: 2800 },
         ];
         for (let indice = 0; indice < estado.quantidadeGuardas; indice += 1) {
+          if (desenharDefensorGuarnecido("guarda", indice)) continue;
           const progresso =
             (tempoRio *
               multiplicadorMovimentoEstradasColonia() *
@@ -19073,6 +19571,7 @@
         }
 
         for (let indice = 0; indice < estado.quantidadeSoldados; indice += 1) {
+          if (desenharDefensorGuarnecido("soldado", indice)) continue;
           const coluna = indice % 5;
           const linha = Math.floor(indice / 5);
           const x = areaQuartelMilitarColonia.x + 95 + coluna * 125;
@@ -19132,6 +19631,7 @@
         desenharAreasProdutivasColonia();
         desenharDefesasColonia();
         desenharObrasPublicasColonia();
+        desenharAdarvesColonia();
         desenharPortoesETorresColonia();
         desenharAdministracaoColonia();
         desenharMoradiasPrestigioColonia();
@@ -19144,6 +19644,7 @@
         desenharPontoCacaMilicia();
         desenharEfetivosDefesaColonia();
         desenharCargaExpedicaoMilicia();
+        desenharCombateMuralhas();
       }
 
       function interpolarPonto(inicio, fim, progresso) {
@@ -19834,6 +20335,7 @@
         atualizarPrioridadesColonia(deltaSimulacao);
         atualizarNecessidadesColonia(deltaSimulacao);
         atualizarDefesaColonia(deltaSimulacao);
+        atualizarGuarnicaoColonia(deltaSimulacao);
         atualizarExpedicaoMilicia(deltaSimulacao);
         atualizarConstrucaoColonia(deltaSimulacao);
         if (
@@ -19862,6 +20364,14 @@
         requestAnimationFrame(quadro);
       }
 
+      document.querySelector("#abrir-muralhas").addEventListener("click", () => abrirPainelMuralhas());
+      document.querySelector("#fechar-muralhas").addEventListener("click", () => { if (typeof painelMuralhas.close === "function") painelMuralhas.close(); else painelMuralhas.removeAttribute("open"); });
+      document.querySelector("#autorizar-adarves").addEventListener("click", autorizarAdarvesColonia);
+      document.querySelector("#alternar-guarnicao").addEventListener("click", alternarGuarnicaoColonia);
+      document.querySelector("#ver-guarnicao").addEventListener("click", () => { verGuarnicaoColonia(); if(typeof painelMuralhas.close === "function") painelMuralhas.close(); });
+      document.querySelector("#equipar-arqueiro-muralha").addEventListener("click", () => { if(!equiparArqueiroMuralhas(document.querySelector("#categoria-arqueiro-muralha").value)) definirMensagem("Verifique efetivo, arco, 20 flechas e espaço no arsenal."); atualizarPainelMuralhas(); });
+      document.querySelector("#exercicio-muralhas").addEventListener("click", iniciarExercicioMuralhas);
+      document.querySelector("#encerrar-exercicio").addEventListener("click", terminarExercicioMuralhas);
       document.querySelector("#abrir-caca-milicia").addEventListener("click", abrirPainelCacaMilicia);
       iniciarCacaMiliciaBotao.addEventListener("click", () => iniciarExpedicaoMilicia());
       document.querySelector("#fechar-caca-milicia").addEventListener("click", () => {
