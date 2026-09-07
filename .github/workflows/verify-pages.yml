@@ -4,6 +4,9 @@ on:
     branches: [main]
 permissions:
   contents: read
+defaults:
+  run:
+    shell: bash
 concurrency:
   group: verify-published-game
   cancel-in-progress: true
@@ -49,6 +52,7 @@ jobs:
         run: |
           mkdir -p verification-output
           python verification/browser-hunts.py --url "https://portuguese-basics.github.io/Basic-Portuguese-Browser-Game/?release=$RELEASE_SHA" | tee verification-output/browser-console.log
+          python verification/browser-clarity.py --url "https://portuguese-basics.github.io/Basic-Portuguese-Browser-Game/?release=$RELEASE_SHA" | tee verification-output/clarity-browser.log
       - name: Preserve source and git history for the Drive backup
         run: |
           git rev-parse HEAD > verification-output/release-commit.txt
