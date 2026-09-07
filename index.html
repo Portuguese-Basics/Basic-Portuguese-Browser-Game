@@ -19949,6 +19949,10 @@
 
       carregarProgresso();
       atualizarInterface();
+      // Preserve the former first-draw allocation on load, outside rendering.
+      if (estado.mapaAtual === "expansao" && estado.coloniaIniciada) {
+        redistribuirTrabalhadoresColonia();
+      }
       redimensionar();
       requestAnimationFrame(quadro);
     </script>
