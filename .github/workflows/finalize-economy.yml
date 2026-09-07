@@ -1,0 +1,68 @@
+name: Finalize citizen ledger formatting
+on:
+  push:
+    branches: [feature/citizen-economy-stage-1]
+    paths: ['.github/workflows/finalize-economy.yml']
+permissions:
+  contents: write
+defaults:
+  run:
+    shell: bash
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/citizen-economy-stage-1
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Preserve accounting and reuse the number formatter
+        run: |
+          mkdir -p verification-output
+          echo '48418084485ebef7fe774c7ce10374fff63ef9082d57ae5d7426521c9613b7db  index.html' | sha256sum --check
+          git apply --check .maintenance/formatter.patch
+          git apply .maintenance/formatter.patch
+          echo '00174c69489a642df70c9ca95c161ff0ea8080b6c5d9ced0fdde2a53890f64d9  index.html' | sha256sum --check
+          echo '868c8377ff092490125a9fae5c1b5e0c79969902197543d1b8bd49d8ec237def  verification/economy-test.js' | sha256sum --check
+      - name: Full simulation and accounting regressions
+        run: |
+          node verification/smoke-test.js | tee verification-output/smoke.log
+          node verification/militia-hunts-test.js | tee verification-output/hunts.log
+          node verification/clarity-test.js | tee verification-output/clarity.log
+          node verification/walls-test.js | tee verification-output/walls.log
+          node verification/baseline-equivalence-test.js | tee verification-output/legacy-hunts.log
+          PREVIOUS_RUNTIME_REF=a47830faae4c4c17e680dead01932e9014dbdf14 node verification/baseline-equivalence-test.js | tee verification-output/legacy-walls.log
+          node verification/economy-test.js | tee verification-output/economy.log
+          node verification/economy-soak-test.js | tee verification-output/economy-soak.log
+      - name: Browser dependencies
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Final browser acceptance and sustained ledger measurements
+        run: |
+          python -m http.server 8765 --bind 127.0.0.1 > /tmp/economy-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          sleep 1
+          python verification/browser-economy.py --url http://127.0.0.1:8765/ --output verification-output/economy-browser | tee verification-output/economy-browser.log
+          python verification/economy-live-soak.py --url http://127.0.0.1:8765/ --seconds 90 --output verification-output/foreground-ledger | tee verification-output/foreground-ledger.log
+          git show a47830faae4c4c17e680dead01932e9014dbdf14:index.html > /tmp/economy-baseline.html
+          python verification/performance-economy.py --baseline /tmp/economy-baseline.html --seconds 15 --output verification-output/performance | tee verification-output/performance.log
+      - name: Commit verified formatter reuse only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- index.html verification/economy-test.js
+          git commit -m 'Reuse citizen ledger number formatter without changing monetary output'
+          git push origin HEAD:refs/heads/feature/citizen-economy-stage-1
+          git rev-parse HEAD > verification-output/feature-commit.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: citizen-economy-final-verification
+          path: verification-output/
+          retention-days: 14

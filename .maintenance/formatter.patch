@@ -1,0 +1,27 @@
+--- a/index.html
++++ b/index.html
+@@ -4302,7 +4302,8 @@
+       function economiaCidadaAtiva() { return estado.coloniaIniciada && estado.economiaCidada.ativa; }
+       function inteiroCidada(n, max = 9000000000000) { return Number.isSafeInteger(n) && n >= 0 && n <= max ? n : 0; }
+       function microsCidada(n) { return Math.round((Number.isFinite(n) ? n : 0) * unidadeOuroCidada); }
+-      function textoOuroCidada(n) { return (n/unidadeOuroCidada).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:4})+' ouro'; }
++      const formatoOuroCidada = new Intl.NumberFormat('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:4});
++      function textoOuroCidada(n) { return formatoOuroCidada.format(n/unidadeOuroCidada)+' ouro'; }
+       function textoSeguroCidada(s) { return String(s ?? '').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+       function efetivosEconomiaColonia() {
+         return estado.economiaCidada.ativa ? Math.min(estado.populacaoColonia, estado.quantidadeMilicianos + estado.quantidadeGuardas + estado.quantidadeSoldados) : 0;
+--- a/verification/economy-test.js
++++ b/verification/economy-test.js
+@@ -46,4 +46,12 @@
+   const g=fixture();const before=Object.keys(g.estado.economiaCidada.pessoas);g.eval('estado.economiaCidada.proximoId=Number.MAX_SAFE_INTEGER;criarPessoaCidada("test")');
+   const after=Object.keys(g.estado.economiaCidada.pessoas);assert.equal(after.length,before.length+1);assert.ok(after.every(id=>/^cid-[1-9]\d{0,8}$/.test(id)));assert.ok(before.every(id=>after.includes(id)));
+ });
++test('reused money formatter is identical and does not affect state',()=>{
++  const g=fixture(),before=plain(g.estado);
++  for(const value of [0,1,100,999,2000,10000,550000,1000000,999999999999,-1000]) {
++    g.context.moneySample=value;
++    assert.equal(g.eval('textoOuroCidada(moneySample)'),(value/1000000).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:4})+' ouro');
++  }
++  assert.deepEqual(plain(g.estado),before);
++});
+ console.log('CITIZEN_ECONOMY_OK '+groups+' groups');
