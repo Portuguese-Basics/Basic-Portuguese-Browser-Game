@@ -49,6 +49,25 @@ it is neither silently discarded nor paid as gold. The next hunt waits for the
 previous cargo to clear. The panel reports each stage, pending cargo, and the
 last result. Hunts are optional windfalls, not guaranteed recurring food output.
 
+Fields now distinguish grains, vegetables, beans and pasture with bounded,
+recognizable symbols. A separate EQUIPE indicator shows assigned workers and
+available job positions; the crop and animal symbols are illustrative, not a
+claim about the number of plants or animals simulated. Unavailable storage is
+shown explicitly. Field geometry, production rates and the 450-resident cap are
+unchanged.
+
+Storage has resource-specific shelves with actual quantity, upgraded capacity,
+a fill bar, and VAZIO/CHEIO or percentage labels. Multi-resource stores display
+separate limits rather than a misleading combined percentage. Building
+inspection inventories also include accessible, live-updating meters.
+
+Drawing no longer allocates jobs or redistributes tools. The original allocator
+is retained behind exact state-signature memoization. Relevant changes still
+recalculate immediately at existing simulation/event call sites; there is no
+250-ms timer or skipped game time. The pre-call signature preserves feedback
+settling between tools and staffing. New dependency coverage, mutation/replay
+and read-only drawing regressions protect this optimization.
+
 Food staffing is based on measured end-to-end output rather than nominal field
 headcount. The allocator compares the marginal production of crops, pasture,
 fishing, kitchens, preservation, bread and meat chains with their actual tool,
@@ -93,6 +112,7 @@ before publishing:
 ```sh
 node verification/smoke-test.js
 node verification/militia-hunts-test.js
+node verification/clarity-test.js
 ```
 
 The ordinary run includes the 450-resident housing, 76-position food-capacity,
@@ -112,6 +132,7 @@ Browser checks use isolated test saves on desktop and touch-mobile viewports:
 python -m pip install playwright==1.57.0
 python -m playwright install --with-deps chromium
 python verification/browser-hunts.py
+python verification/browser-clarity.py --isolated
 ```
 
 To verify a Pages release, pass its URL with `--url`; the browser verifier first

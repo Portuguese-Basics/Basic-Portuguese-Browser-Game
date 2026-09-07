@@ -95,6 +95,7 @@ function createHarness(storage) {
     save() {},
     restore() {},
     translate() {},
+    scale() {},
   };
 
   function element(id) {

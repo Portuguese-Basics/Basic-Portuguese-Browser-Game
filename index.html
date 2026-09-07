@@ -487,6 +487,9 @@
       #painel-caca-milicia input, #painel-caca-milicia select { width: 100%; min-height: 44px; border: 1px solid #8f7a4c; border-radius: 0.3rem; padding: 0.5rem; background: #171812; color: #fff9df; font: inherit; }
       #painel-caca-milicia :focus-visible { outline: 3px solid #f1cc69; outline-offset: 2px; }
 
+      .medidor-estoque { flex: 1 0 100%; width: 100%; height: 0.8rem; }
+      .grade-inspecao-edificio li { flex-wrap: wrap; }
+
       .inspecao-edificio-status {
         display: inline-block;
         margin: 0 0 0.7rem;
@@ -748,7 +751,7 @@
         id="jogo"
         role="img"
         tabindex="0"
-        aria-label="Mapa do assentamento. O arqueiro é o ponto verde."
+        aria-label="Mapa do assentamento. O arqueiro é o ponto verde. Campos mostram equipe ocupada e vagas totais; estoques mostram quantidade e capacidade. Toque nos edifícios para detalhes."
       ></canvas>
       <section
         id="controles-mapa"
@@ -7360,7 +7363,153 @@
           : 0;
       }
 
+      // STAFFING_SNAPSHOT_V1. Exact input invalidation, never a timer or frame skip.
+      // Transitive dependencies are guarded by verification/clarity-test.js.
+      const chavesDecisaoEmpregosColonia = Object.freeze([
+        "acougueConstruido",
+        "adegaFriaConstruida",
+        "armazemFarinhaConstruido",
+        "armazemFeijaoConstruido",
+        "armazemGraosConstruido",
+        "armazemHortalicasConstruido",
+        "armazemPaesConstruido",
+        "armazensInternosPedraConstruidos",
+        "armeiroConstruido",
+        "arsenalMadeiraConstruido",
+        "bancoColoniaConstruido",
+        "barcosPesca",
+        "bibliotecaConstruida",
+        "cabanaCacadoresConstruida",
+        "cabanaReflorestamentoConstruida",
+        "caisComercialConstruido",
+        "caisPescaConstruido",
+        "campoGuardaConstruido",
+        "celeiroConstruido",
+        "cemiterioConstruido",
+        "ciclosManutencaoAtrasada",
+        "cisternaConstruida",
+        "clinicaConstruida",
+        "coloniaIniciada",
+        "colonosComFome",
+        "companhiaTransportadoresConstruida",
+        "cozinhaCarneConstruida",
+        "cozinhaFeijaoConstruida",
+        "cozinhaHortalicasConstruida",
+        "defumadorioConstruido",
+        "depositoFlechasConstruido",
+        "depositoMadeiraConstruido",
+        "ervarioConstruido",
+        "escolaConstruida",
+        "estaleiroConstruido",
+        "estoqueAlimentos",
+        "estoqueCarneCriacao",
+        "estoqueCarneDefumada",
+        "estoqueCarneSelvagem",
+        "estoqueCouro",
+        "estoqueErvas",
+        "estoqueFeijao",
+        "estoqueFerramentas",
+        "estoqueFerramentasMadeira",
+        "estoqueFerramentasPedra",
+        "estoqueHortalicas",
+        "estoqueLocalCarneCriacao",
+        "estoqueLocalCarneSelvagem",
+        "estoqueLocalErvas",
+        "estoqueLocalMadeira",
+        "estoqueMadeira",
+        "estoqueMedicamentos",
+        "estoqueMinerio",
+        "estoquePaes",
+        "estoquePedra",
+        "estoquePeixeSeco",
+        "estoquePeixes",
+        "estoqueRefeicoesCarne",
+        "estoqueRefeicoesFeijao",
+        "estoqueRefeicoesHortalicas",
+        "etapaConstrucaoColonia",
+        "feijaoConstruido",
+        "feitoriaConstruida",
+        "ferrariaColoniaConstruida",
+        "flechariaConstruida",
+        "forjaColoniaConstruida",
+        "guildaConstrutoresConstruida",
+        "hortaConstruida",
+        "igrejaConstruida",
+        "lavouraConstruida",
+        "mercadoPeixesConstruido",
+        "mercadoPublicoConstruido",
+        "minaConstruida",
+        "moinhoConstruido",
+        "naviosMercantes",
+        "nivelOficinaFerramentas",
+        "obraAutomaticaColonia",
+        "oficinaArmasMadeiraConstruida",
+        "padariaConstruida",
+        "pastagemConstruida",
+        "patioTreinoConstruido",
+        "pedreiraConstruida",
+        "populacaoColonia",
+        "progressoNavio",
+        "quantidadeAdministradoresMigracao",
+        "quantidadeCabanasColeta",
+        "quantidadeCabanasLenhadores",
+        "quantidadeCasasColonia",
+        "quantidadeGuardas",
+        "quantidadeMilicianos",
+        "quantidadePocosPublicos",
+        "quantidadePortoesFortificados",
+        "quantidadePostosGuarda",
+        "quantidadeSoldados",
+        "quantidadeTorresMuralha",
+        "quartelBombeirosConstruido",
+        "quartelMilitarConstruido",
+        "saneamentoAvancadoConstruido",
+        "saneamentoConstruido",
+        "saudeColonia",
+        "segundoBlocoMoradiasConstruido",
+        "segundoCaisPescaConstruido",
+        "tempoConstrucaoColonia",
+        "terceiroBlocoMoradiasConstruido",
+        "tesouroColonia",
+        "trechoEstradaEmObra",
+        "trechosMuralhaPedraExterna",
+        "trechosMuralhaPedraInterna",
+        "trechosPalicadaExterna",
+        "trechosPalicadaInterna"
+]);
+      let assinaturaEmpregosColonia = null;
+      let resultadoEmpregosColonia = null;
+
+      function assinaturaDecisaoEmpregosColonia() {
+        return JSON.stringify([
+          ...chavesDecisaoEmpregosColonia.map((chave) => estado[chave]),
+          estado.niveisEstradasColonia,
+          estado.estoqueArmaduras,
+          estado.armadurasEquipadasColonia,
+          estado.empregosColonia,
+          estado.ferramentasLocaisColonia,
+          estado.criancasColonia.length,
+          quantidadeBebesColonia(),
+          estado.migracoesPendentes.length,
+          estado.cacaMilicia.carga,
+        ]);
+      }
+
       function redistribuirTrabalhadoresColonia() {
+        const assinatura = assinaturaDecisaoEmpregosColonia();
+        if (assinatura === assinaturaEmpregosColonia &&
+            resultadoEmpregosColonia === estado.empregosColonia) {
+          return resultadoEmpregosColonia;
+        }
+        // Keep the PRE-call signature: allocation changes tools/staff used by the
+        // next decision. Do not incorrectly cache a still-unsettled feedback step.
+        const resultado = recalcularTrabalhadoresColonia();
+        assinaturaEmpregosColonia = assinatura;
+        resultadoEmpregosColonia = resultado;
+        return resultado;
+      }
+
+      function recalcularTrabalhadoresColonia() {
         const empregos = {
           administracao: 0,
           migracao: 0,
@@ -11003,7 +11152,7 @@
         canvas.setAttribute(
           "aria-label",
           naNovaColonia
-            ? `Mapa costeiro ampliado da nova colônia com ${estado.populacaoColonia} moradores. Arraste para explorar, use dois dedos para ampliar e toque em um edifício para consultar empregados, produção, inventário e operação. O administrador é o ponto verde.`
+            ? `Mapa costeiro ampliado da nova colônia com ${estado.populacaoColonia} moradores. Arraste para explorar, use dois dedos para ampliar e toque em um edifício para consultar empregados, produção, inventário e operação. Campos mostram equipe/vagas, não quantidade plantada. Estoques mostram itens/capacidade e barras de ocupação. O administrador é o ponto verde.`
             : noAssentamento
             ? `Mapa do assentamento com rio, cais, ferraria, banco, minas, ${estado.quantidadeFazendeiros} fazendeiros, ${estado.quantidadeFruticultores} fruticultores, ${estado.quantidadePescadores} pescadores, ${estado.quantidadeComerciantes} comerciantes, ${estado.quantidadeFerreiros} ferreiros, ${estado.quantidadeMineiros} mineiros e ${estado.quantidadeBanqueiros} banqueiros. O arqueiro é o ponto verde.`
             : `Mapa da floresta com ${estado.inimigos.length} inimigos vermelhos. O arqueiro é o ponto verde.`,
@@ -11666,10 +11815,7 @@
       }
 
       function estoqueInspecaoColonia(rotulo, valor, capacidade) {
-        return linhaInspecaoColonia(
-          rotulo,
-          quantidadeInspecaoColonia(valor, capacidade),
-        );
+        return [rotulo, quantidadeInspecaoColonia(valor, capacidade), { valor, capacidade }];
       }
 
       function escaparTextoInspecaoColonia(valor) {
@@ -11685,8 +11831,8 @@
         const itens = linhas.length > 0 ? linhas : [["Situação", vazio]];
         elemento.innerHTML = itens
           .map(
-            ([rotulo, valor]) =>
-              `<li><span>${escaparTextoInspecaoColonia(rotulo)}</span><strong>${escaparTextoInspecaoColonia(valor)}</strong></li>`,
+            ([rotulo, valor, estoque]) =>
+              `<li><span>${escaparTextoInspecaoColonia(rotulo)}</span><strong>${escaparTextoInspecaoColonia(valor)}</strong>${estoque && estoque.capacidade > 0 ? `<meter class="medidor-estoque" min="0" max="${estoque.capacidade}" value="${Math.max(0, Math.min(estoque.capacidade, estoque.valor))}" aria-label="${escaparTextoInspecaoColonia(rotulo)}: ${escaparTextoInspecaoColonia(valor)}"></meter>` : ""}</li>`,
           )
           .join("");
       }
@@ -16635,87 +16781,8 @@
 
       function desenharCeleiroColonia() {
         if (estado.etapaConstrucaoColonia < 4) return;
-
-        const { x, y, largura, altura } = areaCeleiro;
-        const progresso = estado.celeiroConstruido
-          ? 1
-          : estado.obraAutomaticaColonia === "celeiro"
-            ? Math.min(
-                1,
-                estado.tempoObraAutomaticaColonia /
-                  duracaoObraAutomaticaColonia,
-              )
-            : 0;
-
-        if (progresso <= 0) {
-          contexto.strokeStyle = "#76684a";
-          contexto.lineWidth = 10;
-          contexto.strokeRect(x, y, largura, altura);
-          contexto.fillStyle = "#554a34";
-          contexto.font = "bold 24px sans-serif";
-          contexto.textAlign = "center";
-          contexto.textBaseline = "middle";
-          contexto.fillText(
-            "LOCAL PARA CELEIRO",
-            x + largura / 2,
-            y + altura / 2,
-          );
-          contexto.textAlign = "start";
-          contexto.textBaseline = "alphabetic";
-          return;
-        }
-
-        contexto.strokeStyle = "#5b4028";
-        contexto.lineWidth = 12;
-        contexto.strokeRect(x, y, largura, altura);
-        contexto.fillStyle = "#a8753f";
-        contexto.fillRect(
-          x + 12,
-          y + altura - 12 - (altura - 24) * progresso,
-          largura - 24,
-          (altura - 24) * progresso,
-        );
-        contexto.strokeStyle = "#d3a85e";
-        contexto.lineWidth = 10;
-        if (progresso > 0.45) {
-          for (let linha = x + 55; linha < x + largura - 35; linha += 55) {
-            contexto.beginPath();
-            contexto.moveTo(linha, y + 20);
-            contexto.lineTo(linha, y + altura - 20);
-            contexto.stroke();
-          }
-        }
-        if (progresso > 0.72) {
-          contexto.fillStyle = "#4a2f1d";
-          contexto.beginPath();
-          contexto.moveTo(x - 20, y + 20);
-          contexto.lineTo(x + largura / 2, y - 80);
-          contexto.lineTo(x + largura + 20, y + 20);
-          contexto.closePath();
-          contexto.fill();
-        }
-        contexto.fillStyle = "#f1dfad";
-        contexto.fillRect(x + 95, y + 92, largura - 190, 46);
-        contexto.fillStyle = "#3b291b";
-        contexto.font = "bold 21px sans-serif";
-        contexto.textAlign = "center";
-        contexto.textBaseline = "middle";
-        contexto.fillText(
-          progresso >= 1
-            ? `PROVISÕES · ${formatarQuantidade(estado.estoqueAlimentos)}/${capacidadeCeleiroColonia}`
-            : `CELEIRO · ${Math.round(progresso * 100)}%`,
-          x + largura / 2,
-          y + 115,
-        );
-        if (progresso > 0.78) {
-          desenharIconeEstoqueColonia(
-            "provisoes",
-            x + largura / 2,
-            y + 188,
-          );
-        }
-        contexto.textAlign = "start";
-        contexto.textBaseline = "alphabetic";
+        desenharArmazemAlimentoColonia(areaCeleiro, "celeiro", estado.celeiroConstruido,
+          "PROVISÕES", estado.estoqueAlimentos, capacidadeCeleiroColonia, "provisoes");
       }
 
       function desenharCasasAgricultoresColonia() {
@@ -16906,6 +16973,141 @@
         contexto.textBaseline = "alphabetic";
       }
 
+      // FIELD_STORAGE_CLARITY_V1: representative art, exact values, bounded work.
+      function dadosUsoCampoColonia(tipo) {
+        const limites = { lavoura: maximoTrabalhadoresLavoura, horta: maximoTrabalhadoresHorta,
+          feijao: maximoTrabalhadoresFeijao, pastagem: maximoTrabalhadoresPastagem };
+        const destinos = { lavoura: estado.armazemGraosConstruido, horta: estado.armazemHortalicasConstruido,
+          feijao: estado.armazemFeijaoConstruido, pastagem: estado.celeiroConstruido };
+        const capacidade = limites[tipo] || 0;
+        const ocupados = estado.empregosColonia[tipo] || 0;
+        return { capacidade, ocupados, fracao: fracaoUsoVisualColonia(ocupados, capacidade),
+          destinoPronto: Boolean(destinos[tipo]) };
+      }
+
+      function fracaoUsoVisualColonia(quantidade, capacidade) {
+        return capacidade > 0 ? Math.max(0, Math.min(1, quantidade / capacidade)) : 0;
+      }
+
+      function desenharSimboloCampoColonia(tipo, x, y, indice) {
+        contexto.save();
+        if (tipo === "lavoura") {
+          contexto.strokeStyle = "#f1d577";
+          contexto.lineWidth = 7;
+          for (let haste = -1; haste <= 1; haste += 1) {
+            const cx = x + haste * 23;
+            contexto.beginPath(); contexto.moveTo(cx, y + 38); contexto.lineTo(cx, y - 37);
+            for (let ramo = 0; ramo < 3; ramo += 1) {
+              const cy = y - 30 + ramo * 17;
+              contexto.moveTo(cx - 16, cy - 8); contexto.lineTo(cx, cy + 4); contexto.lineTo(cx + 16, cy - 8);
+            }
+            contexto.stroke();
+          }
+        } else if (tipo === "horta" && indice % 2 === 0) {
+          contexto.fillStyle = "#e89443"; contexto.beginPath();
+          contexto.moveTo(x - 25, y - 15); contexto.lineTo(x + 25, y - 15);
+          contexto.lineTo(x - 5, y + 48); contexto.closePath(); contexto.fill();
+          contexto.strokeStyle = "#c9e49a"; contexto.lineWidth = 8; contexto.beginPath();
+          contexto.moveTo(x, y - 15); contexto.lineTo(x - 22, y - 47);
+          contexto.moveTo(x, y - 15); contexto.lineTo(x + 18, y - 47);
+          contexto.moveTo(x, y - 15); contexto.lineTo(x, y - 54); contexto.stroke();
+        } else if (tipo === "horta") {
+          desenharCirculo(x, y, 36, "#416d38", "#d1e3a3");
+          desenharCirculo(x - 12, y - 8, 18, "#7dad57");
+          desenharCirculo(x + 12, y + 7, 17, "#99bd67");
+        } else if (tipo === "feijao") {
+          contexto.strokeStyle = "#d4c093"; contexto.lineWidth = 5;
+          contexto.beginPath(); contexto.moveTo(x, y + 44); contexto.lineTo(x, y - 44); contexto.stroke();
+          for (const deslocamento of [-22, 22]) {
+            contexto.fillStyle = "#779947"; contexto.beginPath();
+            contexto.moveTo(x, y - 26); contexto.bezierCurveTo(x + deslocamento * 2, y - 48, x + deslocamento * 2, y + 28, x, y + 20);
+            contexto.closePath(); contexto.fill();
+            for (let b = 0; b < 3; b += 1) desenharCirculo(x + deslocamento, y - 17 + b * 15, 7, "#ead6a7");
+          }
+        } else {
+          // Fourteen illustrative livestock markers, NOT a counted animal inventory.
+          contexto.fillStyle = "#574735";
+          contexto.fillRect(x - 18, y + 16, 7, 24); contexto.fillRect(x + 11, y + 16, 7, 24);
+          desenharCirculo(x, y, 22, "#eee3c2", "#5d4b32");
+          desenharCirculo(x + 24, y - 12, 12, "#eee3c2", "#5d4b32");
+          desenharCirculo(x - 9, y - 6, 9, indice % 2 ? "#80654b" : "#b5a68b");
+          contexto.fillStyle = "#574735"; contexto.fillRect(x + 19, y - 31, 5, 11);
+          contexto.fillRect(x + 29, y - 29, 5, 10);
+        }
+        contexto.restore();
+      }
+
+      function desenharUsoCampoColonia(area, tipo) {
+        const uso = dadosUsoCampoColonia(tipo);
+        const x = area.x + 45, y = area.y + area.altura - 125, w = area.largura - 90;
+        contexto.save(); contexto.fillStyle = "#302e25"; contexto.fillRect(x, y, w, 92);
+        contexto.fillStyle = "#f6edd0"; contexto.font = "bold 26px sans-serif";
+        contexto.textAlign = "center"; contexto.textBaseline = "middle";
+        contexto.fillText(`EQUIPE: ${uso.ocupados} / ${uso.capacidade} VAGAS`, x + w / 2, y + 22, w - 20);
+        const larguraVaga = (w - 30) / Math.max(1, uso.capacidade);
+        for (let i = 0; i < uso.capacidade; i += 1) {
+          contexto.fillStyle = i < uso.ocupados ? "#afca7a" : "#666653";
+          contexto.fillRect(x + 15 + i * larguraVaga, y + 41, larguraVaga - 5, 14);
+        }
+        contexto.font = "20px sans-serif"; contexto.fillStyle = "#f6edd0";
+        contexto.fillText(!uso.destinoPronto ? "AGUARDANDO ARMAZÉM" :
+          `${uso.capacidade - uso.ocupados} VAGAS LIVRES · ÍCONES ILUSTRATIVOS`, x + w / 2, y + 74, w - 20);
+        contexto.restore();
+      }
+
+      const capacidadesVisuaisInternasColonia = new Map([
+          [areaErvario, capacidadeErvasColonia], [areaDepositoFlechas, capacidadeFlechasColonia],
+          [areaFarmaciaColonia, capacidadeMedicamentosColonia], [areaCofreCortesColonia, capacidadeCortesCarneColonia],
+          [areaDespensaRefeicoesColonia, capacidadeRefeicoesCarneColonia], [areaArmazemFerramentas, capacidadeFerramentasColonia],
+        ]);
+
+      function linhasEstoqueVisualColonia(area, nome, estoque, capacidade, icone) {
+        const interno = capacidadeArmazemInternoColonia;
+        if (area === areaArsenalMadeira) return [
+          ["LANÇAS", estado.estoqueLancasMadeira, interno(capacidadeLancasMadeiraColonia), "lancas"],
+          ["ARCOS", estado.estoqueArcos, interno(capacidadeArcosColonia), "arcos"]];
+        if (area === areaArsenalColonia) return [
+          ["ARMAS", estado.estoqueArmas, interno(capacidadeArmasColonia), "armas"]];
+        const limite = capacidadesVisuaisInternasColonia.has(area) ? interno(capacidadesVisuaisInternasColonia.get(area)) : capacidade;
+        return [[nome, estoque, limite, icone]];
+      }
+
+      function desenharLinhasEstoqueColonia(area, linhas, topo = 84) {
+        // Every resource keeps its OWN capacity. No misleading combined percent.
+        const estreito = area.largura < 260;
+        const h = (area.altura - topo - 12) / Math.max(1, linhas.length);
+        const margem = estreito ? 10 : 18;
+        const x = area.x + margem, w = area.largura - margem * 2;
+        contexto.save();
+        linhas.forEach(([nome, quantidade, capacidade, icone], i) => {
+          const y = area.y + topo + i * h;
+          const uso = fracaoUsoVisualColonia(quantidade, capacidade);
+          contexto.fillStyle = "#302e25"; contexto.fillRect(x, y + 2, w, h - 5);
+          const escalaIcone = Math.min(0.68, (h - 18) / 135, w / 420);
+          const simboloX = linhas.length === 1 ? x + w / 2 : x + 30;
+          const simboloY = linhas.length === 1 ? y + (h - 54) / 2 : y + h / 2;
+          contexto.save(); contexto.translate(simboloX, simboloY); contexto.scale(escalaIcone, escalaIcone);
+          contexto.globalAlpha = quantidade > 0 ? 1 : 0.35;
+          const campo = { graos: "lavoura", hortalicas: "horta", feijao: "feijao" }[icone];
+          if (campo) desenharSimboloCampoColonia(campo, 0, 0, 0);
+          else desenharIconeEstoqueColonia(icone, 0, 0);
+          contexto.restore();
+          const textoX = linhas.length === 1 ? x + 6 : x + 62;
+          const textoW = x + w - textoX - 6;
+          contexto.fillStyle = "#f6edd0"; contexto.textAlign = "center"; contexto.textBaseline = "middle";
+          contexto.font = `bold ${estreito ? 16 : 19}px sans-serif`;
+          contexto.fillText(`${nome}: ${formatarQuantidade(quantidade)} / ${formatarQuantidade(capacidade)}`,
+            textoX + textoW / 2, y + h - 42, textoW);
+          contexto.fillStyle = "#5f6150"; contexto.fillRect(textoX, y + h - 29, textoW, 10);
+          contexto.fillStyle = uso >= 1 ? "#e8bb68" : "#aeca80";
+          contexto.fillRect(textoX, y + h - 29, textoW * uso, 10);
+          contexto.fillStyle = "#f6edd0"; contexto.font = `${estreito ? 13 : 15}px sans-serif`;
+          const situacao = quantidade <= 0 ? "VAZIO" : quantidade >= capacidade ? "CHEIO" : `${Math.floor(uso * 100)}% OCUPADO`;
+          contexto.fillText(situacao, textoX + textoW / 2, y + h - 10, textoW);
+        });
+        contexto.restore();
+      }
+
       function desenharCampoColonia(
         area,
         tipo,
@@ -16952,42 +17154,13 @@
         }
 
         if (progresso >= 0.75) {
-          const quantidadeMarcadores = tipo === "pastagem"
-            ? maximoTrabalhadoresPastagem
-            : 8;
-          const colunasMarcadores = tipo === "pastagem" ? 5 : 4;
-          const linhasMarcadores = Math.ceil(
-            quantidadeMarcadores / colunasMarcadores,
-          );
-          for (let indice = 0; indice < quantidadeMarcadores; indice += 1) {
-            const coluna = indice % colunasMarcadores;
-            const linha = Math.floor(indice / colunasMarcadores);
-            const x = area.x +
-              ((coluna + 1) * area.largura) / (colunasMarcadores + 1);
-            const y = linhasMarcadores === 1
-              ? area.y + area.altura / 2
-              : area.y + 210 +
-                (linha * (area.altura - 350)) / (linhasMarcadores - 1);
-            if (tipo === "horta") {
-              desenharCirculo(x, y, 24, indice % 2 ? "#c85f3b" : "#4f8539", "#365328");
-              desenharCirculo(x + 18, y - 24, 10, "#548d3d");
-            } else if (tipo === "feijao") {
-              desenharCirculo(x - 10, y, 18, "#7b4b2a", "#49301f");
-              desenharCirculo(x + 16, y + 12, 16, "#a06738", "#49301f");
-            } else if (tipo === "lavoura") {
-              contexto.strokeStyle = "#e2bd57";
-              contexto.lineWidth = 7;
-              contexto.beginPath();
-              contexto.moveTo(x, y + 28);
-              contexto.lineTo(x, y - 30);
-              contexto.lineTo(x - 18, y - 10);
-              contexto.moveTo(x, y - 4);
-              contexto.lineTo(x + 20, y - 22);
-              contexto.stroke();
-            } else {
-              desenharCirculo(x, y, 22, "#eee3c2", "#5d4b32");
-              desenharCirculo(x + 24, y - 12, 12, "#eee3c2", "#5d4b32");
-            }
+          const quantidade = tipo === "pastagem" ? maximoTrabalhadoresPastagem : 20;
+          const colunas = tipo === "pastagem" ? 5 : 4;
+          const linhas = Math.ceil(quantidade / colunas);
+          for (let indice = 0; indice < quantidade; indice += 1) {
+            const x = area.x + ((indice % colunas + 1) * area.largura) / (colunas + 1);
+            const y = area.y + 210 + (Math.floor(indice / colunas) * (area.altura - 420)) / Math.max(1, linhas - 1);
+            desenharSimboloCampoColonia(tipo, x, y, indice);
           }
         }
 
@@ -17004,11 +17177,13 @@
         contexto.textBaseline = "middle";
         contexto.fillText(
           progresso >= 1
-            ? `${nome} · ${resumo}`
+            ? `${nome} · ${tipo === "pastagem" ? "CRIAÇÃO" : "CULTIVO"}`
             : `${nome} · ${Math.round(progresso * 100)}%`,
           area.x + area.largura / 2,
           area.y + 51,
+          area.largura - 180,
         );
+        if (construido) desenharUsoCampoColonia(area, tipo);
       }
 
       function desenharAreasProdutivasColonia() {
@@ -17407,6 +17582,22 @@
           contexto.lineWidth = 6;
           contexto.strokeRect(x - 58, y - 38, 52, 52);
           contexto.strokeRect(x + 7, y - 22, 52, 52);
+        } else if (tipo === "medicamentos") {
+          contexto.fillStyle = "#e5e9d6"; contexto.fillRect(x - 34, y - 25, 68, 67);
+          contexto.fillStyle = "#658b83"; contexto.fillRect(x - 25, y - 43, 50, 18);
+          contexto.fillStyle = "#b84637"; contexto.fillRect(x - 6, y - 13, 12, 43);
+          contexto.fillRect(x - 22, y + 3, 44, 12);
+        } else if (tipo === "peles") {
+          contexto.fillStyle = "#bd9863"; contexto.beginPath();
+          contexto.moveTo(x - 43, y - 34); contexto.lineTo(x - 5, y - 20); contexto.lineTo(x + 44, y - 34);
+          contexto.lineTo(x + 31, y + 5); contexto.lineTo(x + 46, y + 38); contexto.lineTo(x, y + 24);
+          contexto.lineTo(x - 46, y + 38); contexto.lineTo(x - 29, y); contexto.closePath(); contexto.fill();
+        } else if (tipo === "armadura") {
+          contexto.fillStyle = "#a8b3b9"; contexto.beginPath();
+          contexto.moveTo(x - 16, y - 38); contexto.lineTo(x - 46, y - 22); contexto.lineTo(x - 28, y + 8);
+          contexto.lineTo(x - 29, y + 40); contexto.lineTo(x + 29, y + 40); contexto.lineTo(x + 28, y + 8);
+          contexto.lineTo(x + 46, y - 22); contexto.lineTo(x + 16, y - 38); contexto.lineTo(x, y - 17);
+          contexto.closePath(); contexto.fill();
         } else {
           contexto.fillStyle = "#d99a4d";
           contexto.beginPath();
@@ -17466,26 +17657,23 @@
           contexto.closePath();
           contexto.fill();
         }
-        if (progresso > 0.78) {
-          desenharIconeEstoqueColonia(
-            icone,
-            area.x + area.largura / 2,
-            area.y + area.altura / 2 + 28,
-          );
-        }
         contexto.fillStyle = "#f1dfad";
         contexto.fillRect(area.x + 25, area.y + 24, area.largura - 50, 42);
         contexto.fillStyle = "#30261b";
-        contexto.font = "bold 16px sans-serif";
+        contexto.font = "bold 21px sans-serif";
         contexto.textAlign = "center";
         contexto.textBaseline = "middle";
         contexto.fillText(
           progresso >= 1
-            ? `${nome} ${formatarQuantidade(estoque)}/${capacidade}`
+            ? (area === areaArsenalMadeira ? "LANÇAS / ARCOS" : area === areaArsenalColonia ? "ARMAS DE METAL" : nome)
             : `${nome} ${Math.round(progresso * 100)}%`,
           area.x + area.largura / 2,
           area.y + 45,
+          area.largura - 62,
         );
+        if (construido) {
+          desenharLinhasEstoqueColonia(area, linhasEstoqueVisualColonia(area, nome, estoque, capacidade, icone));
+        }
         contexto.textAlign = "start";
         contexto.textBaseline = "alphabetic";
       }
@@ -17679,7 +17867,7 @@
           "MEDICAMENTOS",
           estado.estoqueMedicamentos,
           capacidadeArmazemInternoColonia(capacidadeMedicamentosColonia),
-          "ervas",
+          "medicamentos",
         );
 
         desenharEdificioColonia(
@@ -18539,6 +18727,22 @@
             ) * 4,
           "armas",
         );
+        const interno = capacidadeArmazemInternoColonia;
+        if (estado.adegaFriaConstruida) desenharLinhasEstoqueColonia(areaAdegaFriaColonia, [
+          ["CORTES", estado.estoqueCortesCarne, interno(capacidadeCortesCarneColonia), "carne"],
+          ["REF. HORTALIÇAS", estado.estoqueRefeicoesHortalicas, interno(capacidadeRefeicoesHortalicasColonia), "hortalicas"],
+          ["REF. FEIJÃO", estado.estoqueRefeicoesFeijao, interno(capacidadeRefeicoesFeijaoColonia), "feijao"]]);
+        if (estado.defumadorioConstruido) desenharLinhasEstoqueColonia(areaDefumadorioColonia, [
+          ["CARNE DEFUMADA", estado.estoqueCarneDefumada, interno(capacidadeCarneDefumadaColonia), "carne"],
+          ["PEIXE SECO", estado.estoquePeixeSeco, interno(capacidadePeixeSecoColonia), "peixes"]]);
+        if (estado.nivelOficinaFerramentas > 0 && !oficinaFerramentasEmObra) desenharLinhasEstoqueColonia(areaOficinaFerramentasColonia, [
+          ["MADEIRA", estado.estoqueFerramentasMadeira, interno(capacidadeFerramentasMadeiraColonia), "ferramentas"],
+          ["PEDRA", estado.estoqueFerramentasPedra, interno(capacidadeFerramentasPedraColonia), "ferramentas"],
+          ["METAL", estado.estoqueFerramentas, interno(capacidadeFerramentasColonia), "ferramentas"]]);
+        if (estado.armeiroConstruido) desenharLinhasEstoqueColonia(areaArmeiroColonia, [
+          ["PELES", estado.estoqueCouro, interno(capacidadeCouroColonia), "peles"],
+          ...["couro", "reforcada", "malha", "placas"].map(tipo =>
+            [nomeArmaduraColonia(tipo).toUpperCase(), estado.estoqueArmaduras[tipo], interno(capacidadeArmaduraPorTipoColonia), "armadura"])]);
         desenharFrotaCosteiraColonia();
       }
 
@@ -18647,7 +18851,7 @@
       }
 
       function desenharColonosNovaColonia() {
-        redistribuirTrabalhadoresColonia();
+        // Read the simulation snapshot; drawing never assigns jobs or tools.
         const coresEmprego = {
           administracao: "#e1c27a",
           professor: "#6f8fd1",
@@ -19651,6 +19855,9 @@
           }
         }
         estado.brilhoGolpe = Math.max(0, estado.brilhoGolpe - deltaJogo);
+        if (estado.mapaAtual === "expansao" && estado.coloniaIniciada) {
+          redistribuirTrabalhadoresColonia();
+        }
         desenhar();
         requestAnimationFrame(quadro);
       }
