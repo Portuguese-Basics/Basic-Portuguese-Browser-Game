@@ -1,0 +1,57 @@
+name: Apply verified militia expedition
+on:
+  push:
+    branches: [feature/militia-hunting-expeditions]
+    paths:
+      - '.maintenance/hunts-index.patch'
+      - '.github/workflows/install-hunts.yml'
+      - 'verification/browser-hunts.py'
+      - 'verification/militia-hunts-test.js'
+permissions:
+  contents: write
+concurrency:
+  group: install-militia-hunts
+  cancel-in-progress: false
+jobs:
+  install:
+    if: github.ref == 'refs/heads/feature/militia-hunting-expeditions'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/militia-hunting-expeditions
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify the base and apply only the intended game change
+        run: |
+          test "$(git hash-object index.html)" = b61db9ae358b70e8b7603beab1ae22d1c822ea69
+          git apply --check .maintenance/hunts-index.patch
+          git apply .maintenance/hunts-index.patch
+          echo 'a30767c7518f07ded2dcae69aec18df0f083aa65caab5e51a457d12d856361ed  index.html' | sha256sum --check
+      - name: Simulation regressions
+        run: |
+          mkdir -p verification-output
+          node verification/smoke-test.js | tee verification-output/smoke-test.log
+          node verification/militia-hunts-test.js | tee verification-output/militia-hunts-test.log
+      - name: Install browser test dependencies
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Desktop and mobile browser checks
+        run: python verification/browser-hunts.py | tee verification-output/browser-console.log
+      - name: Commit the verified game to the feature branch only
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- index.html
+          git commit -m 'Add save-safe militia hunting expeditions with rally-point animation'
+          git push origin HEAD:refs/heads/feature/militia-hunting-expeditions
+          git rev-parse HEAD > verification-output/feature-commit.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: militia-hunts-install-verification
+          path: verification-output/
+          retention-days: 14
