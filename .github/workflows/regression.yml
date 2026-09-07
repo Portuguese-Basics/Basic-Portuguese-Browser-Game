@@ -1,10 +1,13 @@
 name: Game regression
 on:
   push:
-    branches: [main, feature/militia-hunting-expeditions]
+    branches: [main, 'feature/**']
   pull_request:
 permissions:
   contents: read
+defaults:
+  run:
+    shell: bash
 concurrency:
   group: regression-${{ github.ref }}
   cancel-in-progress: true
@@ -14,6 +17,8 @@ jobs:
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
@@ -22,12 +27,20 @@ jobs:
           mkdir -p verification-output
           node verification/smoke-test.js | tee verification-output/smoke-test.log
           node verification/militia-hunts-test.js | tee verification-output/militia-hunts-test.log
+          node verification/clarity-test.js | tee verification-output/clarity-test.log
+          node verification/baseline-equivalence-test.js | tee verification-output/baseline-equivalence.log
       - name: Browser test dependencies
         run: |
           python -m pip install playwright==1.57.0
           python -m playwright install --with-deps chromium
       - name: Desktop and mobile browser checks
-        run: python verification/browser-hunts.py | tee verification-output/browser-console.log
+        run: |
+          python verification/browser-hunts.py | tee verification-output/browser-console.log
+          python -m http.server 8765 --bind 127.0.0.1 > /tmp/clarity-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          sleep 1
+          python verification/browser-clarity.py --url http://127.0.0.1:8765/ | tee verification-output/clarity-browser.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:
