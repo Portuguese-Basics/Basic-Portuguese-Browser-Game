@@ -1,0 +1,83 @@
+name: Integrate verified citizen economy
+on:
+  push:
+    branches: [feature/citizen-economy-stage-1]
+    paths:
+      - '.maintenance/**'
+      - '.github/workflows/install-economy.yml'
+permissions:
+  contents: write
+defaults:
+  run:
+    shell: bash
+concurrency:
+  group: install-citizen-economy
+  cancel-in-progress: false
+jobs:
+  install:
+    if: github.ref == 'refs/heads/feature/citizen-economy-stage-1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feature/citizen-economy-stage-1
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify base, transfer and every intended output
+        run: |
+          mkdir -p verification-output
+          test "$(git hash-object index.html)" = b868035cb873f28f294bb1fb2a3b8a2bf801cf10
+          cat .maintenance/economy-part-*.gzbytes > /tmp/economy.patch.gz
+          echo '7361b4b3345a1c29996cc5332427aaf3d923dea7b4a7383ccdc82fed858f4f4b  /tmp/economy.patch.gz' | sha256sum --check
+          gzip -dc /tmp/economy.patch.gz > /tmp/economy.patch
+          echo 'b26bbb5f90ac6fd35b37ce0fc5b466c1496f68c9539506e6c17605e966efbf1b  /tmp/economy.patch' | sha256sum --check
+          git apply --check /tmp/economy.patch
+          git apply /tmp/economy.patch
+          sha256sum --check .maintenance/economy-expected.sha256 | tee verification-output/transfer-check.log
+      - name: Simulation, economic conservation and legacy-mode regression
+        run: |
+          node verification/smoke-test.js | tee verification-output/smoke-test.log
+          node verification/militia-hunts-test.js | tee verification-output/hunts-test.log
+          node verification/clarity-test.js | tee verification-output/clarity-test.log
+          node verification/walls-test.js | tee verification-output/walls-test.log
+          node verification/baseline-equivalence-test.js | tee verification-output/legacy-hunting-test.log
+          PREVIOUS_RUNTIME_REF=a47830faae4c4c17e680dead01932e9014dbdf14 node verification/baseline-equivalence-test.js | tee verification-output/legacy-walls-test.log
+          node verification/economy-test.js | tee verification-output/economy-test.log
+          node verification/economy-soak-test.js | tee verification-output/economy-soak-test.log
+      - name: Browser dependencies
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Real-origin desktop and mobile acceptance and foreground ledger soak
+        run: |
+          python verification/browser-hunts.py --output verification-output/hunts | tee verification-output/browser-hunts.log
+          python -m http.server 8765 --bind 127.0.0.1 > /tmp/economy-server.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid"' EXIT
+          sleep 1
+          python verification/browser-clarity.py --url http://127.0.0.1:8765/ --output verification-output/clarity | tee verification-output/browser-clarity.log
+          python verification/browser-walls.py --url http://127.0.0.1:8765/ --output verification-output/walls | tee verification-output/browser-walls.log
+          python verification/browser-economy.py --url http://127.0.0.1:8765/ --output verification-output/economy | tee verification-output/browser-economy.log
+          python verification/economy-live-soak.py --url http://127.0.0.1:8765/ --seconds 60 --output verification-output/foreground-ledger | tee verification-output/foreground-ledger.log
+      - name: Independent final-runtime paired performance evidence
+        run: |
+          git show a47830faae4c4c17e680dead01932e9014dbdf14:index.html > /tmp/economy-baseline.html
+          python verification/performance-economy.py --baseline /tmp/economy-baseline.html --seconds 15 --output verification-output/performance | tee verification-output/performance.log
+      - name: Commit only verified game content to the feature branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- README.md index.html verification/baseline-equivalence-test.js verification/clarity-test.js docs/releases/citizen-economy-stage-1.md verification/browser-economy.py verification/economy-live-soak.py verification/economy-soak-test.js verification/economy-test.js verification/performance-economy.py
+          git commit -m 'Add citizen wallets, funded wages, affordable food and traceable sales and house taxes'
+          git push origin HEAD:refs/heads/feature/citizen-economy-stage-1
+          git rev-parse HEAD > verification-output/feature-commit.txt
+          git archive --format=zip -o verification-output/feature-source.zip HEAD
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: citizen-economy-integration-verification
+          path: verification-output/
+          retention-days: 14
