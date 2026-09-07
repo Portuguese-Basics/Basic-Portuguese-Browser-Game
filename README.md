@@ -68,6 +68,33 @@ recalculate immediately at existing simulation/event call sites; there is no
 settling between tools and staffing. New dependency coverage, mutation/replay
 and read-only drawing regressions protect this optimization.
 
+Wall garrisons now use the actual existing militia, town guards, and soldiers.
+Completed towers support two defenders each, with visible approaches and climbing.
+The **Defesa das muralhas** panel authorizes a third wall tier after both stone
+rings are finished. Each external side costs 2,000 gold and 60 stone; each inner
+side costs 1,500 gold and 40 stone. The guild respects existing essential work,
+material, cash-reserve, and sustainable-maintenance checks. Each upgraded side
+adds 0.25 gold of upkeep per cycle, a visibly thicker walkable parapet, stairs,
+and four positions. Eight towers plus eight upgraded sides provide 48 slots,
+but only the existing 30 possible troops can occupy them: no free extra soldiers.
+
+Bow-equipped defenders fire visible arrows from ready towers or wall positions.
+Quivers consume real arrows, retain remaining ammunition across saves, and refill
+from the existing ammunition depot only when stock exists. The panel can re-equip
+an existing troop with a bow and 20 arrows while returning the previous weapon to
+its capped arsenal. Sentries without bows occupy positions but do not shoot.
+**Recolher guarnição** sends defenders down the stairs and back home. Militia
+selected for a hunt first leave their posts; the hunting party waits for them,
+so a person is never deployed in both places. Pause and all speed settings apply.
+
+The optional **Exercício de defesa** demonstrates targeting, range, obstruction,
+projectile travel, ammunition use, and simulated fortification protection against
+six moving targets. It consumes real arrows but gives no reward and causes no
+civilian losses or permanent damage. This release does not introduce automatic
+raids. Its firing system is exercised through this explicit control rather than
+silently enabling destructive attacks. Save format, colony capacity, and the
+previous staffing/drawing optimization remain compatible.
+
 Food staffing is based on measured end-to-end output rather than nominal field
 headcount. The allocator compares the marginal production of crops, pasture,
 fishing, kitchens, preservation, bread and meat chains with their actual tool,
@@ -112,6 +139,7 @@ before publishing:
 ```sh
 node verification/smoke-test.js
 node verification/militia-hunts-test.js
+node verification/walls-test.js
 node verification/clarity-test.js
 ```
 
@@ -142,3 +170,11 @@ created only inside the isolated browser contexts and never affect real saves.
 GitHub `main` is canonical. The existing Google Drive ZIP is updated in place
 only after the GitHub Pages release has been verified. Existing browser and
 transferred saves must remain compatible.
+
+Wall-specific acceptance: `node verification/walls-test.js` and
+`python verification/browser-walls.py` (or `--url` for exact served release bytes).
+The wall suite checks paid construction, 48 unique slots/30 real troops, climbing,
+gate-safe routes, recall/hunting handoff, ammunition and weapon conservation,
+read-only drawing, pause, deterministic stepping, malformed saves and mid-flight
+reloads. `verification/performance-walls.py --baseline PATH` records a controlled
+host comparison; it is not a physical-phone benchmark.
