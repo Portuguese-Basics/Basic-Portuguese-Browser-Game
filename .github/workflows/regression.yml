@@ -5,19 +5,32 @@ on:
   pull_request:
 permissions:
   contents: read
+concurrency:
+  group: regression-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
   regression:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Complete simulation regression
-        run: node verification/smoke-test.js
-      - name: Expedition regression when present
+      - name: Simulation regressions
         run: |
-          if test -f verification/militia-hunts-test.js; then
-            node verification/militia-hunts-test.js
-          fi
+          mkdir -p verification-output
+          node verification/smoke-test.js | tee verification-output/smoke-test.log
+          node verification/militia-hunts-test.js | tee verification-output/militia-hunts-test.log
+      - name: Browser test dependencies
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+      - name: Desktop and mobile browser checks
+        run: python verification/browser-hunts.py | tee verification-output/browser-console.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: game-regression-${{ github.run_id }}
+          path: verification-output/
+          retention-days: 14
