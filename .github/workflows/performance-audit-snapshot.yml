@@ -1,0 +1,30 @@
+name: Preserve performance audit source
+on:
+  push:
+    branches: [analysis/mobile-performance-graphics]
+    paths:
+      - 'docs/performance/**'
+      - '.github/workflows/performance-audit-snapshot.yml'
+permissions:
+  contents: read
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Preserve exact audit source and available Git history
+        run: |
+          mkdir audit-snapshot
+          git rev-parse HEAD > audit-snapshot/audit-commit.txt
+          git rev-parse origin/main > audit-snapshot/canonical-main.txt
+          git archive --format=zip --prefix=Basic-Portuguese-Browser-Game/ -o audit-snapshot/audit-source.zip HEAD
+          git bundle create audit-snapshot/repository-history.bundle --all
+          sha256sum index.html > audit-snapshot/runtime.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: performance-audit-source-${{ github.sha }}
+          path: audit-snapshot/
+          retention-days: 14
