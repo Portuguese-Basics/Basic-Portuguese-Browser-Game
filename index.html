@@ -1537,7 +1537,9 @@
         <label for="buscar-cidadao">Buscar nome, identificação, gênero ou trabalho</label><input id="buscar-cidadao" type="search" placeholder="Buscar morador" autocomplete="off">
         <div class="tabela-cidada"><table><caption>Cadastro individual — até 20 moradores por página</caption><thead><tr><th>Nome</th><th>Idade / casa</th><th>Trabalho</th><th>Riqueza / salário</th></tr></thead><tbody id="corpo-cidadaos"></tbody></table></div>
         <div class="acoes-transferencia"><button id="pagina-cidadao-anterior" class="secundario" type="button">Anterior</button><span id="pagina-cidadao" role="status"></span><button id="pagina-cidadao-proxima" class="secundario" type="button">Próxima</button></div>
-        <p id="detalhe-cidadao" role="status"></p><details><summary>Casas e imposto do último ciclo</summary><p id="casas-cidada"></p></details>
+        <p id="detalhe-cidadao" role="status"></p>
+        <p id="situacao-cidadao-mapa" role="status"></p><button id="localizar-cidadao-mapa" class="secundario" type="button" disabled>Localizar no mapa</button>
+        <details><summary>Vida cotidiana e presença no mapa</summary><p>Os moradores têm rotinas locais de 56 segundos de jogo, com saídas desencontradas. Trabalhadores de interiores passam no máximo 14 segundos dentro e circulam pelo pátio durante o restante do ciclo. A reserva de trabalho passeia pelo bairro; menores ficam perto de casa, sem trabalho infantil. Bebês aparecem em seus pátios.</p><p>Carroças continuam responsáveis pelas cargas; passeios não criam mercadorias, salários, compras nem impostos. Militares são as mesmas pessoas nas muralhas e expedições, sem duplicatas. A caça fora do mapa é uma ausência real. A câmera não mostra todos os bairros ao mesmo tempo; use Localizar no mapa para encontrar alguém. Pausa congela as rotinas.</p></details><details><summary>Casas e imposto do último ciclo</summary><p id="casas-cidada"></p></details>
         <details><summary>Conferência e livro de movimentos recentes</summary><p id="auditoria-economia-cidada"></p><pre id="livro-cidada"></pre><p>O livro guarda os últimos 512 lançamentos; cada morador mantém 8 movimentos recentes e totais acumulados. Exporte para preservar um retrato; isto não é um histórico ilimitado.</p></details>
       </section>
     </dialog>
@@ -3481,6 +3483,7 @@
         colonosComFome: 0,
         populacaoColonia: 0,
         economiaCidada: novaEconomiaCidada(),
+        vidaCotidiana: novaVidaCotidiana(),
         familiasColonia: [],
         criancasColonia: [],
         quantidadeCasasColonia: 0,
@@ -5870,6 +5873,7 @@
 
       function reiniciarNovaColonia() {
         estado.economiaCidada = novaEconomiaCidada();
+        estado.vidaCotidiana = novaVidaCotidiana();
         assinaturaCadastroCidada = "";
         estado.coloniaIniciada = true;
         estado.revisaoColonia = versaoColonia;
@@ -6158,6 +6162,7 @@
                 estado.terceiroBlocoMoradiasConstruido,
               cacaMilicia: estado.cacaMilicia,
               economiaCidada: estado.economiaCidada,
+              vidaCotidiana: estado.vidaCotidiana,
               cadeiaCarne: {
                 cabanaCacadores: estado.cabanaCacadoresConstruida,
                 acougue: estado.acougueConstruido,
@@ -7893,6 +7898,8 @@
           estado.ampliacaoMuralhasAutorizada = salvo.expansao?.economia?.defesas?.ampliacaoAutorizada === true;
           estado.defesaPosicional = normalizarDefesaPosicional(salvo.expansao?.economia?.defesas?.guarnicao);
           estado.economiaCidada = normalizarEconomiaCidada(salvo.expansao?.economia?.economiaCidada);
+          estado.vidaCotidiana = normalizarVidaCotidiana(salvo.expansao?.economia?.vidaCotidiana);
+          cacheVidaCotidiana.assinatura = "";
           assinaturaCadastroCidada = "";
           const coloniaReiniciadaAoCarregar =
             estado.mapaAtual === "expansao" &&
@@ -7963,6 +7970,7 @@
 
       function redefinirEstado() {
         estado.economiaCidada = novaEconomiaCidada();
+        estado.vidaCotidiana = novaVidaCotidiana();
         assinaturaCadastroCidada = "";
         estado.local = "assentamento";
         estado.velocidadeTempo = 1;
@@ -16438,7 +16446,7 @@
         return destinos[tipo] || null;
       }
 
-      function posicaoRotinaUrbanaColonia(indiceMorador, tipo, vaga) {
+      function posicaoRotinaUrbanaColonia(indiceMorador, tipo, vaga, tempoPessoal = tempoRio) {
         if (tipo === "transportador") {
           const companhia = {
             x:
@@ -16487,7 +16495,7 @@
             caminho.push(...(indice === 0 ? trecho : trecho.slice(1)));
           }
           const progresso =
-            ((tempoRio * multiplicadorMovimentoEstradasColonia() + vaga * 7) %
+            ((tempoPessoal * multiplicadorMovimentoEstradasColonia() + vaga * 7) %
               96) /
             96;
           return percorrerCaminhoPorDistancia(caminho, progresso);
@@ -16955,6 +16963,276 @@
           },
         };
         return centros[tipo] || posicaoAdministrador;
+      }
+
+      // DAILY_LIFE_V1: identity-linked presentation, independent of production/hauling.
+      // One saved simulation clock; bounded, deterministic local routines, no extra workers.
+      const periodoVidaCotidiana = 56;
+      const interiorVidaCotidiana = 14;
+      const coresVidaCotidiana = {
+        administracao:'#e1c27a',professor:'#6f8fd1',migracao:'#55d6d1',lavoura:'#e2b44f',horta:'#62a84f',feijao:'#9b6642',pastagem:'#a6ce6a',
+        celeiro:'#d6924f',moinho:'#d8c28a',padaria:'#d9824b',cacador:'#70834b',acougue:'#a14c42',cozinhaCarne:'#cf7655',cozinhaHortalicas:'#7db35a',cozinhaFeijao:'#9a633e',conserveiro:'#8a6a55',
+        lenhador:'#997157',reflorestador:'#3f9d58',coletor:'#b98dde',clinica:'#f1f2e8',armeiroMadeira:'#c9924d',flecheiro:'#d5b863',pesca:'#62b8e8',estaleiro:'#4f86a3',mina:'#a9adb3',pedreira:'#c8b59a',comercio:'#bb8ee8',
+        ferraria:'#e48345',forja:'#df594c',armeiro:'#73828e',transportador:'#d1a64e',construtor:'#cf8f49',ferramenteiro:'#a4acb3',bombeiro:'#c94336',bibliotecario:'#4f67a1',religioso:'#e7dfc6',feirante:'#a96cc4',geral:'#ded3b4',crianca:'#f0ca58'
+      };
+      const papeisExternosCotidianos = new Set(['lavoura','horta','feijao','pastagem','lenhador','cacador','reflorestador','coletor','pesca','pedreira','estaleiro','construtor','bombeiro']);
+      let cacheVidaCotidiana = { assinatura:'', pessoas:[], porId:new Map(), obstaculos:null };
+      const cachePatiosCotidianos = new Map();
+      let cacheCarrocasCotidianas = { assinatura:'', caminhos:[] };
+      let destaqueVidaCotidiana = '';
+      let ultimaTelaVidaCotidiana = -Infinity;
+      function novaVidaCotidiana() { return { versao:1, tempo:0 }; }
+      function normalizarVidaCotidiana(raw) { return { versao:1, tempo:numeroValido(raw?.tempo,0,1e12,0) }; }
+      function hashVidaCotidiana(texto) {
+        let n=2166136261;
+        for(let i=0;i<texto.length;i++)n=Math.imul(n^texto.charCodeAt(i),16777619)>>>0;
+        n=Math.imul(n^(n>>>16),0x7feb352d);n=Math.imul(n^(n>>>15),0x846ca68b);
+        return (n^(n>>>16))>>>0;
+      }
+      function areaEmpregoCotidiano(tipo,vaga) {
+        const areas={administracao:areaAdministracao,migracao:areaAdministracao,professor:areaEscolaColonia,celeiro:areaCeleiro,moinho:areaMoinhoColonia,padaria:areaPadariaColonia,
+          acougue:areaAcougueColonia,cozinhaCarne:areaCozinhaCarneColonia,cozinhaHortalicas:areaCozinhaHortalicasColonia,cozinhaFeijao:areaCozinhaFeijaoColonia,conserveiro:areaDefumadorioColonia,
+          clinica:areaClinicaColonia,armeiroMadeira:areaOficinaArmasMadeira,flecheiro:areaFlecharia,mina:areaMinaColonia,pedreira:areaPedreiraColonia,comercio:areaCaisComercialColonia,estaleiro:areaEstaleiroColonia,
+          ferraria:areaFerrariaColonia,forja:areaForjaColonia,armeiro:areaArmeiroColonia,transportador:areaTransportadoresColonia,construtor:areaConstrutoresColonia,ferramenteiro:areaOficinaFerramentasColonia,
+          bombeiro:areaBombeirosColonia,bibliotecario:areaBibliotecaColonia,religioso:estado.cemiterioConstruido&&vaga%2?areaCemiterioColonia:areaIgrejaColonia,feirante:areaMercadoPublicoColonia,
+          lavoura:areaLavoura,horta:areaHorta,feijao:areaFeijao,pastagem:areaPastagem,cacador:areaCabanaCacadores,reflorestador:areaCabanaReflorestamento,
+          lenhador:areasCabanasLenhadores[Math.min(1,Math.floor(vaga/trabalhadoresPorCabanaLenhadores))],coletor:areasCabanasColeta[Math.min(1,Math.floor(vaga/trabalhadoresPorCabanaColeta))],
+          pesca:vaga>=trabalhadoresPorCaisPesca?areaSegundoCaisPescaColonia:areaCaisPescaColonia};
+        return areas[tipo] || null;
+      }
+      function obstaculosVidaCotidiana() {
+        // Structural geometry only: ignore inventories and whether a blueprint is funded.
+        // Reserve all building footprints so a new building cannot grow over a pedestrian.
+        const abertos=new Set(['lavoura','horta','feijoal','pastagem','expedicao-milicia','moradias-oeste','moradias-sul','moradias-nordeste']);
+        const retangulos=edificiosInspecionaveisColonia().filter(e=>!abertos.has(e.id)&&!e.id.startsWith('fort-')&&!e.id.startsWith('estrada')&&e.area).map(e=>({...e.area}));
+        for(let i=0;i<90;i++){const p=posicaoCasaColonia(i);retangulos.push({x:p.x-10,y:p.y-38,largura:150,altura:143});}
+        // Wall footprints, with the real gate openings preserved. Do not cross walls on local strolls.
+        for(const r of [recintoExterno,recintoInterno])for(let lado=0;lado<4;lado++)for(const s of segmentosTrechoPalicadaColonia(r,lado))
+          retangulos.push({x:Math.min(s.x1,s.x2)-12,y:Math.min(s.y1,s.y2)-12,largura:Math.abs(s.x2-s.x1)+24,altura:Math.abs(s.y2-s.y1)+24});
+        return retangulos;
+      }
+      function segmentoLivreCotidiano(a,b,obstaculos) {
+        if(![a.x,a.y,b.x,b.y].every(Number.isFinite))return false;
+        if(Math.min(a.x,b.x)<25||Math.max(a.x,b.x)>limiteCosta-45||Math.min(a.y,b.y)<25||Math.max(a.y,b.y)>alturaMundoExpansao-25)return false;
+        for(const r of obstaculos) {
+          // Slab intersection against solid ground footprints. Small body-clearance margin.
+          let inicio=0,fim=1;
+          for(const [k,dim] of [['x','largura'],['y','altura']]) {
+            const d=b[k]-a[k],lo=r[k]-9,hi=r[k]+r[dim]+9;
+            if(Math.abs(d)<1e-9){if(a[k]<lo||a[k]>hi){inicio=2;break;}}
+            else {const t1=(lo-a[k])/d,t2=(hi-a[k])/d;inicio=Math.max(inicio,Math.min(t1,t2));fim=Math.min(fim,Math.max(t1,t2));}
+          }
+          if(inicio<=fim)return false;
+        }
+        return true;
+      }
+      function caminhoMedidoCotidiano(pontos) {
+        const comprimentos=[];let total=0;
+        for(let i=1;i<pontos.length;i++){const d=Math.hypot(pontos[i].x-pontos[i-1].x,pontos[i].y-pontos[i-1].y);comprimentos.push(d);total+=d;}
+        return {pontos,comprimentos,total};
+      }
+      function pontoCaminhoCotidiano(caminho,fase) {
+        if(caminho.total<=0)return {...caminho.pontos[0],dx:0,dy:0};
+        let d=Math.max(0,Math.min(1,fase))*caminho.total;
+        for(let i=0;i<caminho.comprimentos.length;i++){
+          const len=caminho.comprimentos[i];
+          if(d<=len||i===caminho.comprimentos.length-1){const a=caminho.pontos[i],b=caminho.pontos[i+1],f=len?d/len:0;return {x:a.x+(b.x-a.x)*f,y:a.y+(b.y-a.y)*f,dx:len?(b.x-a.x)/len:0,dy:len?(b.y-a.y)/len:0};}
+          d-=len;
+        }
+        return {...caminho.pontos[0],dx:0,dy:0};
+      }
+      function patioVidaCotidiana(area,slot,obstaculos,casa=false) {
+        const chave=[area.x,area.y,area.largura,area.altura,slot%5,casa].join('|');
+        if(cachePatiosCotidianos.has(chave))return cachePatiosCotidianos.get(chave);
+        const guardar=pontos=>{const caminho=caminhoMedidoCotidiano(pontos);if(cachePatiosCotidianos.size>=1024)cachePatiosCotidianos.clear();cachePatiosCotidianos.set(chave,caminho);return caminho;};
+        // Try four exterior faces; choose a collision-free loop with a distinct lane/phase.
+        const limite=casa?38:Math.min(160,Math.max(45,Math.min(area.largura,area.altura)*0.3));
+        const deslocamento=((slot%5)-2)*(casa?9:17);
+        for(const comprimento of [limite,limite/2,10])for(const margem of [24,42,70])for(const lado of [2,1,0,3]) {
+          const vertical=lado%2===1,sinal=lado===1||lado===2?1:-1;
+          const centro={x:area.x+area.largura/2+(vertical?0:deslocamento),y:area.y+area.altura/2+(vertical?deslocamento:0)};
+          const a={x:vertical?(lado===1?area.x+area.largura:area.x)+sinal*margem:centro.x,y:vertical?centro.y:(lado===2?area.y+area.altura:area.y)+sinal*margem};
+          const tangent=vertical?{x:0,y:1}:{x:1,y:0},normal=vertical?{x:sinal,y:0}:{x:0,y:sinal};
+          const p=[a,{x:a.x+tangent.x*comprimento,y:a.y+tangent.y*comprimento},{x:a.x+tangent.x*comprimento+normal.x*(casa?8:18),y:a.y+tangent.y*comprimento+normal.y*(casa?8:18)},{x:a.x-tangent.x*comprimento+normal.x*(casa?8:18),y:a.y-tangent.y*comprimento+normal.y*(casa?8:18)},{x:a.x-tangent.x*comprimento,y:a.y-tangent.y*comprimento},a];
+          if(p.slice(1).every((b,i)=>segmentoLivreCotidiano(p[i],b,obstaculos)))return guardar(p);
+        }
+        // A cramped doorway still gets a visible stationary porch, not an invisible resident.
+        for(let raio=24;raio<=600;raio+=24)for(let i=0;i<16;i++){
+          const t=i*Math.PI/8,p={x:area.x+area.largura/2+Math.cos(t)*(area.largura/2+raio),y:area.y+area.altura/2+Math.sin(t)*(area.altura/2+raio)};
+          if(segmentoLivreCotidiano(p,p,obstaculos))return guardar([p,p]);
+        }
+        throw new Error('Não existe pátio seguro para o morador');
+      }
+      function prepararCarrocasCotidianas() {
+        const assinatura=estado.niveisEstradasColonia.join('|');
+        if(cacheCarrocasCotidianas.assinatura===assinatura)return;
+        const caminhos=[];
+        for(let vaga=0;vaga<2;vaga++) {
+          const companhia = {
+            x:
+              areaTransportadoresColonia.x +
+              areaTransportadoresColonia.largura / 2,
+            y:
+              areaTransportadoresColonia.y +
+              areaTransportadoresColonia.altura,
+          };
+          const cabanaMadeira = areasCabanasLenhadores[vaga % 2];
+          const cabanaErvas = areasCabanasColeta[vaga % 2];
+          const paradas = [
+            companhia,
+            {
+              x: cabanaMadeira.x + cabanaMadeira.largura / 2,
+              y: cabanaMadeira.y + cabanaMadeira.altura,
+            },
+            {
+              x: areaCabanaCacadores.x + areaCabanaCacadores.largura / 2,
+              y: areaCabanaCacadores.y + areaCabanaCacadores.altura,
+            },
+            {
+              x: cabanaErvas.x + cabanaErvas.largura / 2,
+              y: cabanaErvas.y + cabanaErvas.altura,
+            },
+            {
+              x: areaAcougueColonia.x + areaAcougueColonia.largura / 2,
+              y: areaAcougueColonia.y,
+            },
+            {
+              x: areaErvario.x + areaErvario.largura / 2,
+              y: areaErvario.y + areaErvario.altura,
+            },
+            {
+              x: areaDepositoMadeira.x + areaDepositoMadeira.largura / 2,
+              y: areaDepositoMadeira.y + areaDepositoMadeira.altura,
+            },
+            companhia,
+          ];
+          const caminho = [];
+          for (let indice = 0; indice < paradas.length - 1; indice += 1) {
+            const trecho = rotaMaisRapidaColonia(
+              paradas[indice],
+              paradas[indice + 1],
+            ).pontos;
+            caminho.push(...(indice === 0 ? trecho : trecho.slice(1)));
+          }
+          caminhos.push(caminhoMedidoCotidiano(caminho));
+        }
+        cacheCarrocasCotidianas={assinatura,caminhos};
+      }
+      function prepararVidaCotidiana() {
+        if(!economiaCidadaAtiva()||estado.etapaConstrucaoColonia<4){cacheVidaCotidiana.assinatura='';cacheVidaCotidiana.pessoas=[];cacheVidaCotidiana.porId.clear();return;}
+        const e=estado.economiaCidada;
+        // Registry changes already have an exact signature; no money or animation clocks here.
+        const assinatura=assinaturaCadastroCidada+'|'+estado.cemiterioConstruido+'|'+estado.criancasColonia.map(c=>c.id+':'+(c.idade<duracaoBebeColonia)).join(',');
+        prepararCarrocasCotidianas();
+        if(cacheVidaCotidiana.assinatura===assinatura&&cacheVidaCotidiana.fonte===e)return;
+        const obstaculos=cacheVidaCotidiana.obstaculos||obstaculosVidaCotidiana();
+        const jovens=new Map(estado.criancasColonia.map(c=>[e.jovens[c.id],c]));
+        const moradores=Object.values(e.pessoas),pessoas=[],vagasCasa=new Map(),contagemCasas=new Map();
+        for(const p of [...moradores].sort((a,b)=>a.id.localeCompare(b.id))){const n=contagemCasas.get(p.casa)||0;vagasCasa.set(p.id,n);contagemCasas.set(p.casa,n+1);}
+        for(const p of moradores){
+          const h=hashVidaCotidiana(p.id),crianca=jovens.get(p.id),bebe=Boolean(crianca&&crianca.idade<duracaoBebeColonia);
+          const casa=p.casa?{...posicaoCasaColonia(p.casa-1),largura:130,altura:105}:areaAdministracao;
+          const area=areaEmpregoCotidiano(p.emprego,p.vaga)||casa;
+          const chave=[p.emprego,p.vaga,p.casa,vagasCasa.get(p.id),bebe,estado.cemiterioConstruido].join('|'),anterior=cacheVidaCotidiana.porId.get(p.id);
+          if(anterior?.chave===chave){pessoas.push({...anterior,nome:p.nome,indice:e.adultos.indexOf(p.id)});continue;}
+          let caminho=null;
+          if(!papeisMilitaresCidada.includes(p.emprego)&&p.emprego!=='transportador') {
+            if(['lavoura','horta','feijao','pastagem'].includes(p.emprego)){
+              const col=p.vaga%5,row=Math.floor(p.vaga/5),x=area.x+95+col*(area.largura-190)/5,y=area.y+190+row*225;
+              const pontos=[{x,y},{x:x+115,y},{x:x+115,y:y+130},{x,y:y+130},{x,y}];
+              caminho=pontos.slice(1).every((b,i)=>segmentoLivreCotidiano(pontos[i],b,obstaculos))?caminhoMedidoCotidiano(pontos):patioVidaCotidiana(area,p.vaga,obstaculos);
+            }else caminho=patioVidaCotidiana(area,p.emprego==='geral'||crianca?vagasCasa.get(p.id):p.vaga,obstaculos,p.emprego==='geral'||Boolean(crianca));
+          }
+          pessoas.push({chave,id:p.id,tipo:p.emprego,vaga:p.vaga,nome:p.nome,casa:p.casa,bebe,caminho,fase:(h%5600)/100,externo:papeisExternosCotidianos.has(p.emprego),indice:e.adultos.indexOf(p.id)});
+        }
+        cacheVidaCotidiana={assinatura,fonte:e,pessoas,porId:new Map(pessoas.map(p=>[p.id,p])),obstaculos};
+      }
+      function atualizarVidaCotidiana(delta) {
+        if(estado.coloniaIniciada&&!estado.jogoPausado&&Number.isFinite(delta)&&delta>0)estado.vidaCotidiana.tempo+=delta;
+        prepararVidaCotidiana();
+      }
+      function amostraMilitarCotidiana(p) {
+        const u=estado.defesaPosicional.unidades.find(u=>u.categoria===p.tipo&&u.indice===p.vaga);
+        if(u)return {id:p.id,tipo:p.tipo,x:u.x,y:u.y-u.altura*28,visivel:true,atividade:u.altura>0.9?'Em serviço na muralha':'Em deslocamento para a guarnição',externo:true};
+        if(p.tipo==='milicia'&&p.vaga<milicianosEmCacaColonia()){
+          const a=posicaoMilicianoExpedicao(p.vaga),visivel=Boolean(a&&a.y>=0&&a.x>=0);
+          return {id:p.id,tipo:p.tipo,x:a?.x??areaPontoCacaMilicia.x+310,y:a?.y??areaPontoCacaMilicia.y+125,visivel,fora:!visivel,atividade:visivel?'Em expedição de caça':'Caçando fora do mapa',externo:true};
+        }
+        let a=origemDefensorColonia(p.tipo,p.vaga);
+        if(p.tipo==='guarda')a=percorrerCaminhoPorDistancia([{x:6900,y:2800},{x:10200,y:2800},{x:10200,y:6200},{x:6900,y:6200},{x:6900,y:2800}],(tempoRio*multiplicadorMovimentoEstradasColonia()*0.018+p.vaga/Math.max(1,estado.quantidadeGuardas))%1);
+        return {id:p.id,tipo:p.tipo,...a,visivel:true,atividade:'Em patrulha ou treinamento',externo:true};
+      }
+      function amostraVidaCotidiana(id,tempo=estado.vidaCotidiana.tempo) {
+        const p=cacheVidaCotidiana.porId.get(id);if(!p)return null;
+        if(papeisMilitaresCidada.includes(p.tipo))return amostraMilitarCotidiana(p);
+        if(p.tipo==='transportador')return {id:p.id,tipo:p.tipo,...pontoCaminhoCotidiano(cacheCarrocasCotidianas.caminhos[p.vaga%2],((tempo*multiplicadorMovimentoEstradasColonia()+p.vaga*7)%96)/96),visivel:true,atividade:'Conduzindo a carroça de cargas',carroca:true,externo:true};
+        const fase=((tempo+p.fase)%periodoVidaCotidiana+periodoVidaCotidiana)%periodoVidaCotidiana;
+        const interior=!p.externo&&fase<interiorVidaCotidiana;
+        const t=p.externo?fase/periodoVidaCotidiana:Math.max(0,(fase-interiorVidaCotidiana)/(periodoVidaCotidiana-interiorVidaCotidiana));
+        // Two pauses within a continuous exterior circuit, never a teleport to cargo storage.
+        const f=t<0.32?t/0.32*0.42:t<0.46?0.42:t<0.76?0.42+(t-0.46)/0.30*0.43:t<0.87?0.85:0.85+(t-0.87)/0.13*0.15;
+        const a=pontoCaminhoCotidiano(p.caminho,p.bebe?0:f),parado=t>=0.32&&t<0.46||t>=0.76&&t<0.87;
+        const domestico=p.tipo==='geral'||p.tipo==='crianca';
+        return {id:p.id,tipo:p.tipo,...a,visivel:!interior,externo:!interior,bebe:p.bebe,movendo:!interior&&!parado&&!p.bebe,ateSair:interior?interiorVidaCotidiana-fase:0,
+          atividade:interior?(domestico?'Em casa':'Trabalho no interior'):p.bebe?'Bebê no pátio de casa':p.tipo==='crianca'?(parado?'Brincando no pátio':'Passeando perto de casa'):p.tipo==='geral'?(parado?'Pausa e convívio no bairro':'Passeando no bairro'):(parado?'Tarefa no pátio de trabalho':'Circulando no local de trabalho')};
+      }
+      function desenharPessoaCotidiana(a,p,escala,aspecto=1) {
+        contexto.save();contexto.translate(a.x,a.y);contexto.scale(1,aspecto);
+        const s=escala*(a.tipo==='crianca'?0.78:1),x=0,y=0,cor=a.tipo==='geral'?['#d8c38c','#b68a73','#809c91','#aca1b6','#a8b778','#cfaa85'][hashVidaCotidiana(p.id)%6]:(coresVidaCotidiana[a.tipo]||'#ded3b4');
+        const passo=a.movendo?Math.sin(estado.vidaCotidiana.tempo*6+p.fase)*2.8*s:0;
+        contexto.fillStyle='rgba(22,25,17,0.24)';contexto.fillRect(x-6*s,y+3*s,12*s,3*s);
+        if(a.bebe){contexto.fillStyle='#efe0bd';contexto.fillRect(x-6*s,y-6*s,12*s,9*s);contexto.strokeStyle='#493629';contexto.lineWidth=1.5*s;contexto.strokeRect(x-6*s,y-6*s,12*s,9*s);contexto.restore();return;}
+        contexto.strokeStyle='#382d23';contexto.lineWidth=2.2*s;contexto.beginPath();contexto.moveTo(x-2*s,y-2*s);contexto.lineTo(x-3*s+passo,y+4*s);contexto.moveTo(x+2*s,y-2*s);contexto.lineTo(x+3*s-passo,y+4*s);contexto.stroke();
+        contexto.fillStyle='#2c3027';contexto.fillRect(x-5*s,y-14*s,10*s,13*s);
+        contexto.fillStyle=cor;contexto.fillRect(x-3.7*s,y-13*s,7.4*s,11*s);
+        contexto.fillStyle='#edc79c';contexto.beginPath();contexto.arc(x,y-17*s,3.5*s,0,Math.PI*2);contexto.fill();
+        if(!['geral','crianca'].includes(a.tipo)){
+          contexto.fillStyle=['clinica','padaria','cozinhaCarne','cozinhaHortalicas','cozinhaFeijao'].includes(a.tipo)?'#f9edd8':cor;contexto.fillRect(x-4.5*s,y-21*s,9*s,2.5*s);
+          contexto.strokeStyle=p.externo?'#92714a':'#e7d1a0';contexto.lineWidth=1.5*s;contexto.beginPath();contexto.moveTo(x+5*s,y-12*s);contexto.lineTo(x+9*s,y-(p.externo?2:10)*s);contexto.stroke();
+        }
+        contexto.restore();
+      }
+      function desenharVidaCotidiana() {
+        const c=estado.cameraExpansao,v=dimensoesVisaoExpansao(),rect=canvas.getBoundingClientRect(),pixel=rect.width/v.largura,aspecto=pixel/(rect.height/v.altura);
+        // Readability floor in CSS pixels, bounded at overview to avoid giant people.
+        const escala=Math.min(3,Math.max(1,0.38/Math.max(0.02,pixel)));
+        contexto.save();
+        for(const p of cacheVidaCotidiana.pessoas){
+          if(papeisMilitaresCidada.includes(p.tipo))continue;
+          const a=amostraVidaCotidiana(p.id);if(!a?.visivel||a.x<c.x-80||a.x>c.x+v.largura+80||a.y<c.y-80||a.y>c.y+v.altura+80)continue;
+          if(a.carroca){desenharCarrocaTransportadorColonia(a.x,a.y,p.vaga,false);desenharPessoaCotidiana({...a,x:a.x+3,y:a.y-9,movendo:false},p,Math.min(escala,1.5),aspecto);}
+          else desenharPessoaCotidiana(a,p,escala,aspecto);
+        }
+        contexto.restore();
+      }
+      function desenharDestaqueCotidiano() {
+        const a=amostraVidaCotidiana(destaqueVidaCotidiana),p=cacheVidaCotidiana.porId.get(destaqueVidaCotidiana);
+        if(!a||a.fora)return;
+        const rect=canvas.getBoundingClientRect(),v=dimensoesVisaoExpansao(),sx=v.largura/Math.max(1,rect.width),sy=v.altura/Math.max(1,rect.height);
+        if(!areaVisivelMuralhas(a.x-90*sx,a.y-50*sy,180*sx,75*sy))return;
+        contexto.save();contexto.translate(a.x,a.y);contexto.scale(sx,sy);
+        contexto.strokeStyle='#fff3b4';contexto.lineWidth=2;contexto.beginPath();contexto.arc(0,-6,12,0,Math.PI*2);contexto.stroke();
+        contexto.font='bold 12px sans-serif';contexto.textAlign='center';contexto.textBaseline='alphabetic';contexto.fillStyle='#222b24';contexto.fillRect(-80,-43,160,18);contexto.fillStyle='#fff8dd';contexto.fillText(p.nome.slice(0,25),0,-30,154);contexto.restore();
+      }
+
+      function localizarCidadaoNoMapa(id=selecionadoCadastroCidada) {
+        prepararVidaCotidiana();const a=amostraVidaCotidiana(id);if(!a)return false;
+        destaqueVidaCotidiana=id;estado.mapaAtual='expansao';
+        const alvo=a.fora?{x:areaPontoCacaMilicia.x+310,y:areaPontoCacaMilicia.y+125}:a;
+        estado.cameraExpansao.zoom=Math.min(zoomMaximoExpansao,2);const v=dimensoesVisaoExpansao();estado.cameraExpansao.x=alvo.x-v.largura/2;estado.cameraExpansao.y=alvo.y-v.altura/2;
+        limitarCameraExpansao();atualizarControlesCamera();
+        if(typeof painelEconomiaCidada.close==='function')painelEconomiaCidada.close();else painelEconomiaCidada.removeAttribute('open');
+        definirMensagem(a.fora?'Este morador está caçando fora do mapa. O ponto de encontro foi centralizado.':`${cacheVidaCotidiana.porId.get(id).nome}: ${a.atividade}${a.ateSair?` — sai em até ${Math.ceil(a.ateSair)} s de jogo`:''}.`);
+        canvas.scrollIntoView?.({block:'center'});desenhar();return true;
+      }
+      function atualizarTelaVidaCotidiana(agora=0,forcar=false) {
+        if(!forcar&&agora-ultimaTelaVidaCotidiana<1000)return;
+        ultimaTelaVidaCotidiana=agora;
+        if(!painelEconomiaCidada.open)return;
+        const a=amostraVidaCotidiana(selecionadoCadastroCidada),el=document.querySelector('#situacao-cidadao-mapa');
+        const texto=a?`${a.atividade}${a.ateSair?` · próximo período ao ar livre em ${Math.ceil(a.ateSair)} s de jogo`:''}.`:'Selecione um morador para localizá-lo no mapa.';
+        if(el.textContent!==texto)el.textContent=texto;
+        document.querySelector('#localizar-cidadao-mapa').disabled=!a;
       }
 
       function posicaoColonoNovaColonia(indice) {
@@ -19717,6 +19995,7 @@
       }
 
       function desenharJovensColonia() {
+        if (cacheVidaCotidiana.pessoas.length && economiaCidadaAtiva() && estado.etapaConstrucaoColonia >= 4) return;
         estado.criancasColonia.forEach((crianca, indice) => {
           const posicao = posicaoJovemColonia(crianca, indice);
           const bebe = crianca.idade < duracaoBebeColonia;
@@ -19730,7 +20009,7 @@
         });
       }
 
-      function desenharCarrocaTransportadorColonia(x, y, indice) {
+      function desenharCarrocaTransportadorColonia(x, y, indice, mostrarCondutor = true) {
         contexto.strokeStyle = "#5a4029";
         contexto.lineWidth = 5;
         contexto.beginPath();
@@ -19752,10 +20031,11 @@
           contexto.fillStyle = coresCarga[(caixa + indice) % coresCarga.length];
           contexto.fillRect(x - 27 + caixa * 9, y - 14, 8, 18);
         }
-        desenharCirculo(x + 3, y - 14, 6, "#d1a64e", "#59462c");
+        if (mostrarCondutor) desenharCirculo(x + 3, y - 14, 6, "#d1a64e", "#59462c");
       }
 
       function desenharColonosNovaColonia() {
+        if (cacheVidaCotidiana.pessoas.length && economiaCidadaAtiva() && estado.etapaConstrucaoColonia >= 4) { desenharVidaCotidiana(); return; }
         // Read the simulation snapshot; drawing never assigns jobs or tools.
         const coresEmprego = {
           administracao: "#e1c27a",
@@ -20055,6 +20335,7 @@
         desenharEfetivosDefesaColonia();
         desenharCargaExpedicaoMilicia();
         desenharCombateMuralhas();
+        desenharDestaqueCotidiano();
       }
 
       function interpolarPonto(inicio, fim, progresso) {
@@ -20772,17 +21053,20 @@
         }
         atualizarCadastroCidada();
         observarContasCidada();
+        atualizarVidaCotidiana(deltaSimulacao);
         atualizarPainelEconomiaCidada(false, agora);
+        atualizarTelaVidaCotidiana(agora);
         desenhar();
         requestAnimationFrame(quadro);
       }
 
+      document.querySelector('#localizar-cidadao-mapa').addEventListener('click',()=>localizarCidadaoNoMapa());
       document.querySelector('#abrir-economia-cidada').addEventListener('click',abrirEconomiaCidada);
       document.querySelector('#fechar-economia-cidada').addEventListener('click',()=>{ if(typeof painelEconomiaCidada.close==='function')painelEconomiaCidada.close();else painelEconomiaCidada.removeAttribute('open'); });
       document.querySelector('#buscar-cidadao').addEventListener('input',()=>{paginaCadastroCidada=0;atualizarPainelEconomiaCidada(true);});
       document.querySelector('#pagina-cidadao-anterior').addEventListener('click',()=>{paginaCadastroCidada=Math.max(0,paginaCadastroCidada-1);atualizarPainelEconomiaCidada(true);});
       document.querySelector('#pagina-cidadao-proxima').addEventListener('click',()=>{paginaCadastroCidada++;atualizarPainelEconomiaCidada(true);});
-      document.querySelector('#corpo-cidadaos').addEventListener('click',ev=>{const botao=ev.target.closest?.('[data-cidadao]');if(botao){selecionadoCadastroCidada=botao.dataset.cidadao;atualizarPainelEconomiaCidada(true);}});
+      document.querySelector('#corpo-cidadaos').addEventListener('click',ev=>{const botao=ev.target.closest?.('[data-cidadao]');if(botao){selecionadoCadastroCidada=botao.dataset.cidadao;atualizarPainelEconomiaCidada(true);atualizarTelaVidaCotidiana(0,true);}});
       document.querySelector('#alternar-compras-cidada').addEventListener('click',()=>{estado.economiaCidada.opcionais=!estado.economiaCidada.opcionais;atualizarPainelEconomiaCidada(true);salvarProgresso();});
       document.querySelector('#quitar-atrasados-cidada').addEventListener('click',()=>{if(!quitarAtrasadosCidada())definirMensagem('Não há excedente acima da reserva municipal para quitar atrasados.');});
       document.querySelector('#exportar-economia-cidada').addEventListener('click',exportarEconomiaCidada);
@@ -20885,6 +21169,7 @@
       if (estado.mapaAtual === "expansao" && estado.coloniaIniciada) {
         redistribuirTrabalhadoresColonia();
       }
+      prepararVidaCotidiana();
       redimensionar();
       requestAnimationFrame(quadro);
     </script>
