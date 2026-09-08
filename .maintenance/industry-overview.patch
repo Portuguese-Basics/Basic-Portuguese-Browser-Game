@@ -1,0 +1,11 @@
+--- a/index.html
++++ b/index.html
+@@ -4690,6 +4690,8 @@
+       // remain live; money/count/geometry/camera changes invalidate immediately.
+       let cachePinturaIndustria = null;
+       function desenharIndustriaColonia() {
++        // Sparse overview geometry is cheaper to paint directly than a full-screen blit.
++        if(estado.cameraExpansao.zoom<=.15){cachePinturaIndustria=null;desenharIndustriaColoniaDireta(contexto);return;}
+         if(!industriaAtiva()){cachePinturaIndustria=null;return;}
+         if(typeof contexto.getTransform!=='function'||typeof contexto.drawImage!=='function'||canvas.width*canvas.height>4194304){cachePinturaIndustria=null;desenharIndustriaColoniaDireta(contexto);return;}
+         const s=estado.industriaColonia,m=contexto.getTransform(),contagens={};
