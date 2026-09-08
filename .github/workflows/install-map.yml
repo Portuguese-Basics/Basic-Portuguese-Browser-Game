@@ -38,12 +38,12 @@ jobs:
           subprocess.run(['git','apply','/tmp/map.patch'],check=True)
           for name, expected in json.loads(Path('.maintenance/map-output-sha256.json').read_text()).items():
               assert hashlib.sha256(Path(name).read_bytes()).hexdigest() == expected, name
-          print('ALL_17_OUTPUT_HASHES_VERIFIED')
-          subprocess.run(['git','apply','--check','.maintenance/map-browser-fix.patch'],check=True)
-          subprocess.run(['git','apply','.maintenance/map-browser-fix.patch'],check=True)
-          for name, expected in json.loads(Path('.maintenance/map-browser-sha256.json').read_text()).items():
-              assert hashlib.sha256(Path(name).read_bytes()).hexdigest() == expected, name
-          print('BROWSER_TARGETS_FOLLOW_RELOCATED_STRUCTURES')
+          for label in ['browser','coast']:
+              subprocess.run(['git','apply','--check',f'.maintenance/map-{label}-fix.patch'],check=True)
+              subprocess.run(['git','apply',f'.maintenance/map-{label}-fix.patch'],check=True)
+              for name, expected in json.loads(Path(f'.maintenance/map-{label}-sha256.json').read_text()).items():
+                  assert hashlib.sha256(Path(name).read_bytes()).hexdigest() == expected, name
+          print('ALL_FINAL_RUNTIME_AND_TEST_HASHES_VERIFIED')
           PY
       - name: Complete regression, historic migration and current economic comparisons
         run: |
@@ -79,8 +79,10 @@ jobs:
           python - <<'PY'
           import json,subprocess
           from pathlib import Path
-          names=list(json.loads(Path('.maintenance/map-output-sha256.json').read_text()))+list(json.loads(Path('.maintenance/map-browser-sha256.json').read_text()))
-          subprocess.run(['git','add','--',*names],check=True)
+          names=[]
+          for label in ['output','browser','coast']:
+              names+=list(json.loads(Path(f'.maintenance/map-{label}-sha256.json').read_text()))
+          subprocess.run(['git','add','--',*sorted(set(names))],check=True)
           PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
