@@ -39,42 +39,47 @@ jobs:
           for name, expected in json.loads(Path('.maintenance/map-output-sha256.json').read_text()).items():
               assert hashlib.sha256(Path(name).read_bytes()).hexdigest() == expected, name
           print('ALL_17_OUTPUT_HASHES_VERIFIED')
+          subprocess.run(['git','apply','--check','.maintenance/map-browser-fix.patch'],check=True)
+          subprocess.run(['git','apply','.maintenance/map-browser-fix.patch'],check=True)
+          for name, expected in json.loads(Path('.maintenance/map-browser-sha256.json').read_text()).items():
+              assert hashlib.sha256(Path(name).read_bytes()).hexdigest() == expected, name
+          print('BROWSER_TARGETS_FOLLOW_RELOCATED_STRUCTURES')
           PY
       - name: Complete regression, historic migration and current economic comparisons
         run: |
           mkdir -p verification-output
           for name in smoke-test militia-hunts-test clarity-test baseline-equivalence-test walls-test economy-test economy-soak-test daily-life-test daily-life-equivalence-test map-layout-test; do
-            node "verification/$name.js" | tee "verification-output/$name.log"
+            node "verification/$name.js" 2>&1 | tee "verification-output/$name.log"
           done
-          PREVIOUS_RUNTIME_REF=9529f0ce8cc1f43c962f0e665a0ad9ced15c5519 node verification/baseline-equivalence-test.js | tee verification-output/previous-clarity-equivalence.log
-          PREVIOUS_RUNTIME_REF=a47830faae4c4c17e680dead01932e9014dbdf14 node verification/baseline-equivalence-test.js | tee verification-output/previous-walls-equivalence.log
-          PREVIOUS_ACTIVE_REF=c158b99822563e0f94c5f47ac00391e05de0b1c0 node verification/daily-life-equivalence-test.js | tee verification-output/previous-map-active-equivalence.log
+          PREVIOUS_RUNTIME_REF=9529f0ce8cc1f43c962f0e665a0ad9ced15c5519 node verification/baseline-equivalence-test.js 2>&1 | tee verification-output/previous-clarity-equivalence.log
+          PREVIOUS_RUNTIME_REF=a47830faae4c4c17e680dead01932e9014dbdf14 node verification/baseline-equivalence-test.js 2>&1 | tee verification-output/previous-walls-equivalence.log
+          PREVIOUS_ACTIVE_REF=c158b99822563e0f94c5f47ac00391e05de0b1c0 node verification/daily-life-equivalence-test.js 2>&1 | tee verification-output/previous-map-active-equivalence.log
       - name: Independent footprint, roof and utility-network geometry
         run: |
           node verification/export-map-layout.js
           python -m pip install shapely==2.1.2 networkx==3.6.1
-          python verification/map-geometry-audit.py | tee verification-output/map-geometry.log
+          python verification/map-geometry-audit.py 2>&1 | tee verification-output/map-geometry.log
       - name: Browser dependencies
         run: |
           python -m pip install playwright==1.57.0
           python -m playwright install --with-deps chromium
       - name: Six real-origin desktop and touch-mobile acceptance suites
         run: |
-          python verification/browser-hunts.py | tee verification-output/hunts-browser.log
+          python verification/browser-hunts.py 2>&1 | tee verification-output/hunts-browser.log
           python -m http.server 8765 --bind 127.0.0.1 > /tmp/map-server.log 2>&1 &
           server_pid=$!
           trap 'kill "$server_pid"' EXIT
           sleep 1
           for name in clarity walls economy daily-life map-layout; do
-            python "verification/browser-$name.py" --url http://127.0.0.1:8765/ | tee "verification-output/$name-browser.log"
+            python "verification/browser-$name.py" --url http://127.0.0.1:8765/ 2>&1 | tee "verification-output/$name-browser.log"
           done
-          python verification/daily-life-live-soak.py --url http://127.0.0.1:8765/ --seconds 65 | tee verification-output/minute-presence.log
+          python verification/daily-life-live-soak.py --url http://127.0.0.1:8765/ --seconds 65 2>&1 | tee verification-output/minute-presence.log
       - name: Commit only verified game files to the feature branch
         run: |
           python - <<'PY'
           import json,subprocess
           from pathlib import Path
-          names=list(json.loads(Path('.maintenance/map-output-sha256.json').read_text()))
+          names=list(json.loads(Path('.maintenance/map-output-sha256.json').read_text()))+list(json.loads(Path('.maintenance/map-browser-sha256.json').read_text()))
           subprocess.run(['git','add','--',*names],check=True)
           PY
           git config user.name 'github-actions[bot]'
