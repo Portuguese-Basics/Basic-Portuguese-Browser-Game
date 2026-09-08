@@ -74,21 +74,32 @@ jobs:
             python "verification/browser-$name.py" --url http://127.0.0.1:8765/ 2>&1 | tee "verification-output/$name-browser.log"
           done
           python verification/daily-life-live-soak.py --url http://127.0.0.1:8765/ --seconds 65 2>&1 | tee verification-output/minute-presence.log
-      - name: Commit only verified game files to the feature branch
+      - name: Commit verified source without workflow changes
         run: |
           python - <<'PY'
-          import json,subprocess
+          import json,subprocess,shutil
           from pathlib import Path
           names=[]
           for label in ['output','browser','coast']:
               names+=list(json.loads(Path(f'.maintenance/map-{label}-sha256.json').read_text()))
-          subprocess.run(['git','add','--',*sorted(set(names))],check=True)
+          workflow_names=sorted({n for n in names if n.startswith('.github/workflows/')})
+          for name in workflow_names:
+              destination=Path('verification-output/intended-workflows')/Path(name).name
+              destination.parent.mkdir(parents=True,exist_ok=True)
+              shutil.copyfile(name,destination)
+          # Workflow changes are applied separately through the authorized connector.
+          # The runner retains its existing contents-only permission.
+          subprocess.run(['git','restore','--source=HEAD','--',*workflow_names],check=True)
+          names=sorted({n for n in names if not n.startswith('.github/workflows/')})
+          subprocess.run(['git','add','--',*names],check=True)
           PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git commit -m 'Expand map area 25 percent and reorganize bastion, town and access networks'
-          git push origin HEAD:refs/heads/feature/map-expansion-bastion
           git rev-parse HEAD > verification-output/feature-commit.txt
+          git archive --format=zip --prefix=Basic-Portuguese-Browser-Game/ -o verification-output/verified-feature-source.zip HEAD
+          git bundle create verification-output/verified-feature-history.bundle --all
+          git push origin HEAD:refs/heads/feature/map-expansion-bastion
       - uses: actions/upload-artifact@v4
         if: always()
         with:
