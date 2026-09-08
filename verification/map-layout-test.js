@@ -5,7 +5,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs');
 const {execFileSync}=require('node:child_process');const {game,plain}=require('./layout-harness');
 const previous=execFileSync('git',['show','c158b99822563e0f94c5f47ac00391e05de0b1c0:index.html'],{encoding:'utf8'});
 let groups=0;function test(name,f){f();groups++;console.log('PASS '+name);}
-function moneyState(g){const s=plain(g.estado);delete s.cameraExpansao;delete s.jogador.x;delete s.jogador.y;
+function moneyState(g){const s=plain(g.estado);if(s.industriaColonia){assert.deepEqual(s.industriaColonia,plain(g.eval('novaIndustriaColonia()')),'legacy map migration must create a completely inactive, empty enterprise extension');delete s.industriaColonia;}delete s.cameraExpansao;delete s.jogador.x;delete s.jogador.y;
  for(const u of s.defesaPosicional.unidades)for(const k of ['x','y','rota','trecho'])delete u[k];
  if(s.defesaPosicional.exercicio){for(const t of s.defesaPosicional.exercicio.alvos){delete t.x;delete t.y;}for(const p of s.defesaPosicional.exercicio.flechas){delete p.origem;delete p.destino;}}
  return s;
