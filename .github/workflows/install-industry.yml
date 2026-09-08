@@ -38,12 +38,21 @@ jobs:
           subprocess.run(['git','apply','/tmp/industry.patch'],check=True)
           for name, expected in json.loads(Path('.maintenance/industry-output-sha256.json').read_text()).items():
               assert hashlib.sha256(Path(name).read_bytes()).hexdigest() == expected, name
-          print('ALL_11_OUTPUT_HASHES_VERIFIED')
+          encoded=Path('.maintenance/industry-optimize.b64').read_text()
+          assert hashlib.sha256(encoded.encode()).hexdigest()=='0afe79ae3613780d3a579546d9fafb1eb4e01f3d53ae33b2c362089ccad1de77'
+          patch=lzma.decompress(base64.b64decode(encoded,validate=True))
+          assert hashlib.sha256(patch).hexdigest()=='a4bcd19430978d340b474b809fe42e47559aed8761731303cf57b4c714a1e28c'
+          Path('/tmp/industry-optimize.patch').write_bytes(patch)
+          subprocess.run(['git','apply','--check','/tmp/industry-optimize.patch'],check=True)
+          subprocess.run(['git','apply','/tmp/industry-optimize.patch'],check=True)
+          for name,expected in json.loads(Path('.maintenance/industry-optimize-sha256.json').read_text()).items():
+              assert hashlib.sha256(Path(name).read_bytes()).hexdigest()==expected,name
+          print('ALL_FINAL_OUTPUT_HASHES_VERIFIED')
           PY
       - name: Full regressions, transactions and staged industry economy
         run: |
           mkdir -p verification-output
-          for name in smoke-test militia-hunts-test clarity-test baseline-equivalence-test walls-test economy-test economy-soak-test daily-life-test daily-life-equivalence-test map-layout-test map-render-test road-render-test industry-test industry-soak-test; do
+          for name in smoke-test militia-hunts-test clarity-test baseline-equivalence-test walls-test economy-test economy-soak-test daily-life-test daily-life-equivalence-test map-layout-test map-render-test road-render-test industry-test industry-soak-test industry-performance-equivalence-test; do
             node "verification/$name.js" 2>&1 | tee "verification-output/$name.log"
           done
           PREVIOUS_ACTIVE_REF=2c2069da81651b667c9e907ef07cdbd855c635d2 node verification/daily-life-equivalence-test.js 2>&1 | tee verification-output/inactive-baseline-equivalence.log
@@ -69,12 +78,13 @@ jobs:
           done
           python verification/browser-map-render.py 2>&1 | tee verification-output/map-raster.log
           python verification/browser-road-cache.py 2>&1 | tee verification-output/road-cache.log
+          python verification/browser-industry-render.py 2>&1 | tee verification-output/industry-render.log
       - name: Commit verified content only, not workflows
         run: |
           python - <<'PY'
           import json, subprocess
           from pathlib import Path
-          names=list(json.loads(Path('.maintenance/industry-output-sha256.json').read_text()))
+          names=sorted(set(json.loads(Path('.maintenance/industry-output-sha256.json').read_text()))|set(json.loads(Path('.maintenance/industry-optimize-sha256.json').read_text())))
           assert not any(n.startswith('.github/') for n in names)
           subprocess.run(['git','add','--',*names],check=True)
           PY
