@@ -1,0 +1,4 @@
+'use strict';
+const fs=require('node:fs');const {game,plain}=require('./layout-harness');const g=game();
+const layout=g.eval(`({world:{width:larguraMundoExpansao,height:alturaMundoExpansao,coast:limiteCosta},areas:areasPlantaColonia,outer:recintoExterno,inner:recintoInterno,roads:trechosEstradaColonia,guards:areasPostosGuardaColonia,wells:posicoesPocosPublicosColonia,plots:reservasPlantaColonia,prestige:casasPrestigioPlantaColonia,areasCabanasLenhadores,areasCabanasColeta,waterBase:redeHidricaBasicaColonia,waterAdvanced:redeHidricaAvancadaColonia,sewers:redeEsgotoColonia,gates:portoesMuralhaColonia.map(p=>({id:p.id,ring:p.recinto===recintoInterno?'inner':'outer',side:p.lado,x:p.x,y:p.y}))})`);
+fs.mkdirSync('verification-output',{recursive:true});fs.writeFileSync(process.argv[2]||'verification-output/map-layout.json',JSON.stringify(plain(layout),null,2)+'\n');

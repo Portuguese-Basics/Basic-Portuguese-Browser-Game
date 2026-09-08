@@ -1,0 +1,4 @@
+'use strict';
+const fs=require('node:fs'),{execFileSync}=require('node:child_process'),{game}=require('./layout-harness');
+const html=execFileSync('git',['show','c158b99822563e0f94c5f47ac00391e05de0b1c0:index.html'],{encoding:'utf8'}),g=game(new Map(),html);g.mature();g.eval('estado.trechosPalicadaInterna=4;estado.trechosPalicadaExterna=4;estado.trechosMuralhaPedraInterna=4;estado.trechosMuralhaPedraExterna=4;estado.trechosAdarveInterno=4;estado.trechosAdarveExterno=4;estado.quantidadeTorresMuralha=8;estado.quantidadePortoesFortificados=7;estado.arqueirosMilicia=4;estado.arqueirosGuarda=4;estado.arqueirosSoldados=4;estado.defesaPosicional=normalizarDefesaPosicional(null);atualizarGuarnicaoColonia(500);estado.jogoPausado=true;salvarProgresso()');
+fs.mkdirSync('verification-output',{recursive:true});fs.writeFileSync(process.argv[2]||'verification-output/map-legacy-fixture.json',JSON.stringify(Object.fromEntries(g.storage))+'\n');

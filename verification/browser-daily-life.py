@@ -35,7 +35,7 @@ try:
    assert coverage['residents']==450 and coverage['minimumExteriorSeconds']>=40 and coverage['maximumHiddenSeconds']<=14
    (out/f'{name}-coverage.json').write_text(json.dumps(coverage,indent=2))
    page.locator('#jogo').scroll_into_view_if_needed()
-   for scene,expr in [('neighborhood','centerTest(areaSegundoBlocoMoradias.x+600,areaSegundoBlocoMoradias.y+450,1.25)'),('workyards','centerTest(areaClinicaColonia.x+areaClinicaColonia.largura/2,areaClinicaColonia.y+areaClinicaColonia.altura+30,1.05)'),('fields','centerTest(2200,3440,.52)'),('city','centerTest(7900,4250,.17)')]:
+   for scene,expr in [('neighborhood','centerTest(areaSegundoBlocoMoradias.x+600,areaSegundoBlocoMoradias.y+450,1.25)'),('workyards','centerTest(areaClinicaColonia.x+areaClinicaColonia.largura/2,areaClinicaColonia.y+areaClinicaColonia.altura+30,1.05)'),('fields','centerTest(2200,3440,.52)'),('city','centerTest(recintoExterno.x+recintoExterno.largura/2,recintoExterno.y+recintoExterno.altura/2,.12)')]:
     page.evaluate(expr+';atualizarControlesCamera()');page.locator('#jogo').screenshot(path=str(out/f'{name}-{scene}.png'))
    # Find a resident using their real register ID and the actual control.
    resident=page.evaluate('cacheVidaCotidiana.pessoas.find(p=>p.tipo==="geral").id')

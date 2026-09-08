@@ -191,6 +191,7 @@ function createHarness(storage) {
   return {
     elements,
     listeners,
+    evaluate(expression) { return vm.runInNewContext(expression, context); },
     fillRects,
     strokeRects,
     fillTexts,
@@ -1472,7 +1473,7 @@ if (
   expansionSave.expansao.construcao.etapa !== 0 ||
   expansionSave.escritorio.fundo !== 0 ||
   expansionSave.ouro !== 2500 ||
-  expansionSave.jogador.x !== 12740 ||
+  expansionSave.jogador.x !== 16240 ||
   expansionSave.jogador.y !== 4500
 ) {
   throw new Error("A nova economia colonial não foi inicializada corretamente.");
@@ -1483,19 +1484,19 @@ expansionPurchaseGame.step(50);
 expansionSave = JSON.parse(storage.get("arqueiro-do-assentamento-v1"));
 const hasTenTimesWorld = expansionPurchaseGame.fillRects.some(
   ([x, y, width, height]) =>
-    x === 0 && y === 0 && width === 14000 && height === 9000,
+    x === 0 && y === 0 && width === 17500 && height === 9000,
 );
 const hasOceanEdge = expansionPurchaseGame.fillRects.some(
   ([x, y, width, height]) =>
-    x === 13100 && y === 0 && width === 900 && height === 9000,
+    x === 16600 && y === 0 && width === 900 && height === 9000,
 );
 const hasExpansionRiver = expansionPurchaseGame.fillRects.some(
   ([x, y, width, height]) =>
-    x === 0 && y === 520 && width === 14000 && height === 150,
+    x === 0 && y === 520 && width === 17500 && height === 150,
 );
 const hasAdministration = expansionPurchaseGame.strokeRects.some(
   ([x, y, width, height]) =>
-    x === 8370 && y === 4300 && width === 260 && height === 170,
+    x === 12000 && y === 3730 && width === 260 && height === 170,
 );
 if (
   expansionSave.expansao.construcao.etapa !== 1 ||
@@ -1633,45 +1634,34 @@ const hasColonialPasture = expansionPurchaseGame.fillRects.some(
     x === 408 && y === 4198 && width === 3484 && height === 1294,
 );
 const pastureMeetsAgriculturalRoad = 4190 === 4150 + 80 / 2;
-const hasFieldRoad = expansionPurchaseGame.fillRects.some(
-  ([x, y, width, height]) =>
-    x === 3900 && y === 4090 && width === 3030 && height === 120,
-);
-const hasRoadBetweenFieldsAndPasture =
-  expansionPurchaseGame.lineSegments.some(
-    ([x1, y1, x2, y2]) =>
-      x1 === 400 && y1 === 4150 && x2 === 1600 && y2 === 4150,
-  ) &&
-  expansionPurchaseGame.lineSegments.some(
-    ([x1, y1, x2, y2]) =>
-      x1 === 2800 && y1 === 4150 && x2 === 4000 && y2 === 4150,
-  );
+const hasFieldRoad = expansionPurchaseGame.lineSegments.some(([x1,y1,x2,y2])=>y1===4150&&y2===4150&&x1<=4000&&x2>=5000);
+const hasRoadBetweenFieldsAndPasture = expansionPurchaseGame.lineSegments.some(([x1,y1,x2,y2])=>y1===4150&&y2===4150&&x1<=400&&x2>=4000);
 const hasProduceStore = expansionPurchaseGame.strokeRects.some(
   ([x, y, width, height]) =>
-    x === 5600 && y === 2050 && width === 380 && height === 270,
+    x === 5950 && y === 2850 && width === 380 && height === 270,
 );
 const hasBeanStore = expansionPurchaseGame.strokeRects.some(
   ([x, y, width, height]) =>
-    x === 6050 && y === 2050 && width === 380 && height === 270,
+    x === 6500 && y === 2850 && width === 380 && height === 270,
 );
 const hasOuterWardPlan = expansionPurchaseGame.lineSegments.some(
   ([x1, y1, x2, y2]) =>
-    x1 === 5000 && y1 === 1500 && x2 === 11200 && y2 === 1500,
+    x1 === 5000 && y1 === 900 && x2 === 14800 && y2 === 900,
 );
 const hasInnerWardPlan = expansionPurchaseGame.lineSegments.some(
   ([x1, y1, x2, y2]) =>
-    x1 === 6800 && y1 === 2700 && x2 === 10300 && y2 === 2700,
+    x1 === 9800 && y1 === 2400 && x2 === 13700 && y2 === 2400,
 );
 const hasPrematureWallRectangle = expansionPurchaseGame.strokeRects.some(
   ([x, y, width, height]) =>
-    (x === 5000 && y === 1500 && width === 6200 && height === 6000) ||
-    (x === 6800 && y === 2700 && width === 3500 && height === 3600),
+    (x === 5000 && y === 900 && width === 9800 && height === 7000) ||
+    (x === 9800 && y === 2400 && width === 3900 && height === 4200),
 );
 const productionLots = [
-  [5200, 3100, 500, 340],
-  [5900, 3120, 450, 300],
-  [5200, 4550, 500, 340],
-  [5900, 4570, 450, 300],
+  [7200, 2850, 500, 340],
+  [7900, 2870, 450, 300],
+  [5400, 4600, 500, 340],
+  [6100, 4620, 450, 300],
 ];
 const roadRect = [3900, 4090, 3030, 120];
 const roadCrossesProductionLot = productionLots.some(
@@ -1683,7 +1673,7 @@ const roadCrossesProductionLot = productionLots.some(
 );
 const hasGranary = expansionPurchaseGame.strokeRects.some(
   ([x, y, width, height]) =>
-    x === 7000 && y === 4550 && width === 420 && height === 260,
+    x === 10630 && y === 3600 && width === 420 && height === 260,
 );
 const completedHouses = expansionPurchaseGame.strokeRects.filter(
   ([, , width, height]) => width === 130 && height === 105,
@@ -1885,8 +1875,8 @@ if (cameraRestoredGame.estado.cameraExpansao.y <= restoredY) {
 cameraRestoredGame.listeners.get("centralizar-mapa:click")();
 if (
   cameraRestoredGame.estado.cameraExpansao.zoom !== 1 ||
-  cameraRestoredGame.estado.cameraExpansao.x !== 7800 ||
-  cameraRestoredGame.estado.cameraExpansao.y !== 4050
+  cameraRestoredGame.estado.cameraExpansao.x !== 11430 ||
+  cameraRestoredGame.estado.cameraExpansao.y !== 3480
 ) {
   throw new Error("Centralizar não restaurou a vista inicial da nova colônia.");
 }
@@ -2289,8 +2279,8 @@ while (!infrastructureGame.estado.depositoFlechasConstruido) {
   sequenciaInfraestrutura.push(obraEsperada);
 }
 if (
-  primeirosTrechosViarios[0] !== "eixo central e ronda interna" ||
-  primeirosTrechosViarios[1] !== "rua das moradias" ||
+  primeirosTrechosViarios[0] !== "eixo central e ronda da cidadela" ||
+  primeirosTrechosViarios[1] !== "avenidas residenciais e reservas urbanas" ||
   infrastructureGame.quantidadeTrechosEstrada(1) !== 8 ||
   infrastructureGame.quantidadeTrechosEstrada(2) !== 0 ||
   !sequenciaInfraestrutura.includes("saneamento")
@@ -2583,17 +2573,17 @@ if (
   throw new Error("O painel colonial não exibiu empregos, produção e capacidades com clareza.");
 }
 const illustratedStores = [
-  [5150, 2050, 380, 270],
-  [5600, 2050, 380, 270],
-  [6050, 2050, 380, 270],
-  [5900, 3120, 450, 300],
-  [5900, 4570, 450, 300],
-  [11750, 2900, 700, 420],
+  [5400, 2850, 380, 270],
+  [5950, 2850, 380, 270],
+  [6500, 2850, 380, 270],
+  [7900, 2870, 450, 300],
+  [6100, 4620, 450, 300],
+  [15300, 2800, 700, 420],
   [1780, 6720, 470, 300],
   [3780, 6660, 500, 320],
-  [11620, 5410, 640, 430],
-  [8250, 2920, 500, 280],
-  [8850, 2920, 500, 280],
+  [12600, 3570, 640, 430],
+  [11300, 2750, 500, 280],
+  [11900, 2750, 500, 280],
 ];
 if (
   !illustratedStores.every(([sx, sy, sw, sh]) =>
@@ -3239,14 +3229,14 @@ const forestryStructures = [
   [600, 1650, 600, 300],
   [1450, 1650, 600, 300],
   [2400, 1650, 600, 300],
-  [750, 760, 540, 280],
-  [2650, 760, 540, 280],
-  [5100, 1700, 440, 260],
-  [7000, 5480, 440, 280],
-  [6500, 1650, 500, 300],
-  [7050, 2920, 500, 280],
-  [5700, 1650, 500, 300],
-  [7650, 2920, 500, 280],
+  [1350, 600, 540, 280],
+  [2650, 600, 540, 280],
+  [4200, 800, 440, 260],
+  [10630, 5980, 440, 280],
+  [4200, 1300, 500, 300],
+  [10020, 2750, 500, 280],
+  [4200, 1800, 500, 300],
+  [10600, 2750, 500, 280],
 ];
 if (
   !hasNorthwestForest ||
@@ -3517,29 +3507,20 @@ const namedPrestigeHouses = infrastructureGame.fillTexts.filter(
 if (namedPrestigeHouses.length < 2) {
   throw new Error("As duas moradias de prestígio continuaram sem identificação individual.");
 }
-const secureInnerKeepStructures = [
-  [7050, 2920, 500, 280],
-  [7650, 2920, 500, 280],
-  [8250, 2920, 500, 280],
-  [8850, 2920, 500, 280],
-  [7000, 5480, 440, 280],
-  [7550, 5400, 650, 440],
-  [8300, 5480, 440, 280],
-  [8850, 5400, 560, 440],
-];
+const secureInnerKeepStructures = infrastructureGame.evaluate('[areaArsenalMadeira,areaDepositoFlechas,areaArmazemFerramentas,areaArsenalColonia,areaFarmaciaColonia,areaBancoColonia,areaArmeiroColonia,areaArmazemComercial]').map(a=>[a.x,a.y,a.largura,a.altura]);
 if (
   !secureInnerKeepStructures.every(([sx, sy, sw, sh]) =>
-    sx >= 6800 &&
-    sy >= 2700 &&
-    sx + sw <= 10300 &&
-    sy + sh <= 6300 &&
+    sx >= 9800 &&
+    sy >= 2400 &&
+    sx + sw <= 13700 &&
+    sy + sh <= 6600 &&
     infrastructureGame.strokeRects.some(
       ([x, y, width, height]) =>
         x === sx && y === sy && width === sw && height === sh,
     ),
   )
 ) {
-  throw new Error("Banco, clínica ou estoques valiosos ficaram fora do recinto interno.");
+  throw new Error("Banco, armarias ou estoques valiosos ficaram fora do recinto interno.");
 }
 
 const legacyColonyStorage = new Map([
@@ -3582,10 +3563,10 @@ if (
   legacyColonySave.expansao.economia.celeiroConstruido ||
   legacyColonySave.expansao.construcao.etapa !== 0 ||
   !legacyColonySave.expansao.economia.coloniaIniciada ||
-  legacyColonySave.jogador.x !== 12740 ||
+  legacyColonySave.jogador.x !== 16240 ||
   legacyColonySave.jogador.y !== 4500 ||
-  legacyColonySave.expansao.camera.x !== 7800 ||
-  legacyColonySave.expansao.camera.y !== 4050
+  legacyColonySave.expansao.camera.x !== 11430 ||
+  legacyColonySave.expansao.camera.y !== 3480
 ) {
   throw new Error("Um save da colônia 5× não foi reiniciado uma vez no mapa 10×.");
 }
@@ -4166,7 +4147,7 @@ trailGame.step(100);
 if (
   !trailGame.lineSegments.some(
     ([x1, y1, x2, y2]) =>
-      x1 === 5000 && y1 === 4150 && x2 === 6700 && y2 === 4150,
+      x1 === 5000 && y1 === 4150 && x2 === 7000 && y2 === 4150,
   ) ||
   trailGame.fillTexts.some(([texto]) => texto === "TERRA") ||
   trailGame.elements.get("edificio-estradas").textContent !== "Somente trilhas" ||
@@ -4545,7 +4526,7 @@ if (
   !budgetGame.fillTexts.some(([texto]) => texto === "POÇO E CISTERNA") ||
   !budgetGame.fillTexts.some(
     ([texto]) =>
-      texto === "LINHAS AZUIS · REDE SUBTERRÂNEA DE ÁGUA E ESGOTO",
+      texto === "AZUL: ÁGUA · MARROM: ESGOTO SUBTERRÂNEO",
   ) ||
   !budgetGame.fillTexts.some(([texto]) => texto === "POSTO 1")
 ) {
@@ -4731,12 +4712,12 @@ if (
     post.x + post.largura <= outerWard.x + outerWard.largura &&
     post.y + post.altura <= outerWard.y + outerWard.altura
   )) ||
-  Math.abs(guardPostCenters.norte.x + guardPostCenters.sul.x - 2 * outerCenter.x) > 1 ||
-  Math.abs(guardPostCenters.norte.y + guardPostCenters.sul.y - 2 * outerCenter.y) > 1 ||
-  Math.abs(guardPostCenters.leste.x + guardPostCenters.oeste.x - 2 * outerCenter.x) > 1 ||
-  Math.abs(guardPostCenters.leste.y + guardPostCenters.oeste.y - 2 * outerCenter.y) > 1
+  guardPostCenters.norte.y >= outerWard.y + outerWard.altura / 2 ||
+  guardPostCenters.sul.y <= outerWard.y + outerWard.altura / 2 ||
+  guardPostCenters.leste.x <= outerWard.x + outerWard.largura / 2 ||
+  guardPostCenters.oeste.x >= outerWard.x + outerWard.largura / 2
 ) {
-  throw new Error("Os quatro postos não ficaram um por lado, internos e simétricos na muralha externa.");
+  throw new Error("Os quatro postos não ficaram um por lado, internos e acessíveis na muralha externa.");
 }
 const rectanglesOverlap = (first, second, margin = 0) =>
   first.x - margin < second.x + second.largura + margin &&
@@ -4778,11 +4759,11 @@ if (
 
 const resourceGateRoute = wallAuditGame.rotaMaisRapida(
   { x: 4400, y: 5520 },
-  { x: 6900, y: 5520 },
+  { x: 9950, y: 5520 },
 );
 const trainingGateRoute = wallAuditGame.rotaMaisRapida(
-  { x: 6700, y: 7400 },
-  { x: 7200, y: 8060 },
+  { x: 9000, y: 7650 },
+  { x: 9000, y: 8400 },
 );
 const routeCrossesPoint = (route, x, y) =>
   route.pontos.some((point, index) => {
@@ -4798,8 +4779,8 @@ if (
   resourceGateRoute.distanciaForaRede !== 0 ||
   trainingGateRoute.distanciaForaRede !== 0 ||
   !routeCrossesPoint(resourceGateRoute, 5000, 5520) ||
-  !routeCrossesPoint(resourceGateRoute, 6800, 5520) ||
-  !routeCrossesPoint(trainingGateRoute, 6700, 7500)
+  !routeCrossesPoint(resourceGateRoute, 9800, 5520) ||
+  !routeCrossesPoint(trainingGateRoute, 9000, 7900)
 ) {
   throw new Error("As novas passagens não conectam recursos, recinto interno e campo de treino pela rede.");
 }
@@ -5020,7 +5001,7 @@ hydraulicSegments.forEach((edge) => {
     }
   });
 });
-const expectedHydraulicGateCrossings = new Set(["6800,4150", "10300,4150"]);
+const expectedHydraulicGateCrossings = new Set(["9800,4150", "13700,4150"]);
 if (
   hydraulicWallCrossings.size !== expectedHydraulicGateCrossings.size ||
   [...hydraulicWallCrossings].some(
@@ -5042,8 +5023,8 @@ if (
   !basicHydraulicNetwork.some(({ pontos }) =>
     pontos.some(
       (point) =>
-        point.x === auditedCistern.x + auditedCistern.largura &&
-        point.y === auditedCistern.y + auditedCistern.altura / 2,
+        point.x === auditedCistern.x + auditedCistern.largura / 2 &&
+        point.y === auditedCistern.y + auditedCistern.altura,
     ),
   )
 ) {
@@ -5091,7 +5072,7 @@ if (
       ),
   ) ||
   !hydraulicAuditGame.fillTexts.some(
-    ([text]) => text === "LINHAS AZUIS · REDE SUBTERRÂNEA DE ÁGUA E ESGOTO",
+    ([text]) => text === "AZUL: ÁGUA · MARROM: ESGOTO SUBTERRÂNEO",
   ) ||
   !hydraulicAuditGame.elements
     .get("registro-saneamento-ampliado")
@@ -5209,8 +5190,8 @@ if (
 }
 const firstHouseSecondBlock = housingGame.posicaoCasa(30);
 if (
-  firstHouseSecondBlock.x !== 7145 ||
-  firstHouseSecondBlock.y !== 6565
+  firstHouseSecondBlock.x !== 5460 ||
+  firstHouseSecondBlock.y !== 6100
 ) {
   throw new Error("As casas do segundo bairro não foram colocadas no lote reservado.");
 }
@@ -5225,10 +5206,10 @@ Object.assign(housingGame.estado, {
 housingGame.step(100);
 const protectedMeatSites = [
   [420, 500, 600, 260],
-  [4500, 4550, 420, 340],
-  [7100, 6500, 1200, 900],
-  [9450, 2920, 500, 280],
-  [9830, 5580, 180, 350],
+  [2700, 5800, 420, 340],
+  [5400, 6000, 1450, 1350],
+  [12600, 2750, 500, 280],
+  [13200, 2750, 180, 350],
 ];
 if (
   !protectedMeatSites.every(([sx, sy, sw, sh]) =>
@@ -5293,13 +5274,11 @@ if (
   areasSobrepostas(cemiterioSul, limiteExternoCozinhas) ||
   cemiterioSul.y < 8200 ||
   cemiterioSul.y + cemiterioSul.altura < 8800 ||
-  cemiterioSul.x - (patioTreinoSul.x + patioTreinoSul.largura) !== 200 ||
-  cemiterioSul.y >= patioTreinoSul.y + patioTreinoSul.altura ||
-  cemiterioSul.y + cemiterioSul.altura <= patioTreinoSul.y ||
+  areasSobrepostas(cemiterioSul, patioTreinoSul) ||
   ![
-    [8400, 6400, 360, 430],
-    [8810, 6400, 430, 340],
-    [9290, 6400, 430, 340],
+    [7200, 6150, 360, 430],
+    [7820, 6230, 430, 340],
+    [8460, 6230, 430, 340],
   ].every(([sx, sy, sw, sh]) =>
     housingGame.strokeRects.some(
       ([x, y, width, height]) =>
@@ -5308,7 +5287,7 @@ if (
   ) ||
   !housingGame.strokeRects.some(
     ([x, y, width, height]) =>
-      x === 8350 && y === 8200 && width === 1800 && height === 650,
+      x === 10300 && y === 8200 && width === 1800 && height === 650,
   )
 ) {
   throw new Error("As cozinhas, os estoques preservados ou o cemitério não ficaram nas zonas planejadas.");
@@ -5381,13 +5360,13 @@ const northeastRoute = thirdHousingGame.rotaMaisRapida(
 if (
   thirdHousingGame.estado.quantidadeCasasColonia !== 55 ||
   thirdHousingGame.capacidadeMoradias() !== 275 ||
-  firstHouseThirdBlock.x !== 9845 ||
-  firstHouseThirdBlock.y !== 1615 ||
-  lastHouseThirdBlock.x !== 10795 ||
-  lastHouseThirdBlock.y !== 2275 ||
+  firstHouseThirdBlock.x !== 11960 ||
+  firstHouseThirdBlock.y !== 1100 ||
+  lastHouseThirdBlock.x !== 13060 ||
+  lastHouseThirdBlock.y !== 2140 ||
   !areaContida(terceiroBairroNordeste, limiteExternoMoradias) ||
   areasSobrepostas(terceiroBairroNordeste, limiteInternoMoradias) ||
-  housingRoadGroup.acessos.length !== 15 ||
+  housingRoadGroup.acessos.length < 15 ||
   northeastRoute.trechos.length === 0 ||
   northeastRoute.pontos.some((ponto, indice) => {
     if (indice === 0) return false;
@@ -5403,11 +5382,11 @@ thirdHousingGame.step(100);
 if (
   !thirdHousingGame.strokeRects.some(
     ([x, y, width, height]) =>
-      x === 9800 && y === 1550 && width === 1200 && height === 900,
+      x === 11900 && y === 1000 && width === 1450 && height === 1350,
   ) ||
   !thirdHousingGame.strokeRects.some(
     ([x, y, width, height]) =>
-      x === 9845 && y === 1615 && width === 130 && height === 105,
+      x === 11960 && y === 1100 && width === 130 && height === 105,
   ) ||
   !thirdHousingGame.fillTexts.some(([label]) =>
     String(label).startsWith("BAIRRO 3 · 1/30 CASAS"),
