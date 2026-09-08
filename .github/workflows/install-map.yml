@@ -1,8 +1,8 @@
-name: Integrate verified map restructure
+name: Verify map wall batching
 on:
   push:
     branches: [feature/map-expansion-bastion]
-    paths: ['.maintenance/map-*', '.github/workflows/install-map.yml']
+    paths: ['.maintenance/map-render.patch', '.github/workflows/install-map.yml']
 permissions:
   contents: write
 defaults:
@@ -14,95 +14,44 @@ concurrency:
 jobs:
   install:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: feature/map-expansion-bastion
           fetch-depth: 0
+          ref: feature/map-expansion-bastion
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Verify pinned source, complete transfer and every intended output
+      - name: Apply only the verified wall painter change
         run: |
-          python - <<'PY'
-          import base64, hashlib, json, lzma, subprocess
-          from pathlib import Path
-          assert hashlib.sha256(Path('index.html').read_bytes()).hexdigest() == 'd14782e43be0e2f1d2be3227ae6812d3fa64e704020a21e901fc6072ae266623'
-          encoded = ''.join(Path(f'.maintenance/map-part-{i}.b64').read_text() for i in range(1,4))
-          assert hashlib.sha256(encoded.encode()).hexdigest() == 'e3e638ea8ddac28da104ef75ce6f8c2c3c7b167d1cc89514832a618a0095e630'
-          patch = lzma.decompress(base64.b64decode(encoded, validate=True))
-          assert hashlib.sha256(patch).hexdigest() == '5b8fbea3ea6021200cac14ca44aebde4bb3121d8ccec1fb0a5d647ad11d2b3c6'
-          Path('/tmp/map.patch').write_bytes(patch)
-          subprocess.run(['git','apply','--check','/tmp/map.patch'],check=True)
-          subprocess.run(['git','apply','/tmp/map.patch'],check=True)
-          for name, expected in json.loads(Path('.maintenance/map-output-sha256.json').read_text()).items():
-              assert hashlib.sha256(Path(name).read_bytes()).hexdigest() == expected, name
-          for label in ['browser','coast']:
-              subprocess.run(['git','apply','--check',f'.maintenance/map-{label}-fix.patch'],check=True)
-              subprocess.run(['git','apply',f'.maintenance/map-{label}-fix.patch'],check=True)
-              for name, expected in json.loads(Path(f'.maintenance/map-{label}-sha256.json').read_text()).items():
-                  assert hashlib.sha256(Path(name).read_bytes()).hexdigest() == expected, name
-          print('ALL_FINAL_RUNTIME_AND_TEST_HASHES_VERIFIED')
-          PY
-      - name: Complete regression, historic migration and current economic comparisons
+          echo '8cffba64d966e8f1e9d650f095d5cb542dc6d0f983e7ccd65c3bd7183146953e  index.html' | sha256sum --check
+          git apply --check .maintenance/map-render.patch
+          git apply .maintenance/map-render.patch
+          echo '3056150b0a2992331641d74a83012c159e5f5acd94bf2a629254709a9cad67a4  index.html' | sha256sum --check
+      - name: Exact post geometry, read-only paint and economic checks
         run: |
           mkdir -p verification-output
-          for name in smoke-test militia-hunts-test clarity-test baseline-equivalence-test walls-test economy-test economy-soak-test daily-life-test daily-life-equivalence-test map-layout-test; do
-            node "verification/$name.js" 2>&1 | tee "verification-output/$name.log"
-          done
-          PREVIOUS_RUNTIME_REF=9529f0ce8cc1f43c962f0e665a0ad9ced15c5519 node verification/baseline-equivalence-test.js 2>&1 | tee verification-output/previous-clarity-equivalence.log
-          PREVIOUS_RUNTIME_REF=a47830faae4c4c17e680dead01932e9014dbdf14 node verification/baseline-equivalence-test.js 2>&1 | tee verification-output/previous-walls-equivalence.log
-          PREVIOUS_ACTIVE_REF=c158b99822563e0f94c5f47ac00391e05de0b1c0 node verification/daily-life-equivalence-test.js 2>&1 | tee verification-output/previous-map-active-equivalence.log
-      - name: Independent footprint, roof and utility-network geometry
-        run: |
-          node verification/export-map-layout.js
-          python -m pip install shapely==2.1.2 networkx==3.6.1
-          python verification/map-geometry-audit.py 2>&1 | tee verification-output/map-geometry.log
-      - name: Browser dependencies
+          node verification/map-render-test.js | tee verification-output/map-render.log
+          node verification/smoke-test.js | tee verification-output/smoke.log
+          node verification/map-layout-test.js | tee verification-output/map-layout.log
+          PREVIOUS_ACTIVE_REF=c158b99822563e0f94c5f47ac00391e05de0b1c0 node verification/daily-life-equivalence-test.js | tee verification-output/economic-equivalence.log
+      - name: Bounded raster comparison in desktop and mobile browsers
         run: |
           python -m pip install playwright==1.57.0
           python -m playwright install --with-deps chromium
-      - name: Six real-origin desktop and touch-mobile acceptance suites
+          python verification/browser-map-render.py | tee verification-output/map-raster.log
+      - name: Commit the tested source only
         run: |
-          python verification/browser-hunts.py 2>&1 | tee verification-output/hunts-browser.log
-          python -m http.server 8765 --bind 127.0.0.1 > /tmp/map-server.log 2>&1 &
-          server_pid=$!
-          trap 'kill "$server_pid"' EXIT
-          sleep 1
-          for name in clarity walls economy daily-life map-layout; do
-            python "verification/browser-$name.py" --url http://127.0.0.1:8765/ 2>&1 | tee "verification-output/$name-browser.log"
-          done
-          python verification/daily-life-live-soak.py --url http://127.0.0.1:8765/ --seconds 65 2>&1 | tee verification-output/minute-presence.log
-      - name: Commit verified source without workflow changes
-        run: |
-          python - <<'PY'
-          import json,subprocess,shutil
-          from pathlib import Path
-          names=[]
-          for label in ['output','browser','coast']:
-              names+=list(json.loads(Path(f'.maintenance/map-{label}-sha256.json').read_text()))
-          workflow_names=sorted({n for n in names if n.startswith('.github/workflows/')})
-          for name in workflow_names:
-              destination=Path('verification-output/intended-workflows')/Path(name).name
-              destination.parent.mkdir(parents=True,exist_ok=True)
-              shutil.copyfile(name,destination)
-          # Workflow changes are applied separately through the authorized connector.
-          # The runner retains its existing contents-only permission.
-          subprocess.run(['git','restore','--source=HEAD','--',*workflow_names],check=True)
-          names=sorted({n for n in names if not n.startswith('.github/workflows/')})
-          subprocess.run(['git','add','--',*names],check=True)
-          PY
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git commit -m 'Expand map area 25 percent and reorganize bastion, town and access networks'
+          git add -- index.html
+          git commit -m 'Batch identical wall post shapes to recover overview rendering performance'
           git rev-parse HEAD > verification-output/feature-commit.txt
-          git archive --format=zip --prefix=Basic-Portuguese-Browser-Game/ -o verification-output/verified-feature-source.zip HEAD
-          git bundle create verification-output/verified-feature-history.bundle --all
           git push origin HEAD:refs/heads/feature/map-expansion-bastion
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: map-restructure-integration-verification
+          name: map-wall-batching-verification
           path: verification-output/
           retention-days: 14

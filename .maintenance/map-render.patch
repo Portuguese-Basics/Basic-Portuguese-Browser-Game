@@ -1,0 +1,39 @@
+--- a/index.html
++++ b/index.html
+@@ -17024,16 +17024,29 @@
+ 
+         const distancia = Math.hypot(x2 - x1, y2 - y1);
+         const quantidadePostes = Math.max(1, Math.floor(distancia / 58));
++        // Separate wall posts never overlap at the usual 58-unit spacing. Submit
++        // one fill/stroke per segment instead of hundreds of separate GPU draws.
++        // Preserve the original order on unusually short overlapping segments.
++        const agrupar = distancia / quantidadePostes >= 29;
++        if (agrupar) contexto.beginPath();
+         for (let indice = 0; indice <= quantidadePostes; indice += 1) {
+           const posicao = indice / quantidadePostes;
+           if (posicao > parte) break;
+-          desenharCirculo(
+-            x1 + (x2 - x1) * posicao,
+-            y1 + (y2 - y1) * posicao,
+-            13,
+-            cor,
+-            "#3e2d1d",
+-          );
++          const x = x1 + (x2 - x1) * posicao;
++          const y = y1 + (y2 - y1) * posicao;
++          if (agrupar) {
++            contexto.moveTo(x + 13, y);
++            contexto.arc(x, y, 13, 0, Math.PI * 2);
++          } else {
++            desenharCirculo(x, y, 13, cor, "#3e2d1d");
++          }
++        }
++        if (agrupar) {
++          contexto.fillStyle = cor;
++          contexto.fill();
++          contexto.lineWidth = 3;
++          contexto.strokeStyle = "#3e2d1d";
++          contexto.stroke();
+         }
+       }
+ 
