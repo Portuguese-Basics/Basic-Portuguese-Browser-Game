@@ -1,8 +1,8 @@
-name: Verify map wall batching
+name: Verify bounded road painting cache
 on:
   push:
     branches: [feature/map-expansion-bastion]
-    paths: ['.maintenance/map-render.patch', '.github/workflows/install-map.yml']
+    paths: ['.maintenance/map-road-cache.py', '.github/workflows/install-map.yml']
 permissions:
   contents: write
 defaults:
@@ -23,35 +23,33 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - name: Apply only the verified wall painter change
-        run: |
-          echo '8cffba64d966e8f1e9d650f095d5cb542dc6d0f983e7ccd65c3bd7183146953e  index.html' | sha256sum --check
-          git apply --check .maintenance/map-render.patch
-          git apply .maintenance/map-render.patch
-          echo '3056150b0a2992331641d74a83012c159e5f5acd94bf2a629254709a9cad67a4  index.html' | sha256sum --check
-      - name: Exact post geometry, read-only paint and economic checks
+      - name: Apply exact bounded renderer
+        run: python .maintenance/map-road-cache.py
+      - name: Geometry, unchanged direct painting and economic checks
         run: |
           mkdir -p verification-output
           node verification/map-render-test.js | tee verification-output/map-render.log
+          node verification/road-render-test.js | tee verification-output/road-render.log
           node verification/smoke-test.js | tee verification-output/smoke.log
           node verification/map-layout-test.js | tee verification-output/map-layout.log
           PREVIOUS_ACTIVE_REF=c158b99822563e0f94c5f47ac00391e05de0b1c0 node verification/daily-life-equivalence-test.js | tee verification-output/economic-equivalence.log
-      - name: Bounded raster comparison in desktop and mobile browsers
+      - name: Bounded raster and cache invalidation checks
         run: |
           python -m pip install playwright==1.57.0
           python -m playwright install --with-deps chromium
           python verification/browser-map-render.py | tee verification-output/map-raster.log
+          python verification/browser-road-cache.py | tee verification-output/road-cache.log
       - name: Commit the tested source only
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
           git add -- index.html
-          git commit -m 'Batch identical wall post shapes to recover overview rendering performance'
+          git commit -m 'Cache one bounded screen-sized road layer with exact change invalidation'
           git rev-parse HEAD > verification-output/feature-commit.txt
           git push origin HEAD:refs/heads/feature/map-expansion-bastion
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: map-wall-batching-verification
+          name: map-road-cache-verification
           path: verification-output/
           retention-days: 14
