@@ -13,11 +13,14 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
       - name: Browser test dependencies
         run: |
           python -m pip install playwright==1.57.0
@@ -51,10 +54,12 @@ jobs:
           RELEASE_SHA: ${{ github.sha }}
         run: |
           mkdir -p verification-output
-          for name in hunts clarity walls economy daily-life map-layout; do
+          for name in hunts clarity walls economy daily-life map-layout industry; do
             python "verification/browser-$name.py" --url "https://portuguese-basics.github.io/Basic-Portuguese-Browser-Game/?release=$RELEASE_SHA" 2>&1 | tee "verification-output/$name-browser.log"
           done
           python verification/daily-life-live-soak.py --url "https://portuguese-basics.github.io/Basic-Portuguese-Browser-Game/?release=$RELEASE_SHA" --seconds 65 2>&1 | tee verification-output/minute-presence.log
+          node verification/industry-live-fixture.js 2>&1 | tee verification-output/industry-live-fixture.log
+          python verification/industry-live-soak.py --url "https://portuguese-basics.github.io/Basic-Portuguese-Browser-Game/?release=$RELEASE_SHA" --seconds 65 2>&1 | tee verification-output/industry-live.log
       - name: Preserve source and git history for the Drive backup
         run: |
           git rev-parse HEAD > verification-output/release-commit.txt

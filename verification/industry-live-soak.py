@@ -71,6 +71,7 @@ with sync_playwright() as p:
     assert result['accounting'] == 0 and result['moved'] > 10 and not errors, (result, errors)
     assert result['totals']['salarios'] > before['totals']['salarios'], 'No completed paid work observed'
     state = page.evaluate('({industry:estado.industriaColonia,economy:estado.economiaCidada})')
+    page.evaluate("focarIndustria('taverna');salvarProgresso()")
     page.locator('#jogo').screenshot(path=str(out/'mobile-active-industry.png'))
     if args.url:
         response = page.reload(wait_until='load')
