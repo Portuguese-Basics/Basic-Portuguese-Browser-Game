@@ -486,6 +486,8 @@
       #painel-muralhas button, #painel-muralhas select { min-height: 44px; white-space: normal; }
       #painel-muralhas select { font: inherit; padding: 0.5rem; }
       #painel-muralhas :focus-visible { outline: 3px solid #f1cc69; outline-offset: 2px; }
+      #painel-planta-colonia {width:min(48rem,calc(100vw - 1.5rem));max-height:88dvh;overflow-y:auto;}
+      #painel-planta-colonia p {line-height:1.5;overflow-wrap:anywhere;}
       #painel-caca-milicia { width: min(42rem, calc(100vw - 1.5rem)); max-height: 88dvh; overflow-y: auto; }
       #painel-caca-milicia p { line-height: 1.45; color: #d4cbb4; }
       #painel-caca-milicia label { display: flex; flex-direction: column; gap: 0.35rem; flex: 1 1 10rem; }
@@ -736,6 +738,7 @@
         <button id="construir-pastagem" type="button" hidden>
           Preparar pastagem · 500 do cofre
         </button>
+        <button id="abrir-planta-colonia" class="acao-colonia secundario" type="button">Planta da cidade</button>
         <button id="abrir-painel-colonia" class="acao-colonia secundario" type="button">
           Painel colonial
         </button>
@@ -877,7 +880,7 @@
             <li>Melhorias públicas automáticas: poço e cisterna por 600; rede hidrossanitária por 1.200; quatro postos da guarda por 300 cada. Todas acrescentam manutenção recorrente.</li>
             <li>Poço e rede hidrossanitária reduzem a pressão sobre a saúde; os postos acrescentam segurança civil. Moradia, comida, escola e clínica continuam sendo prioridades de emergência.</li>
             <li>Em atenção sanitária, clínica e coleta de ervas passam à frente de obras, indústria e defesa. A farmácia mantém uma reserva proporcional à população; abaixo de 80 de saúde, até 8 profissionais e 6 coletores recebem prioridade essencial.</li>
-            <li>As linhas azuis tracejadas são tubulações subterrâneas de água e esgoto: acompanham corredores viários, atravessam muralhas somente pelos portões e terminam na borda dos poços.</li>
+            <li>As linhas azuis representam água potável; as marrons representam coletores sanitários separados. Seguem servidões subterrâneas, cruzam muralhas nos portões e ligam os bairros ao emissário ao sul dos portos. Não há simulação hidráulica ou de poluição nesta etapa.</li>
             <li>Quatro poços públicos — bairros oeste, sul e norte, mais a reserva de incêndio leste —, rede ampliada e brigada elevam a proteção sanitária e contra fogo sem ultrapassar o orçamento operacional.</li>
             <li>Lenhadores, caçadores, pastores e coletores deixam madeira, carnes e ervas em estoques locais. Somente os transportadores retiram esses bens e os entregam a depósitos, açougue, ervário e clínica.</li>
             <li>A companhia mantém no mínimo 6 carroças com cavalos sempre que houver produção ou carga na origem, e amplia a equipe até 12 conforme o fluxo e o atraso. Cada equipe carrega 12 unidades por viagem, ampliadas pelas estradas, e combina madeira, carnes e ervas na mesma rota; remédios recebem precedência durante recuperação sanitária.</li>
@@ -1544,6 +1547,13 @@
       </section>
     </dialog>
 
+    <dialog id="painel-planta-colonia" aria-labelledby="titulo-planta-colonia">
+      <section class="loja-conteudo"><header class="loja-cabecalho"><h2 id="titulo-planta-colonia">Planta da cidade · expansão de 25%</h2><button id="fechar-planta-colonia" class="secundario" type="button">Fechar</button></header>
+      <p id="resumo-planta-colonia"></p><div class="acoes-transferencia"><button type="button" id="planta-panorama" data-setor-planta="panorama">Mapa inteiro</button><button type="button" id="planta-cidadela" data-setor-planta="cidadela">Cidadela</button><button type="button" id="planta-cidade" data-setor-planta="cidade">Cidade externa</button><button type="button" id="planta-costa" data-setor-planta="costa">Portos</button></div>
+      <p><label><input id="mostrar-lotes-planta" type="checkbox" checked> Mostrar reservas para futuras construções</label></p>
+      <p id="lotes-planta-colonia"></p><p>Posicionamento manual: planejado para uma etapa futura. Relocação desta atualização preserva habitantes, casas, estoques, dinheiro e todas as obras já pagas. As rotinas de deslocamento com destinos reais continuam em desenvolvimento separado.</p></section>
+    </dialog>
+
     <dialog id="painel-caca-milicia" aria-labelledby="titulo-caca-milicia">
       <section class="loja-conteudo">
         <header class="loja-cabecalho">
@@ -2155,34 +2165,20 @@
       const larguraMundo = 1400;
       const alturaMundo = 900;
       const fatorMapaExpansao = 10;
-      const larguraMundoExpansao = larguraMundo * fatorMapaExpansao;
+      const larguraMundoExpansao = larguraMundo * fatorMapaExpansao * 1.25;
       const alturaMundoExpansao = alturaMundo * fatorMapaExpansao;
-      const zoomMinimoExpansao = 1 / fatorMapaExpansao;
+      const zoomMinimoExpansao = 1 / (fatorMapaExpansao * 1.25);
+      const versaoPlantaColonia = 1;
       const zoomMaximoExpansao = 3.5;
       const versaoMapa = 2;
       const posicaoAssentamento = { x: 700, y: 510 };
       const posicaoFloresta = { x: 700, y: 790 };
-      const limiteCosta = 13100;
-      const posicaoNovaColonia = { x: 12740, y: 4500 };
-      const areaAdministracao = {
-        x: 8370,
-        y: 4300,
-        largura: 260,
-        altura: 170,
-      };
-      const posicaoAdministrador = { x: 8500, y: 4500 };
-      const recintoExterno = {
-        x: 5000,
-        y: 1500,
-        largura: 6200,
-        altura: 6000,
-      };
-      const recintoInterno = {
-        x: 6800,
-        y: 2700,
-        largura: 3500,
-        altura: 3600,
-      };
+      const limiteCosta = 16600;
+      const posicaoNovaColonia = { x: limiteCosta - 360, y: 4500 };
+      const areaAdministracao = {"x":12000,"y":3730,"largura":260,"altura":170};
+      const posicaoAdministrador = { x: areaAdministracao.x + 130, y: areaAdministracao.y + 200 };
+      const recintoExterno = {"x":5000,"y":900,"largura":9800,"altura":7000};
+      const recintoInterno = {"x":9800,"y":2400,"largura":3900,"altura":4200};
       const yEstradaCampoColonia = 4150;
       const meiaAberturaPortaoColonia = 105;
       const portoesMuralhaColonia = [
@@ -2242,11 +2238,11 @@
         },
         {
           id: "externo-sul-treinamento",
-          nome: "Portão sul do treinamento",
+          nome: "Portão sul da cidade",
           recinto: recintoExterno,
           lado: "sul",
           indiceTrecho: 2,
-          x: 6700,
+          x: 9000,
           y: recintoExterno.y + recintoExterno.altura,
         },
       ];
@@ -2260,36 +2256,11 @@
         { recinto: "externo", canto: "sudoeste", x: recintoExterno.x, y: recintoExterno.y + recintoExterno.altura },
         { recinto: "externo", canto: "sudeste", x: recintoExterno.x + recintoExterno.largura, y: recintoExterno.y + recintoExterno.altura },
       ];
-      const areasPostosGuardaColonia = [
-        { id: "norte", lado: "norte", x: 7500, y: 1580, largura: 220, altura: 220 },
-        { id: "leste", lado: "leste", x: 10960, y: 2500, largura: 220, altura: 220 },
-        { id: "sul", lado: "sul", x: 8480, y: 7200, largura: 220, altura: 220 },
-        { id: "oeste", lado: "oeste", x: 5020, y: 6280, largura: 220, altura: 220 },
-      ];
-      const areaMoradias = {
-        x: 5350,
-        y: 5650,
-        largura: 1200,
-        altura: 900,
-      };
-      const areaSegundoBlocoMoradias = {
-        x: 7100,
-        y: 6500,
-        largura: 1200,
-        altura: 900,
-      };
-      const areaTerceiroBlocoMoradias = {
-        x: 9800,
-        y: 1550,
-        largura: 1200,
-        altura: 900,
-      };
-      const areaCeleiro = {
-        x: 7000,
-        y: 4550,
-        largura: 420,
-        altura: 260,
-      };
+      const areasPostosGuardaColonia = [{"id":"norte","lado":"norte","x":11000,"y":1100,"largura":220,"altura":220},{"id":"leste","lado":"leste","x":14300,"y":2590,"largura":220,"altura":220},{"id":"sul","lado":"sul","x":12800,"y":7500,"largura":220,"altura":220},{"id":"oeste","lado":"oeste","x":5250,"y":5250,"largura":220,"altura":220}];
+      const areaMoradias = {"x":5400,"y":1250,"largura":1450,"altura":1350};
+      const areaSegundoBlocoMoradias = {"x":5400,"y":6000,"largura":1450,"altura":1350};
+      const areaTerceiroBlocoMoradias = {"x":11900,"y":1000,"largura":1450,"altura":1350};
+      const areaCeleiro = {"x":10630,"y":3600,"largura":420,"altura":260};
       const casasAgricultores = [
         { x: 5200, y: 2600 },
         { x: 5500, y: 2600 },
@@ -2297,654 +2268,276 @@
         { x: 5500, y: 3080 },
         { x: 5350, y: 3560 },
       ];
-      const areaLavoura = {
-        x: 400,
-        y: 2800,
-        largura: 1100,
-        altura: 1300,
-      };
-      const areaHorta = {
-        x: 1600,
-        y: 2800,
-        largura: 1100,
-        altura: 1300,
-      };
-      const areaFeijao = {
-        x: 2800,
-        y: 2800,
-        largura: 1100,
-        altura: 1300,
-      };
-      const areaPastagem = {
-        x: 400,
-        y: 4190,
-        largura: 3500,
-        altura: 1310,
-      };
-      const areaFlorestaColonia = {
-        x: 350,
-        y: 450,
-        largura: 3600,
-        altura: 1700,
-      };
-      const areasCabanasLenhadores = [
-        { x: 600, y: 1650, largura: 600, altura: 300 },
-        { x: 1450, y: 1650, largura: 600, altura: 300 },
-      ];
-      const areaCabanaReflorestamento = {
-        x: 2400,
-        y: 1650,
-        largura: 600,
-        altura: 300,
-      };
-      const areasCabanasColeta = [
-        { x: 750, y: 760, largura: 540, altura: 280 },
-        { x: 2650, y: 760, largura: 540, altura: 280 },
-      ];
-      const areaCabanaCacadores = {
-        x: 420,
-        y: 500,
-        largura: 600,
-        altura: 260,
-      };
-      const areaPontoCacaMilicia = { x: 440, y: 150, largura: 620, altura: 250 };
-      const areaAcougueColonia = {
-        x: 4500,
-        y: 4550,
-        largura: 420,
-        altura: 340,
-      };
-      const areaCofreCortesColonia = {
-        x: 9450,
-        y: 2920,
-        largura: 500,
-        altura: 280,
-      };
-      const areaCozinhaCarneColonia = {
-        x: 8400,
-        y: 6400,
-        largura: 360,
-        altura: 430,
-      };
-      const areaDespensaRefeicoesColonia = {
-        x: 9830,
-        y: 5580,
-        largura: 180,
-        altura: 350,
-      };
-      const areaDepositoMadeira = {
-        x: 5100,
-        y: 1700,
-        largura: 440,
-        altura: 260,
-      };
-      const areaErvario = {
-        x: 7000,
-        y: 5480,
-        largura: 440,
-        altura: 280,
-      };
-      const areaOficinaArmasMadeira = {
-        x: 6500,
-        y: 1650,
-        largura: 500,
-        altura: 300,
-      };
-      const areaArsenalMadeira = {
-        x: 7050,
-        y: 2920,
-        largura: 500,
-        altura: 280,
-      };
-      const areaFlecharia = {
-        x: 5700,
-        y: 1650,
-        largura: 500,
-        altura: 300,
-      };
-      const areaDepositoFlechas = {
-        x: 7650,
-        y: 2920,
-        largura: 500,
-        altura: 280,
-      };
-      const areaClinicaColonia = {
-        x: 7550,
-        y: 5400,
-        largura: 650,
-        altura: 440,
-      };
-      const areaFarmaciaColonia = {
-        x: 8300,
-        y: 5480,
-        largura: 440,
-        altura: 280,
-      };
-      const areaBancoColonia = {
-        x: 8850,
-        y: 5400,
-        largura: 560,
-        altura: 440,
-      };
-      const areaEscolaColonia = {
-        x: 6050,
-        y: 3550,
-        largura: 600,
-        altura: 420,
-      };
-      const areaArmazemGraos = {
-        x: 5150,
-        y: 2050,
-        largura: 380,
-        altura: 270,
-      };
-      const areaArmazemHortalicas = {
-        x: 5600,
-        y: 2050,
-        largura: 380,
-        altura: 270,
-      };
-      const areaArmazemFeijao = {
-        x: 6050,
-        y: 2050,
-        largura: 380,
-        altura: 270,
-      };
-      const areaMoinhoColonia = {
-        x: 5200,
-        y: 3100,
-        largura: 500,
-        altura: 340,
-      };
-      const areaArmazemFarinha = {
-        x: 5900,
-        y: 3120,
-        largura: 450,
-        altura: 300,
-      };
-      const areaPadariaColonia = {
-        x: 5200,
-        y: 4550,
-        largura: 500,
-        altura: 340,
-      };
-      const areaArmazemPaes = {
-        x: 5900,
-        y: 4570,
-        largura: 450,
-        altura: 300,
-      };
-      const areaMinaColonia = {
-        x: 900,
-        y: 6650,
-        largura: 700,
-        altura: 430,
-      };
-      const areaDepositoMinerio = {
-        x: 1780,
-        y: 6720,
-        largura: 470,
-        altura: 300,
-      };
-      const areaPedreiraColonia = {
-        x: 2700,
-        y: 6500,
-        largura: 900,
-        altura: 580,
-      };
-      const areaDepositoPedra = {
-        x: 3780,
-        y: 6660,
-        largura: 500,
-        altura: 320,
-      };
-      const areaCaisPescaColonia = {
-        x: 12720,
-        y: 2050,
-        largura: 380,
-        altura: 720,
-      };
-      const areaSegundoCaisPescaColonia = {
-        x: 12720,
-        y: 3150,
-        largura: 380,
-        altura: 720,
-      };
-      const areaMercadoPeixesColonia = {
-        x: 11750,
-        y: 2900,
-        largura: 700,
-        altura: 420,
-      };
-      const areaCaisComercialColonia = {
-        x: 12520,
-        y: 5150,
-        largura: 580,
-        altura: 980,
-      };
-      const areaArmazemComercial = {
-        x: 11620,
-        y: 5410,
-        largura: 640,
-        altura: 430,
-      };
-      const areaFeitoriaColonia = {
-        x: 11620,
-        y: 4780,
-        largura: 640,
-        altura: 430,
-      };
-      const areaEstaleiroColonia = {
-        x: 11900,
-        y: 6650,
-        largura: 1200,
-        altura: 850,
-      };
-      const areaFerrariaColonia = {
-        x: 10430,
-        y: 2920,
-        largura: 520,
-        altura: 360,
-      };
-      const areaArmazemFerramentas = {
-        x: 8250,
-        y: 2920,
-        largura: 500,
-        altura: 280,
-      };
-      const areaForjaColonia = {
-        x: 10430,
-        y: 4680,
-        largura: 520,
-        altura: 360,
-      };
-      const areaArsenalColonia = {
-        x: 8850,
-        y: 2920,
-        largura: 500,
-        altura: 280,
-      };
-      const areaPatioTreinoColonia = {
-        x: 7200,
-        y: 7750,
-        largura: 950,
-        altura: 620,
-      };
-      const areaQuartelMilitarColonia = {
-        x: 10350,
-        y: 6620,
-        largura: 720,
-        altura: 520,
-      };
-      const areaCisternaColonia = {
-        x: 9540,
-        y: 3600,
-        largura: 360,
-        altura: 300,
-      };
-      const areaCozinhaHortalicasColonia = {
-        x: 8810,
-        y: 6400,
-        largura: 430,
-        altura: 340,
-      };
-      const areaCozinhaFeijaoColonia = {
-        x: 9290,
-        y: 6400,
-        largura: 430,
-        altura: 340,
-      };
-      const areaBibliotecaColonia = {
-        x: 7000,
-        y: 3820,
-        largura: 720,
-        altura: 270,
-      };
-      const areaIgrejaColonia = {
-        x: 8050,
-        y: 3350,
-        largura: 520,
-        altura: 740,
-      };
-      const areaDefumadorioColonia = {
-        x: 8750,
-        y: 3350,
-        largura: 500,
-        altura: 360,
-      };
-      const areaAdegaFriaColonia = {
-        x: 8750,
-        y: 3780,
-        largura: 500,
-        altura: 310,
-      };
-      const areaTransportadoresColonia = {
-        x: 10450,
-        y: 3520,
-        largura: 500,
-        altura: 390,
-      };
-      const areaConstrutoresColonia = {
-        x: 4470,
-        y: 5680,
-        largura: 480,
-        altura: 390,
-      };
-      const areaOficinaFerramentasColonia = {
-        x: 4470,
-        y: 6370,
-        largura: 480,
-        altura: 440,
-      };
-      const areaBombeirosColonia = {
-        x: 10450,
-        y: 5360,
-        largura: 500,
-        altura: 390,
-      };
-      const areaMercadoPublicoColonia = {
-        x: 11600,
-        y: 3550,
-        largura: 680,
-        altura: 430,
-      };
-      const areaArmeiroColonia = {
-        x: 10430,
-        y: 4240,
-        largura: 520,
-        altura: 350,
-      };
-      const areaCemiterioColonia = {
-        x: 8350,
-        y: 8200,
-        largura: 1800,
-        altura: 650,
-      };
+      const areaLavoura = {"x":400,"y":2800,"largura":1100,"altura":1300};
+      const areaHorta = {"x":1600,"y":2800,"largura":1100,"altura":1300};
+      const areaFeijao = {"x":2800,"y":2800,"largura":1100,"altura":1300};
+      const areaPastagem = {"x":400,"y":4190,"largura":3500,"altura":1310};
+      const areaFlorestaColonia = {"x":350,"y":450,"largura":3600,"altura":1700};
+      const areasCabanasLenhadores = [{"x":600,"y":1650,"largura":600,"altura":300},{"x":1450,"y":1650,"largura":600,"altura":300}];
+      const areaCabanaReflorestamento = {"x":2400,"y":1650,"largura":600,"altura":300};
+      const areasCabanasColeta = [{"x":1350,"y":600,"largura":540,"altura":280},{"x":2650,"y":600,"largura":540,"altura":280}];
+      const areaCabanaCacadores = {"x":420,"y":500,"largura":600,"altura":260};
+      const areaPontoCacaMilicia = {"x":440,"y":150,"largura":620,"altura":250};
+      const areaAcougueColonia = {"x":2700,"y":5800,"largura":420,"altura":340};
+      const areaCofreCortesColonia = {"x":12600,"y":2750,"largura":500,"altura":280};
+      const areaCozinhaCarneColonia = {"x":7200,"y":6150,"largura":360,"altura":430};
+      const areaDespensaRefeicoesColonia = {"x":13200,"y":2750,"largura":180,"altura":350};
+      const areaDepositoMadeira = {"x":4200,"y":800,"largura":440,"altura":260};
+      const areaErvario = {"x":10630,"y":5980,"largura":440,"altura":280};
+      const areaOficinaArmasMadeira = {"x":4200,"y":1300,"largura":500,"altura":300};
+      const areaArsenalMadeira = {"x":10020,"y":2750,"largura":500,"altura":280};
+      const areaFlecharia = {"x":4200,"y":1800,"largura":500,"altura":300};
+      const areaDepositoFlechas = {"x":10600,"y":2750,"largura":500,"altura":280};
+      const areaClinicaColonia = {"x":7600,"y":4700,"largura":650,"altura":440};
+      const areaFarmaciaColonia = {"x":13050,"y":5200,"largura":440,"altura":280};
+      const areaBancoColonia = {"x":11300,"y":3550,"largura":560,"altura":440};
+      const areaEscolaColonia = {"x":7500,"y":1650,"largura":600,"altura":420};
+      const areaArmazemGraos = {"x":5400,"y":2850,"largura":380,"altura":270};
+      const areaArmazemHortalicas = {"x":5950,"y":2850,"largura":380,"altura":270};
+      const areaArmazemFeijao = {"x":6500,"y":2850,"largura":380,"altura":270};
+      const areaMoinhoColonia = {"x":7200,"y":2850,"largura":500,"altura":340};
+      const areaArmazemFarinha = {"x":7900,"y":2870,"largura":450,"altura":300};
+      const areaPadariaColonia = {"x":5400,"y":4600,"largura":500,"altura":340};
+      const areaArmazemPaes = {"x":6100,"y":4620,"largura":450,"altura":300};
+      const areaMinaColonia = {"x":900,"y":6650,"largura":700,"altura":430};
+      const areaDepositoMinerio = {"x":1780,"y":6720,"largura":470,"altura":300};
+      const areaPedreiraColonia = {"x":2700,"y":6500,"largura":900,"altura":580};
+      const areaDepositoPedra = {"x":3780,"y":6660,"largura":500,"altura":320};
+      const areaCaisPescaColonia = {"x":16220,"y":2050,"largura":380,"altura":720};
+      const areaSegundoCaisPescaColonia = {"x":16220,"y":3150,"largura":380,"altura":720};
+      const areaMercadoPeixesColonia = {"x":15300,"y":2800,"largura":700,"altura":420};
+      const areaCaisComercialColonia = {"x":16020,"y":5300,"largura":580,"altura":980};
+      const areaArmazemComercial = {"x":12600,"y":3570,"largura":640,"altura":430};
+      const areaFeitoriaColonia = {"x":15200,"y":4780,"largura":640,"altura":430};
+      const areaEstaleiroColonia = {"x":15400,"y":6800,"largura":1200,"altura":850};
+      const areaFerrariaColonia = {"x":14000,"y":1700,"largura":520,"altura":360};
+      const areaArmazemFerramentas = {"x":11300,"y":2750,"largura":500,"altura":280};
+      const areaForjaColonia = {"x":14000,"y":5250,"largura":520,"altura":360};
+      const areaArsenalColonia = {"x":11900,"y":2750,"largura":500,"altura":280};
+      const areaPatioTreinoColonia = {"x":10000,"y":5200,"largura":950,"altura":620};
+      const areaQuartelMilitarColonia = {"x":11300,"y":5200,"largura":720,"altura":520};
+      const areaCisternaColonia = {"x":12550,"y":5200,"largura":360,"altura":300};
+      const areaCozinhaHortalicasColonia = {"x":7820,"y":6230,"largura":430,"altura":340};
+      const areaCozinhaFeijaoColonia = {"x":8460,"y":6230,"largura":430,"altura":340};
+      const areaBibliotecaColonia = {"x":8350,"y":1770,"largura":720,"altura":270};
+      const areaIgrejaColonia = {"x":8570,"y":2850,"largura":520,"altura":740};
+      const areaDefumadorioColonia = {"x":10000,"y":5970,"largura":500,"altura":360};
+      const areaAdegaFriaColonia = {"x":10000,"y":3620,"largura":500,"altura":310};
+      const areaTransportadoresColonia = {"x":14000,"y":3500,"largura":500,"altura":390};
+      const areaConstrutoresColonia = {"x":2600,"y":7650,"largura":480,"altura":390};
+      const areaOficinaFerramentasColonia = {"x":3500,"y":7650,"largura":480,"altura":440};
+      const areaBombeirosColonia = {"x":14000,"y":4550,"largura":500,"altura":390};
+      const areaMercadoPublicoColonia = {"x":7470,"y":3550,"largura":680,"altura":430};
+      const areaArmeiroColonia = {"x":11300,"y":5970,"largura":520,"altura":350};
+      const areaCemiterioColonia = {"x":10300,"y":8200,"largura":1800,"altura":650};
       const raioPocoPublicoColonia = 54;
-      const posicoesPocosPublicosColonia = [
-        { id: "oeste", nome: "BAIRRO OESTE", x: 5900, y: 5150 },
-        { id: "sul", nome: "BAIRRO SUL", x: 8500, y: 7030 },
-        { id: "norte", nome: "BAIRRO NORTE", x: 9400, y: 2080 },
-        { id: "leste", nome: "RESERVA DE INCÊNDIO", x: 10800, y: 6100 },
-      ];
-      const redeHidricaBasicaColonia = [
-        {
-          id: "coletor-norte",
-          pontos: [
-            { x: 9900, y: 3750 },
-            { x: 10200, y: 3750 },
-            { x: 10200, y: 2800 },
-            { x: 6900, y: 2800 },
-            { x: 6900, y: yEstradaCampoColonia },
-          ],
-        },
-        {
-          id: "coletor-central",
-          pontos: [
-            { x: 6900, y: yEstradaCampoColonia },
-            { x: 10200, y: yEstradaCampoColonia },
-          ],
-        },
-        {
-          id: "coletor-sul",
-          pontos: [
-            { x: 6900, y: yEstradaCampoColonia },
-            { x: 6900, y: 6200 },
-            { x: 10200, y: 6200 },
-            { x: 10200, y: yEstradaCampoColonia },
-          ],
-        },
-      ];
-      const redeHidricaAvancadaColonia = [
-        {
-          id: "ramal-oeste",
-          poco: "oeste",
-          pontos: [
-            { x: 6900, y: yEstradaCampoColonia },
-            { x: 6800, y: yEstradaCampoColonia },
-            { x: 6700, y: yEstradaCampoColonia },
-            { x: 6700, y: 5400 },
-            { x: 5900, y: 5400 },
-            { x: 5900, y: 5150 + raioPocoPublicoColonia },
-          ],
-        },
-        {
-          id: "ramal-sul",
-          poco: "sul",
-          pontos: [
-            { x: 6700, y: 5400 },
-            { x: 6700, y: 7030 },
-            { x: 8300, y: 7030 },
-            { x: 8500 - raioPocoPublicoColonia, y: 7030 },
-          ],
-        },
-        {
-          id: "ramal-norte",
-          poco: "norte",
-          pontos: [
-            { x: 6700, y: yEstradaCampoColonia },
-            { x: 6700, y: 2500 },
-            { x: 9400, y: 2500 },
-            { x: 9400, y: 2080 + raioPocoPublicoColonia },
-          ],
-        },
-        {
-          id: "ramal-leste",
-          poco: "leste",
-          pontos: [
-            { x: 10200, y: yEstradaCampoColonia },
-            { x: 10300, y: yEstradaCampoColonia },
-            { x: 10370, y: yEstradaCampoColonia },
-            { x: 10370, y: 6100 },
-            { x: 10800 - raioPocoPublicoColonia, y: 6100 },
-          ],
-        },
-      ];
-      const trechosEstradaColonia = [
-        {
-          id: "centro",
-          nome: "eixo central e ronda interna",
-          pontos: [
-            { x: 4000, y: yEstradaCampoColonia },
-            { x: 5000, y: yEstradaCampoColonia },
-            { x: 6700, y: yEstradaCampoColonia },
-            { x: 6800, y: yEstradaCampoColonia },
-            { x: 8500, y: yEstradaCampoColonia },
-            { x: 10300, y: yEstradaCampoColonia },
-            { x: 11200, y: yEstradaCampoColonia },
-            { x: 12400, y: yEstradaCampoColonia },
-          ],
-          ramais: [
-            [
-              { x: 6900, y: 2800 },
-              { x: 10200, y: 2800 },
-              { x: 10200, y: 4150 },
-              { x: 10200, y: 6200 },
-              { x: 6900, y: 6200 },
-              { x: 6900, y: 4150 },
-              { x: 6900, y: 2800 },
-            ],
-          ],
-        },
-        {
-          id: "moradias",
-          nome: "rua das moradias",
-          pontos: [
-            { x: 6700, y: 2050 },
-            { x: 6700, y: 2700 },
-            { x: 6700, y: yEstradaCampoColonia },
-            { x: 6700, y: 5400 },
-            { x: 6700, y: 6700 },
-            { x: 6700, y: 7400 },
-            { x: 6700, y: 7500 },
-            { x: 6700, y: 8060 },
-          ],
-          ramais: [
-            [
-              { x: 5100, y: 5400 },
-              { x: 6700, y: 5400 },
-            ],
-            [
-              { x: 5100, y: 6700 },
-              { x: 6700, y: 6700 },
-            ],
-            [
-              { x: 6700, y: 2500 },
-              { x: 9700, y: 2500 },
-              { x: 9700, y: 1750 },
-            ],
-            [
-              { x: 6700, y: 8060 },
-              { x: 7200, y: 8060 },
-            ],
-          ],
-          acessos: [
-            [{ x: 5350, y: 5850 }, { x: 6700, y: 5850 }],
-            [{ x: 5350, y: 6015 }, { x: 6700, y: 6015 }],
-            [{ x: 5350, y: 6180 }, { x: 6700, y: 6180 }],
-            [{ x: 5350, y: 6345 }, { x: 6700, y: 6345 }],
-            [{ x: 5350, y: 6515 }, { x: 6700, y: 6515 }],
-            [{ x: 6700, y: 6700 }, { x: 8300, y: 6700 }],
-            [{ x: 6700, y: 6865 }, { x: 8300, y: 6865 }],
-            [{ x: 6700, y: 7030 }, { x: 8300, y: 7030 }],
-            [{ x: 6700, y: 7195 }, { x: 8300, y: 7195 }],
-            [{ x: 6700, y: 7365 }, { x: 8300, y: 7365 }],
-            [{ x: 9700, y: 1750 }, { x: 11000, y: 1750 }],
-            [{ x: 9700, y: 1915 }, { x: 11000, y: 1915 }],
-            [{ x: 9700, y: 2080 }, { x: 11000, y: 2080 }],
-            [{ x: 9700, y: 2245 }, { x: 11000, y: 2245 }],
-            [{ x: 9700, y: 2415 }, { x: 11000, y: 2415 }],
-          ],
-        },
-        {
-          id: "campos",
-          nome: "estradas agrícolas",
-          pontos: [
-            { x: 4000, y: 2200 },
-            { x: 4000, y: 2700 },
-            { x: 4000, y: 3900 },
-            { x: 4000, y: yEstradaCampoColonia },
-            { x: 4000, y: 4400 },
-            { x: 4000, y: 5600 },
-          ],
-          ramais: [
-            [
-              { x: 400, y: 2700 },
-              { x: 1600, y: 2700 },
-              { x: 2800, y: 2700 },
-              { x: 4000, y: 2700 },
-            ],
-            [
-              { x: 400, y: yEstradaCampoColonia },
-              { x: 1600, y: yEstradaCampoColonia },
-              { x: 2800, y: yEstradaCampoColonia },
-              { x: 4000, y: yEstradaCampoColonia },
-            ],
-            [
-              { x: 400, y: 5600 },
-              { x: 2200, y: 5600 },
-              { x: 4000, y: 5600 },
-            ],
-          ],
-        },
-        {
-          id: "floresta",
-          nome: "estradas florestais",
-          pontos: [
-            { x: 5000, y: yEstradaCampoColonia },
-            { x: 4300, y: yEstradaCampoColonia },
-            { x: 4300, y: 2200 },
-            { x: 4000, y: 2200 },
-            { x: 3000, y: 2200 },
-            { x: 1500, y: 2200 },
-            { x: 350, y: 2200 },
-          ],
-          ramais: [
-            [
-              { x: 350, y: 1150 },
-              { x: 2000, y: 1150 },
-              { x: 3950, y: 1150 },
-              { x: 3950, y: 2200 },
-            ],
-          ],
-          acessos: [
-            [
-              { x: 720, y: 760 },
-              { x: 720, y: 1150 },
-            ],
-          ],
-        },
-        {
-          id: "recursos",
-          nome: "estrada das minas e da pedreira",
-          pontos: [
-            { x: 5000, y: yEstradaCampoColonia },
-            { x: 4400, y: yEstradaCampoColonia },
-            { x: 4400, y: 5600 },
-            { x: 4400, y: 6200 },
-            { x: 4400, y: 7200 },
-            { x: 350, y: 7200 },
-          ],
-          ramais: [
-            [
-              { x: 4400, y: 5600 },
-              { x: 4400, y: 5520 },
-              { x: 5000, y: 5520 },
-              { x: 6700, y: 5520 },
-              { x: 6800, y: 5520 },
-              { x: 6900, y: 5520 },
-            ],
-          ],
-        },
-        {
-          id: "costa",
-          nome: "avenida costeira",
-          pontos: [
-            { x: 11300, y: 2500 },
-            { x: 11300, y: 3400 },
-            { x: 11300, y: yEstradaCampoColonia },
-            { x: 11300, y: 4650 },
-            { x: 11300, y: 6200 },
-            { x: 11300, y: 7200 },
-          ],
-        },
-        {
-          id: "caisNorte",
-          nome: "acesso ortogonal aos cais de pesca",
-          pontos: [
-            { x: 11300, y: yEstradaCampoColonia },
-            { x: 11300, y: 3400 },
-            { x: 12400, y: 3400 },
-            { x: 12720, y: 3400 },
-            { x: 12720, y: 2500 },
-          ],
-          ramais: [
-            [
-              { x: 11300, y: 2500 },
-              { x: 12400, y: 2500 },
-              { x: 12720, y: 2500 },
-            ],
-          ],
-        },
-        {
-          id: "caisSul",
-          nome: "acesso ortogonal ao porto sul",
-          pontos: [
-            { x: 11300, y: yEstradaCampoColonia },
-            { x: 11300, y: 6200 },
-            { x: 12400, y: 6200 },
-            { x: 12400, y: 6900 },
-          ],
-          ramais: [
-            [
-              { x: 11300, y: 4650 },
-              { x: 12400, y: 4650 },
-              { x: 12400, y: 6200 },
-            ],
-          ],
-        },
-      ];
+      const posicoesPocosPublicosColonia = [{"id":"oeste","nome":"BAIRRO OESTE","x":7150,"y":2150},{"id":"sul","nome":"BAIRRO SUL","x":7150,"y":7100},{"id":"norte","nome":"BAIRRO NORTE","x":11400,"y":1720},{"id":"leste","nome":"RESERVA DE INCÊNDIO","x":14230,"y":6780}];
+      const redeHidricaBasicaColonia = [{"id":"cisterna-cidadela","pontos":[{"x":12730,"y":5500},{"x":12730,"y":5555},{"x":12480,"y":5555},{"x":12480,"y":4150},{"x":9950,"y":4150}]},{"id":"ronda-potavel","pontos":[{"x":9950,"y":4150},{"x":9950,"y":2550},{"x":13550,"y":2550},{"x":13550,"y":6450},{"x":9950,"y":6450},{"x":9950,"y":4150}]}];
+      const redeHidricaAvancadaColonia = [{"id":"ramal-oeste","poco":"oeste","pontos":[{"x":9950,"y":4150},{"x":7000,"y":4150},{"x":7000,"y":2150},{"x":7096,"y":2150}]},{"id":"ramal-sul","poco":"sul","pontos":[{"x":7000,"y":4150},{"x":7000,"y":7100},{"x":7096,"y":7100}]},{"id":"ramal-norte","poco":"norte","pontos":[{"x":7000,"y":2150},{"x":7000,"y":2300},{"x":11400,"y":2300},{"x":11400,"y":1774}]},{"id":"ramal-leste","poco":"leste","pontos":[{"x":12480,"y":4150},{"x":14650,"y":4150},{"x":14650,"y":6780},{"x":14284,"y":6780}]}];
+      const trechosEstradaColonia = [{"id":"centro","nome":"eixo central e ronda da cidadela","pontos":[{"x":4000,"y":4150},{"x":5000,"y":4150},{"x":7000,"y":4150},{"x":9200,"y":4150},{"x":9800,"y":4150},{"x":11180,"y":4150},{"x":12480,"y":4150},{"x":13700,"y":4150},{"x":14800,"y":4150},{"x":15100,"y":4150},{"x":16200,"y":4150}],"ramais":[[{"x":9950,"y":2550},{"x":13550,"y":2550},{"x":13550,"y":6450},{"x":9950,"y":6450},{"x":9950,"y":2550}],[{"x":9950,"y":3400},{"x":13550,"y":3400}],[{"x":9950,"y":4950},{"x":13550,"y":4950}],[{"x":11180,"y":2550},{"x":11180,"y":6450}],[{"x":12480,"y":2550},{"x":12480,"y":6450}],[{"x":5150,"y":3250},{"x":7000,"y":3250}],[{"x":7000,"y":2680},{"x":9200,"y":2680},{"x":9200,"y":1100}],[{"x":9200,"y":2680},{"x":9200,"y":7650}],[{"x":5150,"y":3250},{"x":5150,"y":5100},{"x":7000,"y":5100},{"x":7000,"y":5520}]],"acessos":[[{"x":12130.0,"y":3965},{"x":12130.0,"y":4150.0}],[{"x":10840.0,"y":3925},{"x":10840.0,"y":4150.0}],[{"x":12850.0,"y":3095},{"x":12850.0,"y":3400.0}],[{"x":13290.0,"y":3165},{"x":13290.0,"y":3400.0}],[{"x":10850.0,"y":6325},{"x":10850.0,"y":6450.0}],[{"x":10270.0,"y":3095},{"x":10270.0,"y":3400.0}],[{"x":10850.0,"y":3095},{"x":10850.0,"y":3400.0}],[{"x":13270.0,"y":5545},{"x":13550.0,"y":5545.0}],[{"x":11580.0,"y":4055},{"x":11580.0,"y":4150.0}],[{"x":5590.0,"y":3185},{"x":5590.0,"y":3250.0}],[{"x":6140.0,"y":3185},{"x":6140.0,"y":3250.0}],[{"x":6690.0,"y":3185},{"x":6690.0,"y":3250.0}],[{"x":5650.0,"y":5005},{"x":5650.0,"y":5100.0}],[{"x":6325.0,"y":4985},{"x":6325.0,"y":5100.0}],[{"x":16410.0,"y":3935},{"x":16200.0,"y":3935},{"x":16200.0,"y":4150.0}],[{"x":12920.0,"y":4065},{"x":12920.0,"y":4150.0}],[{"x":11550.0,"y":3095},{"x":11550.0,"y":3400.0}],[{"x":12150.0,"y":3095},{"x":12150.0,"y":3400.0}],[{"x":11660.0,"y":5785},{"x":11180.0,"y":5785}],[{"x":12730.0,"y":5565},{"x":12480.0,"y":5565}],[{"x":8675.0,"y":6635},{"x":9200.0,"y":6635.0}],[{"x":8830.0,"y":3655},{"x":9200.0,"y":3655.0}],[{"x":10250.0,"y":6395},{"x":10250.0,"y":6450.0}],[{"x":10250.0,"y":3995},{"x":10250.0,"y":4150.0}],[{"x":14250.0,"y":3955},{"x":14250.0,"y":4150.0}],[{"x":7810.0,"y":4045},{"x":7810.0,"y":4150.0}],[{"x":11560.0,"y":6385},{"x":11560.0,"y":6450.0}],[{"x":12820.0,"y":4660},{"x":12820.0,"y":4950.0}],[{"x":13290.0,"y":4660},{"x":13550.0,"y":4660.0}],[{"x":10475.0,"y":5885},{"x":9950.0,"y":5885}]]},{"id":"moradias","nome":"avenidas residenciais e reservas urbanas","pontos":[{"x":7000,"y":1100},{"x":7000,"y":3250},{"x":7000,"y":4150},{"x":7000,"y":5520},{"x":7000,"y":7650},{"x":9000,"y":7650},{"x":9000,"y":8400}],"ramais":[[{"x":7000,"y":2300},{"x":11700,"y":2300},{"x":14650,"y":2300}],[{"x":11700,"y":1200},{"x":11700,"y":2300}],[{"x":7000,"y":5900},{"x":9200,"y":5900}],[{"x":7000,"y":7350},{"x":12600,"y":7350},{"x":14650,"y":7350}],[{"x":9000,"y":8400},{"x":10100,"y":8400}]],"acessos":[[{"x":5410,"y":1480},{"x":7000,"y":1480}],[{"x":5410,"y":1740},{"x":7000,"y":1740}],[{"x":5410,"y":2000},{"x":7000,"y":2000}],[{"x":5410,"y":2260},{"x":7000,"y":2260}],[{"x":5410,"y":2520},{"x":7000,"y":2520}],[{"x":5410,"y":6230},{"x":7000,"y":6230}],[{"x":5410,"y":6490},{"x":7000,"y":6490}],[{"x":5410,"y":6750},{"x":7000,"y":6750}],[{"x":5410,"y":7010},{"x":7000,"y":7010}],[{"x":5410,"y":7270},{"x":7000,"y":7270}],[{"x":11700,"y":1230},{"x":13280,"y":1230}],[{"x":11700,"y":1490},{"x":13280,"y":1490}],[{"x":11700,"y":1750},{"x":13280,"y":1750}],[{"x":11700,"y":2010},{"x":13280,"y":2010}],[{"x":11700,"y":2270},{"x":13280,"y":2270}],[{"x":7380.0,"y":6645},{"x":7000.0,"y":6645}],[{"x":7800.0,"y":2135},{"x":7800.0,"y":2300.0}],[{"x":7450.0,"y":3255},{"x":7000.0,"y":3255}],[{"x":8125.0,"y":3235},{"x":7000.0,"y":3235}],[{"x":14260.0,"y":2125},{"x":14260.0,"y":2300.0}],[{"x":8035.0,"y":6635},{"x":8035.0,"y":7350.0}],[{"x":8710.0,"y":2105},{"x":8710.0,"y":2300.0}],[{"x":11110.0,"y":1385},{"x":11700.0,"y":1385.0}],[{"x":12910.0,"y":7785},{"x":12600.0,"y":7785},{"x":12600.0,"y":7350.0}],[{"x":11200.0,"y":8915},{"x":10100.0,"y":8915},{"x":10100.0,"y":8400.0}]]},{"id":"campos","nome":"estradas agrícolas","pontos":[{"x":4000,"y":2200},{"x":4000,"y":2700},{"x":4000,"y":4150},{"x":4000,"y":5600}],"ramais":[[{"x":400,"y":2700},{"x":4000,"y":2700}],[{"x":400,"y":4150},{"x":4000,"y":4150}],[{"x":400,"y":5600},{"x":4000,"y":5600}]],"acessos":[[{"x":950.0,"y":4165},{"x":950.0,"y":4150.0}],[{"x":2150.0,"y":4165},{"x":2150.0,"y":4150.0}],[{"x":3350.0,"y":4165},{"x":3350.0,"y":4150.0}],[{"x":2150.0,"y":5565},{"x":2150.0,"y":5600.0}]]},{"id":"floresta","nome":"estradas florestais e oficinas externas","pontos":[{"x":5000,"y":4150},{"x":4300,"y":4150},{"x":4300,"y":2200},{"x":350,"y":2200}],"ramais":[[{"x":350,"y":1150},{"x":3950,"y":1150},{"x":3950,"y":2200}],[{"x":4900,"y":450},{"x":4900,"y":2200},{"x":4300,"y":2200}]],"acessos":[[{"x":720,"y":760},{"x":720,"y":1150}],[{"x":2700.0,"y":2015},{"x":2700.0,"y":2200.0}],[{"x":4420.0,"y":1125},{"x":4900.0,"y":1125.0}],[{"x":4450.0,"y":1665},{"x":4900.0,"y":1665.0}],[{"x":4450.0,"y":2165},{"x":4450.0,"y":2200.0}],[{"x":900.0,"y":2015},{"x":900.0,"y":2200.0}],[{"x":1750.0,"y":2015},{"x":1750.0,"y":2200.0}],[{"x":1620.0,"y":945},{"x":1620.0,"y":1150.0}],[{"x":2920.0,"y":945},{"x":2920.0,"y":1150.0}]]},{"id":"recursos","nome":"minas, pedreira e portão dos recursos","pontos":[{"x":5000,"y":4150},{"x":4400,"y":4150},{"x":4400,"y":5520},{"x":4400,"y":7200},{"x":350,"y":7200}],"ramais":[[{"x":4400,"y":5520},{"x":5000,"y":5520},{"x":7000,"y":5520},{"x":9200,"y":5520},{"x":9800,"y":5520},{"x":9950,"y":5520}],[{"x":4400,"y":6300},{"x":2500,"y":6300}],[{"x":4400,"y":7200},{"x":4400,"y":8250},{"x":2500,"y":8250}],[{"x":4400,"y":8030},{"x":9000,"y":8030},{"x":15100,"y":8030},{"x":15100,"y":8000}]],"acessos":[[{"x":2910.0,"y":6205},{"x":2910.0,"y":6300.0}],[{"x":7925.0,"y":5205},{"x":7925.0,"y":5520.0}],[{"x":1250.0,"y":7145},{"x":1250.0,"y":7200.0}],[{"x":2015.0,"y":7085},{"x":2015.0,"y":7200.0}],[{"x":3150.0,"y":7145},{"x":3150.0,"y":7200.0}],[{"x":4030.0,"y":7045},{"x":4030.0,"y":7200.0}],[{"x":2840.0,"y":8105},{"x":2840.0,"y":8250.0}],[{"x":3740.0,"y":8155},{"x":3740.0,"y":8250.0}],[{"x":5360.0,"y":5535},{"x":5360.0,"y":5520.0}]]},{"id":"costa","nome":"avenida costeira e ronda externa leste","pontos":[{"x":15100,"y":450},{"x":15100,"y":1800},{"x":15100,"y":4150},{"x":15100,"y":6500},{"x":15100,"y":8000}],"ramais":[[{"x":14650,"y":1200},{"x":14650,"y":7650}],[{"x":14650,"y":4150},{"x":15100,"y":4150}],[{"x":15100,"y":6500},{"x":15900,"y":6500}],[{"x":4900,"y":740},{"x":15100,"y":740}]],"acessos":[[{"x":14260.0,"y":5675},{"x":14650.0,"y":5675.0}],[{"x":14250.0,"y":5005},{"x":14650.0,"y":5005.0}],[{"x":14410.0,"y":2875},{"x":14650.0,"y":2875.0}]]},{"id":"caisNorte","nome":"acessos aos dois cais de pesca","pontos":[{"x":15100,"y":3400},{"x":16100,"y":3400},{"x":16100,"y":1900}],"ramais":[[{"x":15100,"y":1900},{"x":16100,"y":1900}],[{"x":16100,"y":2900},{"x":16500,"y":2900}]],"acessos":[[{"x":16410.0,"y":2835},{"x":16410.0,"y":2900.0}],[{"x":15650.0,"y":3285},{"x":15650.0,"y":3400.0}]]},{"id":"caisSul","nome":"porto mercantil, estaleiro e corredor sanitário","pontos":[{"x":15100,"y":6500},{"x":15300,"y":6500},{"x":15300,"y":7850},{"x":16400,"y":7850}],"ramais":[[{"x":15100,"y":4520},{"x":15900,"y":4520},{"x":15900,"y":6500}],[{"x":15100,"y":8000},{"x":16400,"y":8000},{"x":16400,"y":8560}]],"acessos":[[{"x":16310.0,"y":6345},{"x":15900.0,"y":6345}],[{"x":15520.0,"y":5275},{"x":15900.0,"y":5275.0}],[{"x":16000.0,"y":7715},{"x":16000.0,"y":7850.0}]]}];
+
+      const areasPlantaColonia = {areaAdministracao, areaMoradias, areaSegundoBlocoMoradias, areaTerceiroBlocoMoradias, areaCeleiro, areaLavoura, areaHorta, areaFeijao, areaPastagem, areaFlorestaColonia, areaCabanaReflorestamento, areaCabanaCacadores, areaPontoCacaMilicia, areaAcougueColonia, areaCofreCortesColonia, areaCozinhaCarneColonia, areaDespensaRefeicoesColonia, areaDepositoMadeira, areaErvario, areaOficinaArmasMadeira, areaArsenalMadeira, areaFlecharia, areaDepositoFlechas, areaClinicaColonia, areaFarmaciaColonia, areaBancoColonia, areaEscolaColonia, areaArmazemGraos, areaArmazemHortalicas, areaArmazemFeijao, areaMoinhoColonia, areaArmazemFarinha, areaPadariaColonia, areaArmazemPaes, areaMinaColonia, areaDepositoMinerio, areaPedreiraColonia, areaDepositoPedra, areaCaisPescaColonia, areaSegundoCaisPescaColonia, areaMercadoPeixesColonia, areaCaisComercialColonia, areaArmazemComercial, areaFeitoriaColonia, areaEstaleiroColonia, areaFerrariaColonia, areaArmazemFerramentas, areaForjaColonia, areaArsenalColonia, areaPatioTreinoColonia, areaQuartelMilitarColonia, areaCisternaColonia, areaCozinhaHortalicasColonia, areaCozinhaFeijaoColonia, areaBibliotecaColonia, areaIgrejaColonia, areaDefumadorioColonia, areaAdegaFriaColonia, areaTransportadoresColonia, areaConstrutoresColonia, areaOficinaFerramentasColonia, areaBombeirosColonia, areaMercadoPublicoColonia, areaArmeiroColonia, areaCemiterioColonia};
+      const areasPlantaAnteriorColonia = {"areaAdministracao":{"x":8370,"y":4300,"largura":260,"altura":170},"areaMoradias":{"x":5350,"y":5650,"largura":1200,"altura":900},"areaSegundoBlocoMoradias":{"x":7100,"y":6500,"largura":1200,"altura":900},"areaTerceiroBlocoMoradias":{"x":9800,"y":1550,"largura":1200,"altura":900},"areaCeleiro":{"x":7000,"y":4550,"largura":420,"altura":260},"areaLavoura":{"x":400,"y":2800,"largura":1100,"altura":1300},"areaHorta":{"x":1600,"y":2800,"largura":1100,"altura":1300},"areaFeijao":{"x":2800,"y":2800,"largura":1100,"altura":1300},"areaPastagem":{"x":400,"y":4190,"largura":3500,"altura":1310},"areaFlorestaColonia":{"x":350,"y":450,"largura":3600,"altura":1700},"areaCabanaReflorestamento":{"x":2400,"y":1650,"largura":600,"altura":300},"areaCabanaCacadores":{"x":420,"y":500,"largura":600,"altura":260},"areaPontoCacaMilicia":{"x":440,"y":150,"largura":620,"altura":250},"areaAcougueColonia":{"x":4500,"y":4550,"largura":420,"altura":340},"areaCofreCortesColonia":{"x":9450,"y":2920,"largura":500,"altura":280},"areaCozinhaCarneColonia":{"x":8400,"y":6400,"largura":360,"altura":430},"areaDespensaRefeicoesColonia":{"x":9830,"y":5580,"largura":180,"altura":350},"areaDepositoMadeira":{"x":5100,"y":1700,"largura":440,"altura":260},"areaErvario":{"x":7000,"y":5480,"largura":440,"altura":280},"areaOficinaArmasMadeira":{"x":6500,"y":1650,"largura":500,"altura":300},"areaArsenalMadeira":{"x":7050,"y":2920,"largura":500,"altura":280},"areaFlecharia":{"x":5700,"y":1650,"largura":500,"altura":300},"areaDepositoFlechas":{"x":7650,"y":2920,"largura":500,"altura":280},"areaClinicaColonia":{"x":7550,"y":5400,"largura":650,"altura":440},"areaFarmaciaColonia":{"x":8300,"y":5480,"largura":440,"altura":280},"areaBancoColonia":{"x":8850,"y":5400,"largura":560,"altura":440},"areaEscolaColonia":{"x":6050,"y":3550,"largura":600,"altura":420},"areaArmazemGraos":{"x":5150,"y":2050,"largura":380,"altura":270},"areaArmazemHortalicas":{"x":5600,"y":2050,"largura":380,"altura":270},"areaArmazemFeijao":{"x":6050,"y":2050,"largura":380,"altura":270},"areaMoinhoColonia":{"x":5200,"y":3100,"largura":500,"altura":340},"areaArmazemFarinha":{"x":5900,"y":3120,"largura":450,"altura":300},"areaPadariaColonia":{"x":5200,"y":4550,"largura":500,"altura":340},"areaArmazemPaes":{"x":5900,"y":4570,"largura":450,"altura":300},"areaMinaColonia":{"x":900,"y":6650,"largura":700,"altura":430},"areaDepositoMinerio":{"x":1780,"y":6720,"largura":470,"altura":300},"areaPedreiraColonia":{"x":2700,"y":6500,"largura":900,"altura":580},"areaDepositoPedra":{"x":3780,"y":6660,"largura":500,"altura":320},"areaCaisPescaColonia":{"x":12720,"y":2050,"largura":380,"altura":720},"areaSegundoCaisPescaColonia":{"x":12720,"y":3150,"largura":380,"altura":720},"areaMercadoPeixesColonia":{"x":11750,"y":2900,"largura":700,"altura":420},"areaCaisComercialColonia":{"x":12520,"y":5150,"largura":580,"altura":980},"areaArmazemComercial":{"x":11620,"y":5410,"largura":640,"altura":430},"areaFeitoriaColonia":{"x":11620,"y":4780,"largura":640,"altura":430},"areaEstaleiroColonia":{"x":11900,"y":6650,"largura":1200,"altura":850},"areaFerrariaColonia":{"x":10430,"y":2920,"largura":520,"altura":360},"areaArmazemFerramentas":{"x":8250,"y":2920,"largura":500,"altura":280},"areaForjaColonia":{"x":10430,"y":4680,"largura":520,"altura":360},"areaArsenalColonia":{"x":8850,"y":2920,"largura":500,"altura":280},"areaPatioTreinoColonia":{"x":7200,"y":7750,"largura":950,"altura":620},"areaQuartelMilitarColonia":{"x":10350,"y":6620,"largura":720,"altura":520},"areaCisternaColonia":{"x":9540,"y":3600,"largura":360,"altura":300},"areaCozinhaHortalicasColonia":{"x":8810,"y":6400,"largura":430,"altura":340},"areaCozinhaFeijaoColonia":{"x":9290,"y":6400,"largura":430,"altura":340},"areaBibliotecaColonia":{"x":7000,"y":3820,"largura":720,"altura":270},"areaIgrejaColonia":{"x":8050,"y":3350,"largura":520,"altura":740},"areaDefumadorioColonia":{"x":8750,"y":3350,"largura":500,"altura":360},"areaAdegaFriaColonia":{"x":8750,"y":3780,"largura":500,"altura":310},"areaTransportadoresColonia":{"x":10450,"y":3520,"largura":500,"altura":390},"areaConstrutoresColonia":{"x":4470,"y":5680,"largura":480,"altura":390},"areaOficinaFerramentasColonia":{"x":4470,"y":6370,"largura":480,"altura":440},"areaBombeirosColonia":{"x":10450,"y":5360,"largura":500,"altura":390},"areaMercadoPublicoColonia":{"x":11600,"y":3550,"largura":680,"altura":430},"areaArmeiroColonia":{"x":10430,"y":4240,"largura":520,"altura":350},"areaCemiterioColonia":{"x":8350,"y":8200,"largura":1800,"altura":650}};
+      const postosPlantaAnteriorColonia = [{"id":"torre-4-0","x":4980,"y":1500},{"id":"torre-5-0","x":11180,"y":1500},{"id":"torre-6-0","x":4980,"y":7500},{"id":"torre-7-0","x":11180,"y":7500},{"id":"torre-0-0","x":6780,"y":2700},{"id":"torre-1-0","x":10280,"y":2700},{"id":"torre-2-0","x":6780,"y":6300},{"id":"torre-3-0","x":10280,"y":6300},{"id":"torre-4-1","x":5020,"y":1500},{"id":"torre-5-1","x":11220,"y":1500},{"id":"torre-6-1","x":5020,"y":7500},{"id":"torre-7-1","x":11220,"y":7500},{"id":"torre-0-1","x":6820,"y":2700},{"id":"torre-1-1","x":10320,"y":2700},{"id":"torre-2-1","x":6820,"y":6300},{"id":"torre-3-1","x":10320,"y":6300},{"id":"adarve-externo-0-0","x":5827.5,"y":1464},{"id":"adarve-externo-1-0","x":11236,"y":2258.75},{"id":"adarve-externo-2-0","x":5783.75,"y":7536},{"id":"adarve-externo-3-0","x":4964,"y":2215},{"id":"adarve-interno-0-0","x":7290,"y":2664},{"id":"adarve-interno-1-0","x":10336,"y":3158.75},{"id":"adarve-interno-2-0","x":7290,"y":6336},{"id":"adarve-interno-3-0","x":6764,"y":3115},{"id":"adarve-externo-0-1","x":7342.5,"y":1464},{"id":"adarve-externo-1-1","x":11236,"y":3636.25},{"id":"adarve-externo-2-1","x":7561.25,"y":7536},{"id":"adarve-externo-3-1","x":4964,"y":3505},{"id":"adarve-interno-0-1","x":8130,"y":2664},{"id":"adarve-interno-1-1","x":10336,"y":3936.25},{"id":"adarve-interno-2-1","x":8130,"y":6336},{"id":"adarve-interno-3-1","x":6764,"y":3805},{"id":"adarve-externo-0-2","x":8857.5,"y":1464},{"id":"adarve-externo-1-2","x":11236,"y":5363.75},{"id":"adarve-externo-2-2","x":8988.75,"y":7536},{"id":"adarve-externo-3-2","x":4964,"y":5145},{"id":"adarve-interno-0-2","x":8970,"y":2664},{"id":"adarve-interno-1-2","x":10336,"y":5063.75},{"id":"adarve-interno-2-2","x":8970,"y":6336},{"id":"adarve-interno-3-2","x":6764,"y":4845},{"id":"adarve-externo-0-3","x":10372.5,"y":1464},{"id":"adarve-externo-1-3","x":11236,"y":6741.25},{"id":"adarve-externo-2-3","x":10416.25,"y":7536},{"id":"adarve-externo-3-3","x":4964,"y":6785},{"id":"adarve-interno-0-3","x":9810,"y":2664},{"id":"adarve-interno-1-3","x":10336,"y":5841.25},{"id":"adarve-interno-2-3","x":9810,"y":6336},{"id":"adarve-interno-3-3","x":6764,"y":5885}];
+      const reservasPlantaColonia = [{"id":"reserva-civica-norte","nome":"RESERVA CÍVICA NORTE","zona":"cidade","x":9300,"y":1150,"largura":1550,"altura":850},{"id":"reserva-town-west","nome":"NOVAS OFICINAS / SERVIÇOS","zona":"cidade","x":5500,"y":3400,"largura":1250,"altura":550},{"id":"reserva-cultura","nome":"CULTURA / CONVÍVIO","zona":"cidade","x":7480,"y":2380,"largura":1550,"altura":200},{"id":"reserva-mercado","nome":"COMÉRCIO / LAZER","zona":"cidade","x":7550,"y":4320,"largura":1520,"altura":210},{"id":"reserva-sul","nome":"EXPANSÃO URBANA SUL","zona":"cidade","x":9900,"y":6840,"largura":2600,"altura":360},{"id":"reserva-bastiao-1","nome":"RESERVA ESTRATÉGICA","zona":"cidadela","x":10050,"y":4370,"largura":950,"altura":400},{"id":"reserva-bastiao-2","nome":"RESERVA DE GUARNIÇÃO","zona":"cidadela","x":11320,"y":4370,"largura":990,"altura":400},{"id":"reserva-bastiao-3","nome":"NOVO DEPÓSITO PROTEGIDO","zona":"cidadela","x":12600,"y":5610,"largura":840,"altura":600},{"id":"reserva-norte-externa","nome":"EXPANSÃO EXTRA-MUROS","zona":"exterior","x":6500,"y":150,"largura":4700,"altura":550},{"id":"reserva-leste-norte","nome":"FUTURO DISTRITO PORTUÁRIO","zona":"exterior","x":15300,"y":850,"largura":1200,"altura":800},{"id":"reserva-oficinas-sul","nome":"OFICINAS / APOIO EXTERNO","zona":"exterior","x":5100,"y":8150,"largura":3400,"altura":600},{"id":"reserva-leste-sul","nome":"NOVOS SERVIÇOS EXTERNOS","zona":"exterior","x":12600,"y":8170,"largura":3400,"altura":580}];
+      const redeEsgotoColonia = [{"id":"coletor-geral","pontos":[{"x":7022,"y":1280},{"x":7022,"y":7672},{"x":9022,"y":7672},{"x":9022,"y":8052},{"x":16422,"y":8052},{"x":16422,"y":8582},{"x":16620,"y":8582}]},{"id":"coletor-nordeste","pontos":[{"x":11722,"y":1230},{"x":11722,"y":2322},{"x":7022,"y":2322}]},{"id":"coletor-cidadela","pontos":[{"x":9972,"y":2572},{"x":9972,"y":5542},{"x":7022,"y":5542}]},{"id":"coletor-leste","pontos":[{"x":14672,"y":1220},{"x":14672,"y":7372},{"x":9022,"y":7372},{"x":9022,"y":7672}]},{"id":"areaMoradias-0","pontos":[{"x":5420,"y":1502},{"x":7022,"y":1502}]},{"id":"areaMoradias-1","pontos":[{"x":5420,"y":1762},{"x":7022,"y":1762}]},{"id":"areaMoradias-2","pontos":[{"x":5420,"y":2022},{"x":7022,"y":2022}]},{"id":"areaMoradias-3","pontos":[{"x":5420,"y":2282},{"x":7022,"y":2282}]},{"id":"areaMoradias-4","pontos":[{"x":5420,"y":2542},{"x":7022,"y":2542}]},{"id":"areaSegundoBlocoMoradias-0","pontos":[{"x":5420,"y":6252},{"x":7022,"y":6252}]},{"id":"areaSegundoBlocoMoradias-1","pontos":[{"x":5420,"y":6512},{"x":7022,"y":6512}]},{"id":"areaSegundoBlocoMoradias-2","pontos":[{"x":5420,"y":6772},{"x":7022,"y":6772}]},{"id":"areaSegundoBlocoMoradias-3","pontos":[{"x":5420,"y":7032},{"x":7022,"y":7032}]},{"id":"areaSegundoBlocoMoradias-4","pontos":[{"x":5420,"y":7292},{"x":7022,"y":7292}]},{"id":"areaTerceiroBlocoMoradias-0","pontos":[{"x":13280,"y":1252},{"x":11722,"y":1252}]},{"id":"areaTerceiroBlocoMoradias-1","pontos":[{"x":13280,"y":1512},{"x":11722,"y":1512}]},{"id":"areaTerceiroBlocoMoradias-2","pontos":[{"x":13280,"y":1772},{"x":11722,"y":1772}]},{"id":"areaTerceiroBlocoMoradias-3","pontos":[{"x":13280,"y":2032},{"x":11722,"y":2032}]},{"id":"areaTerceiroBlocoMoradias-4","pontos":[{"x":13280,"y":2292},{"x":11722,"y":2292}]}];
+      const casasPrestigioPlantaColonia = [{"x":12730,"y":4470,"largura":180,"altura":125},{"x":13200,"y":4470,"largura":180,"altura":125}];
+      const acessosPlantaColonia = {"areaAdministracao":{"x":12130.0,"y":3965,"road":0,"connector":[{"x":12130.0,"y":3965},{"x":12130.0,"y":4150.0}],"length":185.0},"areaCeleiro":{"x":10840.0,"y":3925,"road":0,"connector":[{"x":10840.0,"y":3925},{"x":10840.0,"y":4150.0}],"length":225.0},"areaCabanaReflorestamento":{"x":2700.0,"y":2015,"road":3,"connector":[{"x":2700.0,"y":2015},{"x":2700.0,"y":2200.0}],"length":185.0},"areaCabanaCacadores":{"x":720.0,"y":825,"road":3,"connector":[{"x":720.0,"y":825},{"x":720.0,"y":825}],"length":0.0},"areaAcougueColonia":{"x":2910.0,"y":6205,"road":4,"connector":[{"x":2910.0,"y":6205},{"x":2910.0,"y":6300.0}],"length":95.0},"areaCofreCortesColonia":{"x":12850.0,"y":3095,"road":0,"connector":[{"x":12850.0,"y":3095},{"x":12850.0,"y":3400.0}],"length":305.0},"areaCozinhaCarneColonia":{"x":7380.0,"y":6645,"road":1,"connector":[{"x":7380.0,"y":6645},{"x":7000.0,"y":6645}],"length":380.0},"areaDespensaRefeicoesColonia":{"x":13290.0,"y":3165,"road":0,"connector":[{"x":13290.0,"y":3165},{"x":13290.0,"y":3400.0}],"length":235.0},"areaDepositoMadeira":{"x":4420.0,"y":1125,"road":3,"connector":[{"x":4420.0,"y":1125},{"x":4900.0,"y":1125.0}],"length":480.0},"areaErvario":{"x":10850.0,"y":6325,"road":0,"connector":[{"x":10850.0,"y":6325},{"x":10850.0,"y":6450.0}],"length":125.0},"areaOficinaArmasMadeira":{"x":4450.0,"y":1665,"road":3,"connector":[{"x":4450.0,"y":1665},{"x":4900.0,"y":1665.0}],"length":450.0},"areaArsenalMadeira":{"x":10270.0,"y":3095,"road":0,"connector":[{"x":10270.0,"y":3095},{"x":10270.0,"y":3400.0}],"length":305.0},"areaFlecharia":{"x":4450.0,"y":2165,"road":3,"connector":[{"x":4450.0,"y":2165},{"x":4450.0,"y":2200.0}],"length":35.0},"areaDepositoFlechas":{"x":10850.0,"y":3095,"road":0,"connector":[{"x":10850.0,"y":3095},{"x":10850.0,"y":3400.0}],"length":305.0},"areaClinicaColonia":{"x":7925.0,"y":5205,"road":4,"connector":[{"x":7925.0,"y":5205},{"x":7925.0,"y":5520.0}],"length":315.0},"areaFarmaciaColonia":{"x":13270.0,"y":5545,"road":0,"connector":[{"x":13270.0,"y":5545},{"x":13550.0,"y":5545.0}],"length":280.0},"areaBancoColonia":{"x":11580.0,"y":4055,"road":0,"connector":[{"x":11580.0,"y":4055},{"x":11580.0,"y":4150.0}],"length":95.0},"areaEscolaColonia":{"x":7800.0,"y":2135,"road":1,"connector":[{"x":7800.0,"y":2135},{"x":7800.0,"y":2300.0}],"length":165.0},"areaArmazemGraos":{"x":5590.0,"y":3185,"road":0,"connector":[{"x":5590.0,"y":3185},{"x":5590.0,"y":3250.0}],"length":65.0},"areaArmazemHortalicas":{"x":6140.0,"y":3185,"road":0,"connector":[{"x":6140.0,"y":3185},{"x":6140.0,"y":3250.0}],"length":65.0},"areaArmazemFeijao":{"x":6690.0,"y":3185,"road":0,"connector":[{"x":6690.0,"y":3185},{"x":6690.0,"y":3250.0}],"length":65.0},"areaMoinhoColonia":{"x":7450.0,"y":3255,"road":1,"connector":[{"x":7450.0,"y":3255},{"x":7000.0,"y":3255}],"length":450.0},"areaArmazemFarinha":{"x":8125.0,"y":3235,"road":1,"connector":[{"x":8125.0,"y":3235},{"x":7000.0,"y":3235}],"length":1125.0},"areaPadariaColonia":{"x":5650.0,"y":5005,"road":0,"connector":[{"x":5650.0,"y":5005},{"x":5650.0,"y":5100.0}],"length":95.0},"areaArmazemPaes":{"x":6325.0,"y":4985,"road":0,"connector":[{"x":6325.0,"y":4985},{"x":6325.0,"y":5100.0}],"length":115.0},"areaMinaColonia":{"x":1250.0,"y":7145,"road":4,"connector":[{"x":1250.0,"y":7145},{"x":1250.0,"y":7200.0}],"length":55.0},"areaDepositoMinerio":{"x":2015.0,"y":7085,"road":4,"connector":[{"x":2015.0,"y":7085},{"x":2015.0,"y":7200.0}],"length":115.0},"areaPedreiraColonia":{"x":3150.0,"y":7145,"road":4,"connector":[{"x":3150.0,"y":7145},{"x":3150.0,"y":7200.0}],"length":55.0},"areaDepositoPedra":{"x":4030.0,"y":7045,"road":4,"connector":[{"x":4030.0,"y":7045},{"x":4030.0,"y":7200.0}],"length":155.0},"areaCaisPescaColonia":{"x":16410.0,"y":2835,"road":6,"connector":[{"x":16410.0,"y":2835},{"x":16410.0,"y":2900.0}],"length":65.0},"areaSegundoCaisPescaColonia":{"x":16410.0,"y":3935,"road":0,"connector":[{"x":16410.0,"y":3935},{"x":16200.0,"y":3935},{"x":16200.0,"y":4150.0}],"length":425.0},"areaMercadoPeixesColonia":{"x":15650.0,"y":3285,"road":6,"connector":[{"x":15650.0,"y":3285},{"x":15650.0,"y":3400.0}],"length":115.0},"areaCaisComercialColonia":{"x":16310.0,"y":6345,"road":7,"connector":[{"x":16310.0,"y":6345},{"x":15900.0,"y":6345}],"length":410.0},"areaArmazemComercial":{"x":12920.0,"y":4065,"road":0,"connector":[{"x":12920.0,"y":4065},{"x":12920.0,"y":4150.0}],"length":85.0},"areaFeitoriaColonia":{"x":15520.0,"y":5275,"road":7,"connector":[{"x":15520.0,"y":5275},{"x":15900.0,"y":5275.0}],"length":380.0},"areaEstaleiroColonia":{"x":16000.0,"y":7715,"road":7,"connector":[{"x":16000.0,"y":7715},{"x":16000.0,"y":7850.0}],"length":135.0},"areaFerrariaColonia":{"x":14260.0,"y":2125,"road":1,"connector":[{"x":14260.0,"y":2125},{"x":14260.0,"y":2300.0}],"length":175.0},"areaArmazemFerramentas":{"x":11550.0,"y":3095,"road":0,"connector":[{"x":11550.0,"y":3095},{"x":11550.0,"y":3400.0}],"length":305.0},"areaForjaColonia":{"x":14260.0,"y":5675,"road":5,"connector":[{"x":14260.0,"y":5675},{"x":14650.0,"y":5675.0}],"length":390.0},"areaArsenalColonia":{"x":12150.0,"y":3095,"road":0,"connector":[{"x":12150.0,"y":3095},{"x":12150.0,"y":3400.0}],"length":305.0},"areaQuartelMilitarColonia":{"x":11660.0,"y":5785,"road":0,"connector":[{"x":11660.0,"y":5785},{"x":11180.0,"y":5785}],"length":480.0},"areaCisternaColonia":{"x":12730.0,"y":5565,"road":0,"connector":[{"x":12730.0,"y":5565},{"x":12480.0,"y":5565}],"length":250.0},"areaCozinhaHortalicasColonia":{"x":8035.0,"y":6635,"road":1,"connector":[{"x":8035.0,"y":6635},{"x":8035.0,"y":7350.0}],"length":715.0},"areaCozinhaFeijaoColonia":{"x":8675.0,"y":6635,"road":0,"connector":[{"x":8675.0,"y":6635},{"x":9200.0,"y":6635.0}],"length":525.0},"areaBibliotecaColonia":{"x":8710.0,"y":2105,"road":1,"connector":[{"x":8710.0,"y":2105},{"x":8710.0,"y":2300.0}],"length":195.0},"areaIgrejaColonia":{"x":8830.0,"y":3655,"road":0,"connector":[{"x":8830.0,"y":3655},{"x":9200.0,"y":3655.0}],"length":370.0},"areaDefumadorioColonia":{"x":10250.0,"y":6395,"road":0,"connector":[{"x":10250.0,"y":6395},{"x":10250.0,"y":6450.0}],"length":55.0},"areaAdegaFriaColonia":{"x":10250.0,"y":3995,"road":0,"connector":[{"x":10250.0,"y":3995},{"x":10250.0,"y":4150.0}],"length":155.0},"areaTransportadoresColonia":{"x":14250.0,"y":3955,"road":0,"connector":[{"x":14250.0,"y":3955},{"x":14250.0,"y":4150.0}],"length":195.0},"areaConstrutoresColonia":{"x":2840.0,"y":8105,"road":4,"connector":[{"x":2840.0,"y":8105},{"x":2840.0,"y":8250.0}],"length":145.0},"areaOficinaFerramentasColonia":{"x":3740.0,"y":8155,"road":4,"connector":[{"x":3740.0,"y":8155},{"x":3740.0,"y":8250.0}],"length":95.0},"areaBombeirosColonia":{"x":14250.0,"y":5005,"road":5,"connector":[{"x":14250.0,"y":5005},{"x":14650.0,"y":5005.0}],"length":400.0},"areaMercadoPublicoColonia":{"x":7810.0,"y":4045,"road":0,"connector":[{"x":7810.0,"y":4045},{"x":7810.0,"y":4150.0}],"length":105.0},"areaArmeiroColonia":{"x":11560.0,"y":6385,"road":0,"connector":[{"x":11560.0,"y":6385},{"x":11560.0,"y":6450.0}],"length":65.0},"areasCabanasLenhadores-0":{"x":900.0,"y":2015,"road":3,"connector":[{"x":900.0,"y":2015},{"x":900.0,"y":2200.0}],"length":185.0},"areasCabanasLenhadores-1":{"x":1750.0,"y":2015,"road":3,"connector":[{"x":1750.0,"y":2015},{"x":1750.0,"y":2200.0}],"length":185.0},"areasCabanasColeta-0":{"x":1620.0,"y":945,"road":3,"connector":[{"x":1620.0,"y":945},{"x":1620.0,"y":1150.0}],"length":205.0},"areasCabanasColeta-1":{"x":2920.0,"y":945,"road":3,"connector":[{"x":2920.0,"y":945},{"x":2920.0,"y":1150.0}],"length":205.0},"guarda-0":{"x":11110.0,"y":1385,"road":1,"connector":[{"x":11110.0,"y":1385},{"x":11700.0,"y":1385.0}],"length":590.0},"guarda-1":{"x":14410.0,"y":2875,"road":5,"connector":[{"x":14410.0,"y":2875},{"x":14650.0,"y":2875.0}],"length":240.0},"guarda-2":{"x":12910.0,"y":7785,"road":1,"connector":[{"x":12910.0,"y":7785},{"x":12600.0,"y":7785},{"x":12600.0,"y":7350.0}],"length":745.0},"guarda-3":{"x":5360.0,"y":5535,"road":4,"connector":[{"x":5360.0,"y":5535},{"x":5360.0,"y":5520.0}],"length":15.0},"prestigio-0":{"x":12820.0,"y":4660,"road":0,"connector":[{"x":12820.0,"y":4660},{"x":12820.0,"y":4950.0}],"length":290.0},"prestigio-1":{"x":13290.0,"y":4660,"road":0,"connector":[{"x":13290.0,"y":4660},{"x":13550.0,"y":4660.0}],"length":260.0},"casa-1":{"x":5525,"y":1480,"road":1,"connector":[{"x":5525,"y":1480},{"x":5525,"y":1480}],"length":0.0},"casa-2":{"x":5745,"y":1480,"road":1,"connector":[{"x":5745,"y":1480},{"x":5745,"y":1480}],"length":0.0},"casa-3":{"x":5965,"y":1480,"road":1,"connector":[{"x":5965,"y":1480},{"x":5965,"y":1480}],"length":0.0},"casa-4":{"x":6185,"y":1480,"road":1,"connector":[{"x":6185,"y":1480},{"x":6185,"y":1480}],"length":0.0},"casa-5":{"x":6405,"y":1480,"road":1,"connector":[{"x":6405,"y":1480},{"x":6405,"y":1480}],"length":0.0},"casa-6":{"x":6625,"y":1480,"road":1,"connector":[{"x":6625,"y":1480},{"x":6625,"y":1480}],"length":0.0},"casa-7":{"x":5525,"y":1740,"road":1,"connector":[{"x":5525,"y":1740},{"x":5525,"y":1740}],"length":0.0},"casa-8":{"x":5745,"y":1740,"road":1,"connector":[{"x":5745,"y":1740},{"x":5745,"y":1740}],"length":0.0},"casa-9":{"x":5965,"y":1740,"road":1,"connector":[{"x":5965,"y":1740},{"x":5965,"y":1740}],"length":0.0},"casa-10":{"x":6185,"y":1740,"road":1,"connector":[{"x":6185,"y":1740},{"x":6185,"y":1740}],"length":0.0},"casa-11":{"x":6405,"y":1740,"road":1,"connector":[{"x":6405,"y":1740},{"x":6405,"y":1740}],"length":0.0},"casa-12":{"x":6625,"y":1740,"road":1,"connector":[{"x":6625,"y":1740},{"x":6625,"y":1740}],"length":0.0},"casa-13":{"x":5525,"y":2000,"road":1,"connector":[{"x":5525,"y":2000},{"x":5525,"y":2000}],"length":0.0},"casa-14":{"x":5745,"y":2000,"road":1,"connector":[{"x":5745,"y":2000},{"x":5745,"y":2000}],"length":0.0},"casa-15":{"x":5965,"y":2000,"road":1,"connector":[{"x":5965,"y":2000},{"x":5965,"y":2000}],"length":0.0},"casa-16":{"x":6185,"y":2000,"road":1,"connector":[{"x":6185,"y":2000},{"x":6185,"y":2000}],"length":0.0},"casa-17":{"x":6405,"y":2000,"road":1,"connector":[{"x":6405,"y":2000},{"x":6405,"y":2000}],"length":0.0},"casa-18":{"x":6625,"y":2000,"road":1,"connector":[{"x":6625,"y":2000},{"x":6625,"y":2000}],"length":0.0},"casa-19":{"x":5525,"y":2260,"road":1,"connector":[{"x":5525,"y":2260},{"x":5525,"y":2260}],"length":0.0},"casa-20":{"x":5745,"y":2260,"road":1,"connector":[{"x":5745,"y":2260},{"x":5745,"y":2260}],"length":0.0},"casa-21":{"x":5965,"y":2260,"road":1,"connector":[{"x":5965,"y":2260},{"x":5965,"y":2260}],"length":0.0},"casa-22":{"x":6185,"y":2260,"road":1,"connector":[{"x":6185,"y":2260},{"x":6185,"y":2260}],"length":0.0},"casa-23":{"x":6405,"y":2260,"road":1,"connector":[{"x":6405,"y":2260},{"x":6405,"y":2260}],"length":0.0},"casa-24":{"x":6625,"y":2260,"road":1,"connector":[{"x":6625,"y":2260},{"x":6625,"y":2260}],"length":0.0},"casa-25":{"x":5525,"y":2520,"road":1,"connector":[{"x":5525,"y":2520},{"x":5525,"y":2520}],"length":0.0},"casa-26":{"x":5745,"y":2520,"road":1,"connector":[{"x":5745,"y":2520},{"x":5745,"y":2520}],"length":0.0},"casa-27":{"x":5965,"y":2520,"road":1,"connector":[{"x":5965,"y":2520},{"x":5965,"y":2520}],"length":0.0},"casa-28":{"x":6185,"y":2520,"road":1,"connector":[{"x":6185,"y":2520},{"x":6185,"y":2520}],"length":0.0},"casa-29":{"x":6405,"y":2520,"road":1,"connector":[{"x":6405,"y":2520},{"x":6405,"y":2520}],"length":0.0},"casa-30":{"x":6625,"y":2520,"road":1,"connector":[{"x":6625,"y":2520},{"x":6625,"y":2520}],"length":0.0},"casa-31":{"x":5525,"y":6230,"road":1,"connector":[{"x":5525,"y":6230},{"x":5525,"y":6230}],"length":0.0},"casa-32":{"x":5745,"y":6230,"road":1,"connector":[{"x":5745,"y":6230},{"x":5745,"y":6230}],"length":0.0},"casa-33":{"x":5965,"y":6230,"road":1,"connector":[{"x":5965,"y":6230},{"x":5965,"y":6230}],"length":0.0},"casa-34":{"x":6185,"y":6230,"road":1,"connector":[{"x":6185,"y":6230},{"x":6185,"y":6230}],"length":0.0},"casa-35":{"x":6405,"y":6230,"road":1,"connector":[{"x":6405,"y":6230},{"x":6405,"y":6230}],"length":0.0},"casa-36":{"x":6625,"y":6230,"road":1,"connector":[{"x":6625,"y":6230},{"x":6625,"y":6230}],"length":0.0},"casa-37":{"x":5525,"y":6490,"road":1,"connector":[{"x":5525,"y":6490},{"x":5525,"y":6490}],"length":0.0},"casa-38":{"x":5745,"y":6490,"road":1,"connector":[{"x":5745,"y":6490},{"x":5745,"y":6490}],"length":0.0},"casa-39":{"x":5965,"y":6490,"road":1,"connector":[{"x":5965,"y":6490},{"x":5965,"y":6490}],"length":0.0},"casa-40":{"x":6185,"y":6490,"road":1,"connector":[{"x":6185,"y":6490},{"x":6185,"y":6490}],"length":0.0},"casa-41":{"x":6405,"y":6490,"road":1,"connector":[{"x":6405,"y":6490},{"x":6405,"y":6490}],"length":0.0},"casa-42":{"x":6625,"y":6490,"road":1,"connector":[{"x":6625,"y":6490},{"x":6625,"y":6490}],"length":0.0},"casa-43":{"x":5525,"y":6750,"road":1,"connector":[{"x":5525,"y":6750},{"x":5525,"y":6750}],"length":0.0},"casa-44":{"x":5745,"y":6750,"road":1,"connector":[{"x":5745,"y":6750},{"x":5745,"y":6750}],"length":0.0},"casa-45":{"x":5965,"y":6750,"road":1,"connector":[{"x":5965,"y":6750},{"x":5965,"y":6750}],"length":0.0},"casa-46":{"x":6185,"y":6750,"road":1,"connector":[{"x":6185,"y":6750},{"x":6185,"y":6750}],"length":0.0},"casa-47":{"x":6405,"y":6750,"road":1,"connector":[{"x":6405,"y":6750},{"x":6405,"y":6750}],"length":0.0},"casa-48":{"x":6625,"y":6750,"road":1,"connector":[{"x":6625,"y":6750},{"x":6625,"y":6750}],"length":0.0},"casa-49":{"x":5525,"y":7010,"road":1,"connector":[{"x":5525,"y":7010},{"x":5525,"y":7010}],"length":0.0},"casa-50":{"x":5745,"y":7010,"road":1,"connector":[{"x":5745,"y":7010},{"x":5745,"y":7010}],"length":0.0},"casa-51":{"x":5965,"y":7010,"road":1,"connector":[{"x":5965,"y":7010},{"x":5965,"y":7010}],"length":0.0},"casa-52":{"x":6185,"y":7010,"road":1,"connector":[{"x":6185,"y":7010},{"x":6185,"y":7010}],"length":0.0},"casa-53":{"x":6405,"y":7010,"road":1,"connector":[{"x":6405,"y":7010},{"x":6405,"y":7010}],"length":0.0},"casa-54":{"x":6625,"y":7010,"road":1,"connector":[{"x":6625,"y":7010},{"x":6625,"y":7010}],"length":0.0},"casa-55":{"x":5525,"y":7270,"road":1,"connector":[{"x":5525,"y":7270},{"x":5525,"y":7270}],"length":0.0},"casa-56":{"x":5745,"y":7270,"road":1,"connector":[{"x":5745,"y":7270},{"x":5745,"y":7270}],"length":0.0},"casa-57":{"x":5965,"y":7270,"road":1,"connector":[{"x":5965,"y":7270},{"x":5965,"y":7270}],"length":0.0},"casa-58":{"x":6185,"y":7270,"road":1,"connector":[{"x":6185,"y":7270},{"x":6185,"y":7270}],"length":0.0},"casa-59":{"x":6405,"y":7270,"road":1,"connector":[{"x":6405,"y":7270},{"x":6405,"y":7270}],"length":0.0},"casa-60":{"x":6625,"y":7270,"road":1,"connector":[{"x":6625,"y":7270},{"x":6625,"y":7270}],"length":0.0},"casa-61":{"x":12025,"y":1230,"road":1,"connector":[{"x":12025,"y":1230},{"x":12025,"y":1230}],"length":0.0},"casa-62":{"x":12245,"y":1230,"road":1,"connector":[{"x":12245,"y":1230},{"x":12245,"y":1230}],"length":0.0},"casa-63":{"x":12465,"y":1230,"road":1,"connector":[{"x":12465,"y":1230},{"x":12465,"y":1230}],"length":0.0},"casa-64":{"x":12685,"y":1230,"road":1,"connector":[{"x":12685,"y":1230},{"x":12685,"y":1230}],"length":0.0},"casa-65":{"x":12905,"y":1230,"road":1,"connector":[{"x":12905,"y":1230},{"x":12905,"y":1230}],"length":0.0},"casa-66":{"x":13125,"y":1230,"road":1,"connector":[{"x":13125,"y":1230},{"x":13125,"y":1230}],"length":0.0},"casa-67":{"x":12025,"y":1490,"road":1,"connector":[{"x":12025,"y":1490},{"x":12025,"y":1490}],"length":0.0},"casa-68":{"x":12245,"y":1490,"road":1,"connector":[{"x":12245,"y":1490},{"x":12245,"y":1490}],"length":0.0},"casa-69":{"x":12465,"y":1490,"road":1,"connector":[{"x":12465,"y":1490},{"x":12465,"y":1490}],"length":0.0},"casa-70":{"x":12685,"y":1490,"road":1,"connector":[{"x":12685,"y":1490},{"x":12685,"y":1490}],"length":0.0},"casa-71":{"x":12905,"y":1490,"road":1,"connector":[{"x":12905,"y":1490},{"x":12905,"y":1490}],"length":0.0},"casa-72":{"x":13125,"y":1490,"road":1,"connector":[{"x":13125,"y":1490},{"x":13125,"y":1490}],"length":0.0},"casa-73":{"x":12025,"y":1750,"road":1,"connector":[{"x":12025,"y":1750},{"x":12025,"y":1750}],"length":0.0},"casa-74":{"x":12245,"y":1750,"road":1,"connector":[{"x":12245,"y":1750},{"x":12245,"y":1750}],"length":0.0},"casa-75":{"x":12465,"y":1750,"road":1,"connector":[{"x":12465,"y":1750},{"x":12465,"y":1750}],"length":0.0},"casa-76":{"x":12685,"y":1750,"road":1,"connector":[{"x":12685,"y":1750},{"x":12685,"y":1750}],"length":0.0},"casa-77":{"x":12905,"y":1750,"road":1,"connector":[{"x":12905,"y":1750},{"x":12905,"y":1750}],"length":0.0},"casa-78":{"x":13125,"y":1750,"road":1,"connector":[{"x":13125,"y":1750},{"x":13125,"y":1750}],"length":0.0},"casa-79":{"x":12025,"y":2010,"road":1,"connector":[{"x":12025,"y":2010},{"x":12025,"y":2010}],"length":0.0},"casa-80":{"x":12245,"y":2010,"road":1,"connector":[{"x":12245,"y":2010},{"x":12245,"y":2010}],"length":0.0},"casa-81":{"x":12465,"y":2010,"road":1,"connector":[{"x":12465,"y":2010},{"x":12465,"y":2010}],"length":0.0},"casa-82":{"x":12685,"y":2010,"road":1,"connector":[{"x":12685,"y":2010},{"x":12685,"y":2010}],"length":0.0},"casa-83":{"x":12905,"y":2010,"road":1,"connector":[{"x":12905,"y":2010},{"x":12905,"y":2010}],"length":0.0},"casa-84":{"x":13125,"y":2010,"road":1,"connector":[{"x":13125,"y":2010},{"x":13125,"y":2010}],"length":0.0},"casa-85":{"x":12025,"y":2270,"road":1,"connector":[{"x":12025,"y":2270},{"x":12025,"y":2270}],"length":0.0},"casa-86":{"x":12245,"y":2270,"road":1,"connector":[{"x":12245,"y":2270},{"x":12245,"y":2270}],"length":0.0},"casa-87":{"x":12465,"y":2270,"road":1,"connector":[{"x":12465,"y":2270},{"x":12465,"y":2270}],"length":0.0},"casa-88":{"x":12685,"y":2270,"road":1,"connector":[{"x":12685,"y":2270},{"x":12685,"y":2270}],"length":0.0},"casa-89":{"x":12905,"y":2270,"road":1,"connector":[{"x":12905,"y":2270},{"x":12905,"y":2270}],"length":0.0},"casa-90":{"x":13125,"y":2270,"road":1,"connector":[{"x":13125,"y":2270},{"x":13125,"y":2270}],"length":0.0},"areaLavoura":{"x":950.0,"y":4165,"road":2,"connector":[{"x":950.0,"y":4165},{"x":950.0,"y":4150.0}],"length":15.0},"areaHorta":{"x":2150.0,"y":4165,"road":2,"connector":[{"x":2150.0,"y":4165},{"x":2150.0,"y":4150.0}],"length":15.0},"areaFeijao":{"x":3350.0,"y":4165,"road":2,"connector":[{"x":3350.0,"y":4165},{"x":3350.0,"y":4150.0}],"length":15.0},"areaPastagem":{"x":2150.0,"y":5565,"road":2,"connector":[{"x":2150.0,"y":5565},{"x":2150.0,"y":5600.0}],"length":35.0},"areaPatioTreinoColonia":{"x":10475.0,"y":5885,"road":0,"connector":[{"x":10475.0,"y":5885},{"x":9950.0,"y":5885}],"length":525.0},"areaCemiterioColonia":{"x":11200.0,"y":8915,"road":1,"connector":[{"x":11200.0,"y":8915},{"x":10100.0,"y":8915},{"x":10100.0,"y":8400.0}],"length":1615.0}};
       const cacheRotasEstradaColonia = new Map();
+      // PLANTA_COLONIAL_V1: fixed-layout geography, independent of paid construction.
+      // Placement is intentionally not editable yet. Every object keeps its stable ID.
+      let cacheSolidosPlanta = null;
+      let cacheGrafoPlanta = null;
+      const avisosRotasPlanta = new Set();
+      const cacheLigacoesPlanta = new Map();
+      function retangulosSolidosPlanta() {
+        if (cacheSolidosPlanta) return cacheSolidosPlanta;
+        const abertos = new Set(['areaMoradias','areaSegundoBlocoMoradias','areaTerceiroBlocoMoradias','areaFlorestaColonia','areaPontoCacaMilicia','areaPatioTreinoColonia']);
+        const r = Object.entries(areasPlantaColonia).filter(([k])=>!abertos.has(k)).map(([id,a])=>({id,...a}));
+        for(const [nome,lista] of [['lenhador',areasCabanasLenhadores],['coleta',areasCabanasColeta],['guarda',areasPostosGuardaColonia],['prestigio',casasPrestigioPlantaColonia]])
+          lista.forEach((a,i)=>r.push({id:nome+'-'+i,...a}));
+        for(let i=0;i<90;i++)r.push({id:'casa-'+(i+1),...posicaoCasaColonia(i),largura:130,altura:105});
+        for(const p of posicoesPocosPublicosColonia)r.push({id:'poco-'+p.id,x:p.x-54,y:p.y-54,largura:108,altura:108});
+        for(const [nome,recinto] of [['externo',recintoExterno],['interno',recintoInterno]])for(let lado=0;lado<4;lado++)
+          segmentosTrechoPalicadaColonia(recinto,lado).forEach((s,i)=>r.push({id:'parede-'+nome+'-'+lado+'-'+i,parede:true,x:Math.min(s.x1,s.x2)-36,y:Math.min(s.y1,s.y2)-36,largura:Math.abs(s.x2-s.x1)+72,altura:Math.abs(s.y2-s.y1)+72}));
+        cacheSolidosPlanta=r;return r;
+      }
+      function pontoDentroPlanta(p,r,m=0) {
+        return p.x>=r.x-m&&p.x<=r.x+r.largura+m&&p.y>=r.y-m&&p.y<=r.y+r.altura+m;
+      }
+      function segmentoCruzaRetanguloPlanta(a,b,r,m=0) {
+        let inicio=0,fim=1;
+        for(const [e,d] of [['x','largura'],['y','altura']]) {
+          const v=b[e]-a[e],lo=r[e]-m,hi=r[e]+r[d]+m;
+          if(Math.abs(v)<1e-9){if(a[e]<=lo||a[e]>=hi)return false;}
+          else {const t1=(lo-a[e])/v,t2=(hi-a[e])/v;inicio=Math.max(inicio,Math.min(t1,t2));fim=Math.min(fim,Math.max(t1,t2));}
+        }
+        return inicio<fim-1e-8&&fim>1e-8&&inicio<1-1e-8;
+      }
+      function segmentoNavegavelPlanta(a,b,ignorar=null,margem=12) {
+        if(![a.x,a.y,b.x,b.y].every(Number.isFinite))return false;
+        if(Math.min(a.x,b.x)<0||Math.max(a.x,b.x)>limiteCosta||Math.min(a.y,b.y)<0||Math.max(a.y,b.y)>alturaMundoExpansao)return false;
+        return retangulosSolidosPlanta().every(r=>r.id===ignorar||!segmentoCruzaRetanguloPlanta(a,b,r,margem));
+      }
+      function caminhosOrtogonalPlanta(a,b,ignorar=null) {
+        const possibilidades=[[a,{x:a.x,y:b.y},b],[a,{x:b.x,y:a.y},b]];
+        return possibilidades.filter(p=>p.slice(1).every((q,i)=>segmentoNavegavelPlanta(p[i],q,ignorar)))
+          .map(p=>p.filter((q,i)=>!i||Math.hypot(q.x-p[i-1].x,q.y-p[i-1].y)>0.001));
+      }
+      function grafoRodoviarioPlanta() {
+        if(cacheGrafoPlanta)return cacheGrafoPlanta;
+        const arestas=arestasRedeViariaColonia(),divisores=arestas.map(a=>[a.inicio,a.fim]);
+        for(let i=0;i<arestas.length;i++)for(let j=i+1;j<arestas.length;j++)for(const p of intersecoesArestasEstradaColonia(arestas[i],arestas[j])){divisores[i].push(p);divisores[j].push(p);}
+        const pontos=new Map(),vizinhos=new Map(),segmentos=[];
+        const guardar=p=>{const k=chavePontoEstradaColonia(p);if(!pontos.has(k)){pontos.set(k,p);vizinhos.set(k,[]);}return k;};
+        for(let i=0;i<arestas.length;i++) {
+          const a=arestas[i],vertical=a.inicio.x===a.fim.x;
+          const ps=[...new Map(divisores[i].map(p=>[chavePontoEstradaColonia(p),p])).values()].sort((p,q)=>vertical?p.y-q.y:p.x-q.x);
+          for(let j=1;j<ps.length;j++) {
+            const p=ps[j-1],q=ps[j],k=guardar(p),h=guardar(q),distancia=distanciaManhattanColonia(p,q);
+            if(!distancia)continue;
+            // The geometry gate separately checks full road width. Never route through a new obstruction.
+            if(!segmentoNavegavelPlanta(p,q,null,0)){avisosRotasPlanta.add('Segmento obstruído: '+k+' / '+h);continue;}
+            vizinhos.get(k).push({chave:h,distancia,indiceTrecho:a.indiceTrecho});vizinhos.get(h).push({chave:k,distancia,indiceTrecho:a.indiceTrecho});
+            segmentos.push({inicio:p,fim:q,indiceTrecho:a.indiceTrecho});
+          }
+        }
+        cacheGrafoPlanta={pontos,vizinhos,segmentos};return cacheGrafoPlanta;
+      }
+      function ligacoesPontoPlanta(p) {
+        const chaveLigacao=estado.niveisEstradasColonia.join('')+'|'+chavePontoEstradaColonia(p);
+        if(cacheLigacoesPlanta.has(chaveLigacao))return cacheLigacoesPlanta.get(chaveLigacao);
+        const grafo=grafoRodoviarioPlanta(),dentro=retangulosSolidosPlanta().find(r=>!r.parede&&pontoDentroPlanta(p,r,12));
+        let saidas=[{p,caminho:[p],distancia:0}];
+        if(dentro) {
+          const r=dentro;
+          saidas=[{x:p.x,y:r.y-45},{x:p.x,y:r.y+r.altura+45},{x:r.x-45,y:p.y},{x:r.x+r.largura+45,y:p.y}]
+            .filter(q=>segmentoNavegavelPlanta(p,q,r.id)&&(pontoDentroPlanta(p,r,0.05)||!segmentoCruzaRetanguloPlanta(p,q,r,0))).map(q=>({p:q,caminho:[p,q],distancia:distanciaManhattanColonia(p,q)}));
+        }
+        const ligacoes=new Map();
+        for(const saida of saidas) {
+          const candidatos=grafo.segmentos.map(a=>{const q=pontoProjetadoNaArestaColonia(saida.p,a);return{a,q,distancia:distanciaManhattanColonia(saida.p,q)};}).sort((a,b)=>a.distancia-b.distancia);
+          let aceitos=0;
+          for(const c of candidatos) {
+            if(aceitos>=10)break;
+            const percursos=caminhosOrtogonalPlanta(saida.p,c.q);if(!percursos.length)continue;
+            aceitos++;
+            for(const ponta of [c.a.inicio,c.a.fim]) {
+              const chave=chavePontoEstradaColonia(ponta),fora=saida.distancia+c.distancia;
+              const custo=fora/0.38+distanciaManhattanColonia(c.q,ponta)/velocidadeTrechoEstradaColonia(c.a.indiceTrecho);
+              if(!ligacoes.has(chave)||custo<ligacoes.get(chave).custo)ligacoes.set(chave,{chave,custo,fora,trecho:c.a.indiceTrecho,pontos:simplificarCaminhoOrtogonalColonia([...saida.caminho,...percursos[0].slice(1),ponta])});
+            }
+          }
+        }
+        if(cacheLigacoesPlanta.size>=1200)cacheLigacoesPlanta.clear();cacheLigacoesPlanta.set(chaveLigacao,ligacoes);return ligacoes;
+      }
+      function rotaSeguraPlantaColonia(origem,destino) {
+        const chave=[versaoPlantaColonia,estado.niveisEstradasColonia.join(''),chavePontoEstradaColonia(origem),chavePontoEstradaColonia(destino)].join('|');
+        if(cacheRotasEstradaColonia.has(chave))return cacheRotasEstradaColonia.get(chave);
+        if(distanciaManhattanColonia(origem,destino)<0.001)return {pontos:[{...origem},{...destino}],trechos:[],distanciaForaRede:0,custo:0};
+        const g=grafoRodoviarioPlanta(),a=ligacoesPontoPlanta(origem),b=ligacoesPontoPlanta(destino),dist=new Map(),prev=new Map(),abertos=new Set();
+        for(const [k,v] of a){dist.set(k,v.custo);prev.set(k,null);abertos.add(k);}
+        let fim=null,melhor=Infinity;
+        while(abertos.size) {
+          let k=null,n=Infinity;for(const p of abertos)if(dist.get(p)<n){n=dist.get(p);k=p;}
+          abertos.delete(k);if(n>=melhor)break;
+          if(b.has(k)&&n+b.get(k).custo<melhor){melhor=n+b.get(k).custo;fim=k;}
+          for(const v of g.vizinhos.get(k)||[]) {
+            const d=n+v.distancia/velocidadeTrechoEstradaColonia(v.indiceTrecho);
+            if(d<(dist.get(v.chave)??Infinity)){dist.set(v.chave,d);prev.set(v.chave,{chave:k,trecho:v.indiceTrecho});abertos.add(v.chave);}
+          }
+        }
+        let resultado;
+        if(!fim) {
+          // A blocked route stays blocked; there is no diagonal/teleport fallback through walls.
+          avisosRotasPlanta.add('Sem acesso: '+chavePontoEstradaColonia(origem)+' -> '+chavePontoEstradaColonia(destino));
+          resultado={pontos:[{...origem},{...origem}],trechos:[],distanciaForaRede:0,bloqueada:true};
+        }else {
+          const ids=[fim],trechos=[];let k=fim;
+          while(prev.get(k)){const p=prev.get(k);trechos.push(p.trecho);k=p.chave;ids.push(k);}
+          ids.reverse();const entrada=a.get(k),saida=b.get(fim);
+          resultado={pontos:simplificarCaminhoOrtogonalColonia([...entrada.pontos,...ids.slice(1).map(k=>g.pontos.get(k)),...saida.pontos.slice(0,-1).reverse()]),
+            trechos:[...new Set([entrada.trecho,...trechos,saida.trecho])],distanciaForaRede:entrada.fora+saida.fora,custo:melhor};
+        }
+        if(cacheRotasEstradaColonia.size>=800)cacheRotasEstradaColonia.clear();cacheRotasEstradaColonia.set(chave,resultado);return resultado;
+      }
+      function rotaRondaInternaPlanta() {
+        const r=recintoInterno,m=150;
+        return [{x:r.x+m,y:r.y+m},{x:r.x+r.largura-m,y:r.y+m},{x:r.x+r.largura-m,y:r.y+r.altura-m},{x:r.x+m,y:r.y+r.altura-m},{x:r.x+m,y:r.y+m}];
+      }
+      function remapearPontoPlanta(p) {
+        // Relocate a camera by its closest named place rather than scaling every building.
+        let melhor=null,dist=Infinity;
+        for(const [id,a] of Object.entries(areasPlantaAnteriorColonia)){
+          if(id==='areaFlorestaColonia')continue;
+          const dx=Math.max(a.x-p.x,0,p.x-a.x-a.largura),dy=Math.max(a.y-p.y,0,p.y-a.y-a.altura),d=dx*dx+dy*dy;
+          if(d<dist){dist=d;melhor=id;}
+        }
+        const a=areasPlantaAnteriorColonia[melhor],b=areasPlantaColonia[melhor];
+        if(!a||!b)return {...p};return {x:b.x+(p.x-a.x),y:b.y+(p.y-a.y)};
+      }
+      function localizarFracaoRotaPlanta(rota,p,trecho) {
+        let total=0,feito=0;
+        for(let i=1;i<rota.length;i++){const d=Math.hypot(rota[i].x-rota[i-1].x,rota[i].y-rota[i-1].y);total+=d;if(i<trecho)feito+=d;else if(i===trecho)feito+=Math.min(d,Math.hypot(p.x-rota[i-1].x,p.y-rota[i-1].y));}
+        return total?Math.max(0,Math.min(1,feito/total)):0;
+      }
+      function colocarNaRotaPlanta(rota,fracao) {
+        const medidas=rota.slice(1).map((p,i)=>Math.hypot(p.x-rota[i].x,p.y-rota[i].y));
+        let falta=medidas.reduce((a,b)=>a+b,0)*fracao;
+        for(let i=0;i<medidas.length;i++){if(falta<=medidas[i]||i===medidas.length-1){const f=medidas[i]?Math.min(1,falta/medidas[i]):0;return {...interpolarPonto(rota[i],rota[i+1],f),trecho:i+1};}falta-=medidas[i];}
+        return {...rota[0],trecho:1};
+      }
+      function migrarGuarnicaoPlanta(dados) {
+        if(!dados||typeof dados!=='object')return dados;
+        const copia=JSON.parse(JSON.stringify(dados)),postos=new Map(postosElevadosColonia().map(p=>[p.id,p]));
+        let deslocamentoExercicio={x:0,y:0};
+        if(copia.exercicio){const novo=postos.get(copia.exercicio.posto),antigo=postosPlantaAnteriorColonia.find(p=>p.id===copia.exercicio.posto);if(novo&&antigo)deslocamentoExercicio={x:novo.x-antigo.x,y:novo.y-antigo.y};}
+        for(const u of Array.isArray(copia.unidades)?copia.unidades:[]) {
+          const p=postos.get(u.posto);if(!p||!Array.isArray(u.rota)||u.rota.length<2)continue;
+          const fracao=localizarFracaoRotaPlanta(u.rota,u,u.trecho),rota=rotaAcessoGuarnicao(origemDefensorColonia(u.categoria,u.indice),p);
+          u.rota=u.fase==='voltando'?[...rota].reverse():rota;
+          if(['posto','subindo','descendo'].includes(u.fase)){
+            const altura=u.fase==='posto'?1:Math.max(0,Math.min(1,Number(u.altura)||0));
+            u.x=p.pe.x+(p.x-p.pe.x)*altura;u.y=p.pe.y+(p.y-p.pe.y)*altura;u.altura=altura;u.trecho=rota.length;
+          }else Object.assign(u,colocarNaRotaPlanta(u.rota,fracao));
+        }
+        if(copia.exercicio){
+          // The exercise is a bounded non-destructive drill. Preserve elapsed time, targets,
+          // ammunition already spent and projectile progress, translating the active scene once.
+          const trans=p=>({x:Math.min(larguraMundoExpansao,Math.max(0,p.x+deslocamentoExercicio.x)),y:Math.min(alturaMundoExpansao,Math.max(0,p.y+deslocamentoExercicio.y))});
+          for(const a of copia.exercicio.alvos||[])Object.assign(a,trans(a));
+          for(const f of copia.exercicio.flechas||[]){f.origem=trans(f.origem);f.destino=trans(f.destino);}
+        }
+        return copia;
+      }
+      function migrarCameraPlanta(salvo) {
+        if((salvo.expansao?.plantaRevisao||0)>=versaoPlantaColonia)return;
+        if(estado.cameraExpansao.zoom<=0.1001){estado.cameraExpansao={x:0,y:0,zoom:zoomMinimoExpansao};return;}
+        const z=estado.cameraExpansao.zoom,centro={x:estado.cameraExpansao.x+larguraMundo/(2*z),y:estado.cameraExpansao.y+alturaMundo/(2*z)},alvo=remapearPontoPlanta(centro);
+        estado.cameraExpansao.x=alvo.x-larguraMundo/(2*z);estado.cameraExpansao.y=alvo.y-alturaMundo/(2*z);limitarCameraExpansao();
+      }
+      let mostrarReservasPlanta=true;
+      function abrirPlantaColonia() {
+        const p=document.querySelector('#painel-planta-colonia');
+        document.querySelector('#resumo-planta-colonia').textContent='17.500 × 9.000 · área +25%. Cidadela: guarnição e reservas protegidas. Cidade externa: moradias e serviços. Extra-muros: lavouras, extração e portos. Os lotes tracejados são reservas vazias, não construções gratuitas. Água azul e coletores sanitários marrons seguem servidões subterrâneas separadas.';
+        document.querySelector('#lotes-planta-colonia').textContent=reservasPlantaColonia.map(r=>r.nome+': '+r.largura+' × '+r.altura).join(' · ');
+        if(typeof p.showModal==='function'){if(!p.open)p.showModal();}else p.setAttribute('open','');
+      }
+      function focarSetorPlanta(setor) {
+        const p=document.querySelector('#painel-planta-colonia');if(typeof p.close==='function')p.close();else p.removeAttribute('open');
+        if(setor==='panorama'){estado.cameraExpansao={x:0,y:0,zoom:zoomMinimoExpansao};limitarCameraExpansao();}
+        else {const a=setor==='cidadela'?recintoInterno:setor==='cidade'?recintoExterno:{x:14950,y:1000,largura:1650,altura:7100};focarCameraExpansao({x:a.x+a.largura/2,y:a.y+a.altura/2},setor==='cidadela'?0.19:setor==='cidade'?0.11:0.12);}
+        atualizarControlesCamera();desenhar();salvarProgresso();
+      }
+      function desenharReservasPlantaColonia() {
+        if(!estado.coloniaIniciada||!mostrarReservasPlanta)return;
+        contexto.save();contexto.strokeStyle='rgba(57,73,39,0.50)';contexto.fillStyle='rgba(58,71,39,0.72)';contexto.lineWidth=5;contexto.setLineDash([35,24]);contexto.font='bold 20px sans-serif';contexto.textAlign='center';
+        for(const r of reservasPlantaColonia)if(areaVisivelMuralhas(r.x,r.y,r.largura,r.altura)){
+          contexto.strokeRect(r.x,r.y,r.largura,r.altura);if(estado.cameraExpansao.zoom>=0.14)contexto.fillText(r.nome,r.x+r.largura/2,r.y+32);
+        }
+        contexto.restore();
+      }
+
       const quantidadeColonosExpansao = 20;
       const versaoColonia = 5;
       const ouroInicialAdministrador = 2500;
@@ -3957,9 +3550,9 @@
         cantosTorresMuralhaColonia.forEach((c,i)=>{
           if(i>=estado.quantidadeTorresMuralha)return;
           const r=c.recinto==="externo"?recintoExterno:recintoInterno;
-          const sx=c.x===r.x?1:-1, sy=c.y===r.y?1:-1;
+          const sx=c.x===r.x?1:-1, sy=c.y===r.y?1:-1, m=r===recintoExterno?100:150;
           for(let s=0;s<2;s++)torres.push({id:`torre-${i}-${s}`,estrutura:`fort-torre-${i}`,tipo:"torre",recinto:r,nome:c.recinto,
-            x:c.x+(s?20:-20),y:c.y,pe:{x:c.x+sx*100,y:c.y+sy*100},corredor:{x:c.x+sx*14,y:c.y+sy*14},normal:{x:-sx/Math.SQRT2,y:-sy/Math.SQRT2},alcance:1200});
+            x:c.x+(s?20:-20),y:c.y,pe:{x:c.x+sx*100,y:c.y+sy*100},corredor:{x:c.x+sx*m,y:c.y+sy*m},normal:{x:-sx/Math.SQRT2,y:-sy/Math.SQRT2},alcance:1200});
         });
         for(const t of catalogoTrechosAdarve()) if(t.pronto) {
           const comprimentos=t.segmentos.map(s=>Math.hypot(s.x2-s.x1,s.y2-s.y1)-140);
@@ -3970,7 +3563,7 @@
             const horizontal=seg.y1===seg.y2;
             const x=seg.x1+(horizontal?70+d:0),y=seg.y1+(horizontal?0:70+d);
             muros.push({id:`adarve-${t.nome}-${t.lado}-${i}`,estrutura:`fort-muro-${t.nome}-${t.lado}`,tipo:"muro",recinto:t.recinto,nome:t.nome,
-              x:x+t.normal.x*36,y:y+t.normal.y*36,pe:{x:x-t.normal.x*100,y:y-t.normal.y*100},corredor:{x:x-t.normal.x*14,y:y-t.normal.y*14},normal:t.normal,alcance:950});
+              x:x+t.normal.x*36,y:y+t.normal.y*36,pe:{x:x-t.normal.x*100,y:y-t.normal.y*100},corredor:{x:x-t.normal.x*(t.recinto===recintoExterno?100:150),y:y-t.normal.y*(t.recinto===recintoExterno?100:150)},normal:t.normal,alcance:950});
           }
         }
         // Interleave the two rings/sides: do not fill an entire wall before another.
@@ -3984,10 +3577,10 @@
       function origemDefensorColonia(cat,i) {
         if(cat==="milicia") return posicaoPatioMiliciano(i);
         if(cat==="soldado") return {x:areaQuartelMilitarColonia.x+95+(i%5)*125,y:areaQuartelMilitarColonia.y+areaQuartelMilitarColonia.altura+75+Math.floor(i/5)*75};
-        return {x:6900,y:2800+i*30};
+        return {x:recintoInterno.x+150,y:recintoInterno.y+150+i*30};
       }
       function caminhoCorredorMuralha(r,de,ate) {
-        const x=r.x+14,y=r.y+14,w=r.largura-28,h=r.altura-28,L=2*(w+h);
+        const m=r===recintoExterno?100:150,x=r.x+m,y=r.y+m,w=r.largura-2*m,h=r.altura-2*m,L=2*(w+h);
         const escalar=p=>Math.abs(p.y-y)<1?p.x-x:Math.abs(p.x-x-w)<1?w+p.y-y:Math.abs(p.y-y-h)<1?w+h+x+w-p.x:2*w+h+y+h-p.y;
         const ponto=s=>{s=((s%L)+L)%L;return s<=w?{x:x+s,y}:s<=w+h?{x:x+w,y:y+s-w}:s<=2*w+h?{x:x+2*w+h-s,y:y+h}:{x,y:y+L-s};};
         let a=escalar(de), b=escalar(ate), frente=(b-a+L)%L, sinal=frente<=L/2?1:-1;
@@ -3997,31 +3590,16 @@
         return [de,...meio.sort((a,b)=>a.d-b.d).filter((v,i,a)=>!i||Math.abs(v.d-a[i-1].d)>0.01).map(v=>v.p),ate];
       }
       function rotaAcessoGuarnicao(origem,posto) {
-        // The existing road snap can cross a wall on its first connector. Use
-        // explicit gate crossings and the clear inner-edge patrol corridors.
-        const dentro=(r,p)=>p.x>r.x&&p.x<r.x+r.largura&&p.y>r.y&&p.y<r.y+r.altura;
-        const interno=dentro(recintoInterno,origem), externo=dentro(recintoExterno,origem);
-        const rota=[origem];let pe;
-        if(interno){
-          pe={x:recintoInterno.x+14,y:origem.y};rota.push(pe);
-          if(posto.recinto===recintoExterno){
-            const saida={x:recintoInterno.x+14,y:yEstradaCampoColonia};
-            rota.push(...caminhoCorredorMuralha(recintoInterno,pe,saida),{x:recintoInterno.x,y:yEstradaCampoColonia});
-            pe={x:recintoExterno.x+14,y:yEstradaCampoColonia};rota.push(pe);
-          }
-        }else{
-          if(externo){pe={x:origem.x,y:recintoExterno.y+recintoExterno.altura-14};rota.push(pe);}
-          else{rota.push({x:origem.x,y:8460},{x:6700,y:8460},{x:6700,y:7500});pe={x:6700,y:7486};rota.push(pe);}
-          if(posto.recinto===recintoInterno){
-            const leste=origem.x>recintoInterno.x+recintoInterno.largura;
-            const corredor={x:leste?11186:5014,y:yEstradaCampoColonia};
-            rota.push(...caminhoCorredorMuralha(recintoExterno,pe,corredor));
-            const portao={x:leste?10300:6800,y:yEstradaCampoColonia};rota.push(portao);
-            pe={x:portao.x+(leste?-14:14),y:portao.y};rota.push(pe);
-          }
+        const r=posto.recinto,m=r===recintoExterno?100:150;
+        const entradas=portoesMuralhaColonia.filter(p=>p.recinto===r).map(p=>({x:p.x+(p.lado==='oeste'?m:p.lado==='leste'?-m:0),y:p.y+(p.lado==='sul'?-m:0)}));
+        let melhor=null,custo=Infinity;
+        for(const entrada of entradas){const rua=rotaMaisRapidaColonia(origem,entrada);if(rua.bloqueada)continue;
+          const ronda=caminhoCorredorMuralha(r,entrada,posto.corredor);
+          const distancia=rua.pontos.slice(1).reduce((n,p,i)=>n+Math.hypot(p.x-rua.pontos[i].x,p.y-rua.pontos[i].y),0)+ronda.slice(1).reduce((n,p,i)=>n+Math.hypot(p.x-ronda[i].x,p.y-ronda[i].y),0);
+          if(distancia<custo){custo=distancia;melhor=[...rua.pontos,...ronda.slice(1),posto.pe];}
         }
-        rota.push(...caminhoCorredorMuralha(posto.recinto,pe,posto.corredor || posto.pe), posto.pe);
-        return rota.filter((p,i,a)=>!i||Math.hypot(p.x-a[i-1].x,p.y-a[i-1].y)>0.01);
+        if(!melhor){avisosRotasPlanta.add('Guarnição sem acesso: '+posto.id);return [origem,origem];}
+        return melhor.filter((p,i,a)=>!i||Math.hypot(p.x-a[i-1].x,p.y-a[i-1].y)>0.01);
       }
       function sincronizarGuarnicaoColonia() {
         const d=estado.defesaPosicional, postos=postosElevadosColonia();
@@ -6134,6 +5712,7 @@
             fundo: estado.fundoExpansao,
           },
           expansao: {
+            plantaRevisao: versaoPlantaColonia,
             mapaComprado: estado.mapaExpansaoComprado,
             mapaAtual: estado.mapaAtual,
             revisaoColonia: estado.revisaoColonia,
@@ -7887,6 +7466,7 @@
             alturaMundoExpansao,
             posicaoNovaColonia.y - alturaMundo / 2,
           );
+          migrarCameraPlanta(salvo);
           limitarCameraExpansao();
 
           if (estado.coloniaIniciada) {
@@ -7897,6 +7477,7 @@
           estado.trechosAdarveExterno = Math.floor(numeroValido(salvo.expansao?.economia?.defesas?.adarveExterno, 0, estado.trechosMuralhaPedraExterna, 0));
           estado.ampliacaoMuralhasAutorizada = salvo.expansao?.economia?.defesas?.ampliacaoAutorizada === true;
           estado.defesaPosicional = normalizarDefesaPosicional(salvo.expansao?.economia?.defesas?.guarnicao);
+          if((salvo.expansao?.plantaRevisao||0)<versaoPlantaColonia) estado.defesaPosicional = normalizarDefesaPosicional(migrarGuarnicaoPlanta(estado.defesaPosicional));
           estado.economiaCidada = normalizarEconomiaCidada(salvo.expansao?.economia?.economiaCidada);
           estado.vidaCotidiana = normalizarVidaCotidiana(salvo.expansao?.economia?.vidaCotidiana);
           cacheVidaCotidiana.assinatura = "";
@@ -12596,7 +12177,7 @@
       function dimensoesVisaoExpansao() {
         return {
           largura: larguraMundo / estado.cameraExpansao.zoom,
-          altura: alturaMundo / estado.cameraExpansao.zoom,
+          altura: Math.min(alturaMundoExpansao, alturaMundo / estado.cameraExpansao.zoom),
         };
       }
 
@@ -12616,7 +12197,7 @@
 
       function atualizarControlesCamera() {
         const naNovaColonia = estado.mapaAtual === "expansao";
-        nivelZoomEl.textContent = `Mapa 10× · Zoom ${Math.round(estado.cameraExpansao.zoom * 100)}%`;
+        nivelZoomEl.textContent = `Área +25% · Zoom ${Math.round(estado.cameraExpansao.zoom * 100)}%`;
         diminuirZoomBotao.disabled =
           !naNovaColonia ||
           estado.cameraExpansao.zoom <= zoomMinimoExpansao + 0.001;
@@ -15850,8 +15431,8 @@
         const coluna = indiceNoBloco % 6;
         const linha = Math.floor(indiceNoBloco / 6);
         return {
-          x: area.x + 45 + coluna * 190,
-          y: area.y + 65 + linha * 165,
+          x: area.x + 60 + coluna * 220,
+          y: area.y + 100 + linha * 260,
         };
       }
 
@@ -15885,7 +15466,9 @@
             penultimo &&
             ultimo &&
             ((penultimo.x === ultimo.x && ultimo.x === ponto.x) ||
-              (penultimo.y === ultimo.y && ultimo.y === ponto.y))
+              (penultimo.y === ultimo.y && ultimo.y === ponto.y)) &&
+            (ultimo.x-penultimo.x)*(ponto.x-ultimo.x)>=0 &&
+            (ultimo.y-penultimo.y)*(ponto.y-ultimo.y)>=0
           ) {
             resultado[resultado.length - 1] = ponto;
           } else {
@@ -15972,189 +15555,7 @@
       }
 
       function rotaMaisRapidaColonia(origem, destino) {
-        if (chavePontoEstradaColonia(origem) === chavePontoEstradaColonia(destino)) {
-          return {
-            pontos: [{ ...origem }, { ...destino }],
-            trechos: [],
-            distanciaForaRede: 0,
-          };
-        }
-        const chaveCache = [
-          estado.niveisEstradasColonia.join(""),
-          chavePontoEstradaColonia(origem),
-          chavePontoEstradaColonia(destino),
-        ].join("|");
-        const rotaEmCache = cacheRotasEstradaColonia.get(chaveCache);
-        if (rotaEmCache) return rotaEmCache;
-
-        const arestas = arestasRedeViariaColonia();
-        const divisores = arestas.map((aresta) => [aresta.inicio, aresta.fim]);
-        for (let a = 0; a < arestas.length; a += 1) {
-          for (let b = a + 1; b < arestas.length; b += 1) {
-            intersecoesArestasEstradaColonia(arestas[a], arestas[b]).forEach(
-              (ponto) => {
-                divisores[a].push(ponto);
-                divisores[b].push(ponto);
-              },
-            );
-          }
-        }
-
-        const acessosOrigem = [];
-        const acessosDestino = [];
-        arestas.forEach((aresta, indice) => {
-          const acessoOrigem = pontoProjetadoNaArestaColonia(origem, aresta);
-          const acessoDestino = pontoProjetadoNaArestaColonia(destino, aresta);
-          divisores[indice].push(acessoOrigem, acessoDestino);
-          acessosOrigem.push(acessoOrigem);
-          acessosDestino.push(acessoDestino);
-        });
-
-        const pontosPorChave = new Map();
-        const vizinhos = new Map();
-        const adicionarPonto = (ponto) => {
-          const chave = chavePontoEstradaColonia(ponto);
-          if (!pontosPorChave.has(chave)) pontosPorChave.set(chave, { ...ponto });
-          if (!vizinhos.has(chave)) vizinhos.set(chave, []);
-          return chave;
-        };
-        const adicionarLigacao = (inicio, fim, indiceTrecho) => {
-          const chaveInicio = adicionarPonto(inicio);
-          const chaveFim = adicionarPonto(fim);
-          if (chaveInicio === chaveFim) return;
-          const distancia = distanciaManhattanColonia(inicio, fim);
-          const custo = distancia / velocidadeTrechoEstradaColonia(indiceTrecho);
-          vizinhos.get(chaveInicio).push({ chave: chaveFim, custo, indiceTrecho });
-          vizinhos.get(chaveFim).push({ chave: chaveInicio, custo, indiceTrecho });
-        };
-
-        arestas.forEach((aresta, indiceAresta) => {
-          const vertical = aresta.inicio.x === aresta.fim.x;
-          const unicos = Array.from(
-            new Map(
-              divisores[indiceAresta].map((ponto) => [
-                chavePontoEstradaColonia(ponto),
-                ponto,
-              ]),
-            ).values(),
-          ).sort((a, b) => (vertical ? a.y - b.y : a.x - b.x));
-          for (let indice = 0; indice < unicos.length - 1; indice += 1) {
-            adicionarLigacao(
-              unicos[indice],
-              unicos[indice + 1],
-              aresta.indiceTrecho,
-            );
-          }
-        });
-
-        const velocidadeForaRede = 0.38;
-        const distancias = new Map();
-        const anteriores = new Map();
-        const abertos = new Set();
-        const chavesOrigem = new Set(
-          acessosOrigem.map((ponto) => chavePontoEstradaColonia(ponto)),
-        );
-        chavesOrigem.forEach((chave) => {
-          const ponto = pontosPorChave.get(chave);
-          const distancia = distanciaManhattanColonia(origem, ponto);
-          const atual = distancias.get(chave);
-          const custo = distancia / velocidadeForaRede;
-          if (atual === undefined || custo < atual) {
-            distancias.set(chave, custo);
-            anteriores.set(chave, null);
-          }
-          abertos.add(chave);
-        });
-
-        while (abertos.size > 0) {
-          let atual = null;
-          let menor = Infinity;
-          abertos.forEach((chave) => {
-            const distancia = distancias.get(chave) ?? Infinity;
-            if (distancia < menor) {
-              menor = distancia;
-              atual = chave;
-            }
-          });
-          abertos.delete(atual);
-          (vizinhos.get(atual) || []).forEach((vizinho) => {
-            const alternativa = menor + vizinho.custo;
-            if (alternativa < (distancias.get(vizinho.chave) ?? Infinity)) {
-              distancias.set(vizinho.chave, alternativa);
-              anteriores.set(vizinho.chave, {
-                chave: atual,
-                indiceTrecho: vizinho.indiceTrecho,
-              });
-              abertos.add(vizinho.chave);
-            }
-          });
-        }
-
-        let melhorDestino = null;
-        let melhorCusto = Infinity;
-        Array.from(
-          new Set(acessosDestino.map((ponto) => chavePontoEstradaColonia(ponto))),
-        ).forEach((chave) => {
-          const ponto = pontosPorChave.get(chave);
-          const custo =
-            (distancias.get(chave) ?? Infinity) +
-            distanciaManhattanColonia(ponto, destino) / velocidadeForaRede;
-          if (custo < melhorCusto) {
-            melhorCusto = custo;
-            melhorDestino = chave;
-          }
-        });
-
-        if (!melhorDestino || !Number.isFinite(melhorCusto)) {
-          const rotaAlternativa = {
-            pontos: simplificarCaminhoOrtogonalColonia([
-              origem,
-              { x: destino.x, y: origem.y },
-              destino,
-            ]),
-            trechos: [],
-            distanciaForaRede: distanciaManhattanColonia(origem, destino),
-          };
-          cacheRotasEstradaColonia.set(chaveCache, rotaAlternativa);
-          return rotaAlternativa;
-        }
-
-        const chavesCaminho = [];
-        const trechos = [];
-        let chaveAtual = melhorDestino;
-        while (chaveAtual) {
-          chavesCaminho.push(chaveAtual);
-          const anterior = anteriores.get(chaveAtual);
-          if (anterior) trechos.push(anterior.indiceTrecho);
-          chaveAtual = anterior?.chave || null;
-        }
-        chavesCaminho.reverse();
-        trechos.reverse();
-        const pontosRede = chavesCaminho.map((chave) => pontosPorChave.get(chave));
-        const primeiroAcesso = pontosRede[0];
-        const ultimoAcesso = pontosRede[pontosRede.length - 1];
-        const pontos = [origem];
-        if (origem.x !== primeiroAcesso.x && origem.y !== primeiroAcesso.y) {
-          pontos.push({ x: primeiroAcesso.x, y: origem.y });
-        }
-        pontos.push(...pontosRede);
-        if (destino.x !== ultimoAcesso.x && destino.y !== ultimoAcesso.y) {
-          pontos.push({ x: ultimoAcesso.x, y: destino.y });
-        }
-        pontos.push(destino);
-        const rotaCalculada = {
-          pontos: simplificarCaminhoOrtogonalColonia(pontos),
-          trechos: Array.from(new Set(trechos)),
-          distanciaForaRede:
-            distanciaManhattanColonia(origem, primeiroAcesso) +
-            distanciaManhattanColonia(ultimoAcesso, destino),
-          custo: melhorCusto,
-        };
-        if (cacheRotasEstradaColonia.size > 600) {
-          cacheRotasEstradaColonia.clear();
-        }
-        cacheRotasEstradaColonia.set(chaveCache, rotaCalculada);
-        return rotaCalculada;
+        return rotaSeguraPlantaColonia(origem, destino);
       }
 
       function acessoCasaColonia(indiceMorador) {
@@ -16373,7 +15774,7 @@
             y: areaCaisComercialColonia.y + areaCaisComercialColonia.altura / 2,
           },
           estaleiro: {
-            x: 12400,
+            x: areaEstaleiroColonia.x + areaEstaleiroColonia.largura / 2,
             y: areaEstaleiroColonia.y,
           },
           ferraria: {
@@ -17159,7 +16560,7 @@
           return {id:p.id,tipo:p.tipo,x:a?.x??areaPontoCacaMilicia.x+310,y:a?.y??areaPontoCacaMilicia.y+125,visivel,fora:!visivel,atividade:visivel?'Em expedição de caça':'Caçando fora do mapa',externo:true};
         }
         let a=origemDefensorColonia(p.tipo,p.vaga);
-        if(p.tipo==='guarda')a=percorrerCaminhoPorDistancia([{x:6900,y:2800},{x:10200,y:2800},{x:10200,y:6200},{x:6900,y:6200},{x:6900,y:2800}],(tempoRio*multiplicadorMovimentoEstradasColonia()*0.018+p.vaga/Math.max(1,estado.quantidadeGuardas))%1);
+        if(p.tipo==='guarda')a=percorrerCaminhoPorDistancia(rotaRondaInternaPlanta(),(tempoRio*multiplicadorMovimentoEstradasColonia()*0.018+p.vaga/Math.max(1,estado.quantidadeGuardas))%1);
         return {id:p.id,tipo:p.tipo,...a,visivel:true,atividade:'Em patrulha ou treinamento',externo:true};
       }
       function amostraVidaCotidiana(id,tempo=estado.vidaCotidiana.tempo) {
@@ -17923,10 +17324,7 @@
       function desenharMoradiasPrestigioColonia() {
         if (estado.etapaConstrucaoColonia < 4) return;
 
-        const casas = [
-          [9600, 3400],
-          [9600, 5250],
-        ];
+        const casas = casasPrestigioPlantaColonia.map(p=>[p.x,p.y]);
         casas.forEach(([x, y], indice) => {
           contexto.strokeStyle = "#5a4028";
           contexto.lineWidth = 10;
@@ -17957,7 +17355,7 @@
         contexto.font = "bold 18px sans-serif";
         contexto.textAlign = "center";
         contexto.textBaseline = "middle";
-        contexto.fillText("MORADIAS DE PRESTÍGIO", 9690, 4470);
+        contexto.fillText("ALOJAMENTOS DA CIDADELA", 13055, 4645);
         contexto.textAlign = "start";
         contexto.textBaseline = "alphabetic";
       }
@@ -19111,6 +18509,15 @@
         }
       }
 
+      // Keep complete hulls and masts inside the current coastal water strip.
+      function posicaoNavioNoMarColonia(x, y, escala = 1) {
+        const margemX = 110 * escala + 8;
+        return {
+          x: Math.max(limiteCosta + margemX, Math.min(larguraMundoExpansao - margemX, x)),
+          y: Math.max(110 * escala + 8, Math.min(alturaMundoExpansao - 46 * escala - 8, y)),
+        };
+      }
+
       function desenharBarcoCosteiroColonia(
         x,
         y,
@@ -19119,6 +18526,7 @@
         corVela,
         rotulo,
       ) {
+        ({ x, y } = posicaoNavioNoMarColonia(x, y, escala));
         contexto.fillStyle = corCasco;
         contexto.strokeStyle = "#3c2a20";
         contexto.lineWidth = 7 * escala;
@@ -19422,15 +18830,21 @@
           contexto.setLineDash([]);
         }
 
+        if (progressoAvancado > 0) {
+          contexto.strokeStyle = "#815741"; contexto.lineWidth = 8;
+          contexto.setLineDash([16, 14]);
+          redeEsgotoColonia.forEach(({pontos})=>desenharCaminhoParcialRedeHidricaColonia(pontos,progressoAvancado));
+          contexto.setLineDash([]);
+        }
         if (progressoBasico > 0.7) {
           contexto.fillStyle = "#263b3a";
           contexto.font = "bold 17px sans-serif";
           contexto.textAlign = "center";
           contexto.textBaseline = "middle";
           contexto.fillText(
-            "LINHAS AZUIS · REDE SUBTERRÂNEA DE ÁGUA E ESGOTO",
-            8500,
-            6135,
+            "AZUL: ÁGUA · MARROM: ESGOTO SUBTERRÂNEO",
+            recintoInterno.x + recintoInterno.largura / 2,
+            recintoInterno.y + recintoInterno.altura - 70,
           );
           contexto.textAlign = "start";
           contexto.textBaseline = "alphabetic";
@@ -19929,14 +19343,19 @@
         desenharFrotaCosteiraColonia();
       }
 
+      function posicaoBarcoMigracaoColonia(tempo, indice) {
+        const progresso = limitarProgresso(tempo / duracaoViagemMigrante);
+        const yDestino = estado.caisComercialConstruido
+          ? areaCaisComercialColonia.y + 250
+          : posicaoNovaColonia.y + 80;
+        const inicioX = larguraMundoExpansao - 180;
+        const fimX = limiteCosta + 130;
+        return posicaoNavioNoMarColonia(inicioX + (fimX - inicioX) * progresso, yDestino + indice * 95);
+      }
+
       function desenharBarcosMigracaoColonia() {
         estado.migracoesPendentes.forEach((tempo, indice) => {
-          const progresso = limitarProgresso(tempo / duracaoViagemMigrante);
-          const yDestino = estado.caisComercialConstruido
-            ? areaCaisComercialColonia.y + 250
-            : posicaoNovaColonia.y + 80;
-          const x = 13820 - progresso * 760;
-          const y = yDestino + indice * 95;
+          const { x, y } = posicaoBarcoMigracaoColonia(tempo, indice);
           contexto.fillStyle = "#4b3020";
           contexto.beginPath();
           contexto.moveTo(x - 95, y);
@@ -20236,13 +19655,7 @@
           );
         }
 
-        const rotaGuarda = [
-          { x: 6900, y: 2800 },
-          { x: 10200, y: 2800 },
-          { x: 10200, y: 6200 },
-          { x: 6900, y: 6200 },
-          { x: 6900, y: 2800 },
-        ];
+        const rotaGuarda = rotaRondaInternaPlanta();
         for (let indice = 0; indice < estado.quantidadeGuardas; indice += 1) {
           if (desenharDefensorGuarnecido("guarda", indice)) continue;
           const progresso =
@@ -20310,12 +19723,13 @@
         );
         contexto.fillText(
           "COSTA RESERVADA PARA PORTOS, PESCA E NAVEGAÇÃO",
-          12050,
-          1050,
+          limiteCosta-900,
+          560,
         );
         contexto.textAlign = "start";
         contexto.textBaseline = "alphabetic";
 
+        desenharReservasPlantaColonia();
         desenharBarcosMigracaoColonia();
         desenharFlorestaNoroesteColonia();
         desenharAreasProdutivasColonia();
@@ -21078,6 +20492,10 @@
       document.querySelector("#equipar-arqueiro-muralha").addEventListener("click", () => { if(!equiparArqueiroMuralhas(document.querySelector("#categoria-arqueiro-muralha").value)) definirMensagem("Verifique efetivo, arco, 20 flechas e espaço no arsenal."); atualizarPainelMuralhas(); });
       document.querySelector("#exercicio-muralhas").addEventListener("click", iniciarExercicioMuralhas);
       document.querySelector("#encerrar-exercicio").addEventListener("click", terminarExercicioMuralhas);
+      document.querySelector('#abrir-planta-colonia').addEventListener('click',abrirPlantaColonia);
+      document.querySelector('#fechar-planta-colonia').addEventListener('click',()=>document.querySelector('#painel-planta-colonia').close());
+      ['panorama','cidadela','cidade','costa'].forEach(s=>document.querySelector('#planta-'+s).addEventListener('click',()=>focarSetorPlanta(s)));
+      document.querySelector('#mostrar-lotes-planta').addEventListener('change',e=>{mostrarReservasPlanta=e.target.checked;desenhar();});
       document.querySelector("#abrir-caca-milicia").addEventListener("click", abrirPainelCacaMilicia);
       iniciarCacaMiliciaBotao.addEventListener("click", () => iniciarExpedicaoMilicia());
       document.querySelector("#fechar-caca-milicia").addEventListener("click", () => {

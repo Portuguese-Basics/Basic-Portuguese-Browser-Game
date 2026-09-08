@@ -36,9 +36,9 @@ with sync_playwright() as pw:
    assert hashlib.sha256(response.body()).hexdigest()==hashlib.sha256(Path('index.html').read_bytes()).hexdigest()
   page.evaluate(SETUP);page.locator('#jogo').scroll_into_view_if_needed()
   page.evaluate('centerTest(2150,4050,.38)');page.locator('#jogo').screenshot(path=str(out/f'{name}-fields.png'))
-  page.evaluate('centerTest(5700,2160,1.6)');page.locator('#jogo').screenshot(path=str(out/f'{name}-stores.png'))
-  page.evaluate('centerTest(7700,3010,1.6)');page.locator('#jogo').screenshot(path=str(out/f'{name}-arsenal.png'))
-  page.evaluate('centerTest(10550,4420,1.8)');page.locator('#jogo').screenshot(path=str(out/f'{name}-armor.png'))
+  page.evaluate('centerTest(areaArmazemGraos.x+190,areaArmazemGraos.y+135,1.6)');page.locator('#jogo').screenshot(path=str(out/f'{name}-stores.png'))
+  page.evaluate('centerTest(areaDepositoFlechas.x+areaDepositoFlechas.largura/2,areaDepositoFlechas.y+areaDepositoFlechas.altura/2,1.6)');page.locator('#jogo').screenshot(path=str(out/f'{name}-arsenal.png'))
+  page.evaluate('centerTest(areaArmeiroColonia.x+areaArmeiroColonia.largura/2,areaArmeiroColonia.y+areaArmeiroColonia.altura/2,1.8)');page.locator('#jogo').screenshot(path=str(out/f'{name}-armor.png'))
   page.evaluate('centerTest(2150,3550,1.1)');page.locator('#jogo').screenshot(path=str(out/f'{name}-field-close.png'))
   # Direct canvas tap, not a programmatic dialog open.
   page.evaluate('centerTest(areaArmazemGraos.x+190,areaArmazemGraos.y+135,1.6)')

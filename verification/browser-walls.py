@@ -43,9 +43,9 @@ try:
    advance(.1);assert page.evaluate('estado.defesaPosicional.unidades.every(u=>u.fase==="indo")')
    advance(500);assert page.evaluate('estado.defesaPosicional.unidades.filter(u=>u.fase==="posto").length')==30
    page.locator('#jogo').scroll_into_view_if_needed()
-   page.evaluate('centerTest(8100,4500,.16)');page.locator('#jogo').screenshot(path=str(out/f'{name}-manned-fortress.png'))
-   page.evaluate('centerTest(5200,1630,1.3)');page.locator('#jogo').screenshot(path=str(out/f'{name}-tower-close.png'))
-   point=page.evaluate('''()=>{const r=canvas.getBoundingClientRect(),v=dimensoesVisaoExpansao();return{x:r.left+(5000-estado.cameraExpansao.x)/v.largura*r.width,y:r.top+(1500-estado.cameraExpansao.y)/v.altura*r.height}}''')
+   page.evaluate('centerTest(recintoExterno.x+recintoExterno.largura/2,recintoExterno.y+recintoExterno.altura/2,.12)');page.locator('#jogo').screenshot(path=str(out/f'{name}-manned-fortress.png'))
+   page.evaluate('''()=>{window.__testTower=cantosTorresMuralhaColonia.find(t=>t.recinto==="externo");centerTest(__testTower.x+200,__testTower.y+130,1.3)}''');page.locator('#jogo').screenshot(path=str(out/f'{name}-tower-close.png'))
+   point=page.evaluate('''()=>{const r=canvas.getBoundingClientRect(),v=dimensoesVisaoExpansao();return{x:r.left+(__testTower.x-estado.cameraExpansao.x)/v.largura*r.width,y:r.top+(__testTower.y-estado.cameraExpansao.y)/v.altura*r.height}}''')
    if touch:page.touchscreen.tap(point['x'],point['y'])
    else:page.mouse.click(point['x'],point['y'])
    assert page.locator('#painel-muralhas').is_visible();assert 'torre' in page.locator('#selecionado-muralhas').inner_text()
@@ -53,7 +53,7 @@ try:
    page.screenshot(path=str(out/f'{name}-garrison-panel.png'))
    page.locator('#exercicio-muralhas').click();page.locator('#fechar-muralhas').click()
    advance(.6);assert page.evaluate('estado.defesaPosicional.exercicio.flechas.length')>0
-   page.evaluate('centerTest(4600,1120,.8)');page.locator('#jogo').screenshot(path=str(out/f'{name}-arrow-fire.png'))
+   page.evaluate('''()=>{const p=postosElevadosColonia().find(p=>p.id===estado.defesaPosicional.exercicio.posto);centerTest(p.x+p.normal.x*350,p.y+p.normal.y*350,.8)}''');page.locator('#jogo').screenshot(path=str(out/f'{name}-arrow-fire.png'))
    saved=page.evaluate('estado.defesaPosicional');page.wait_for_timeout(250);assert page.evaluate('estado.defesaPosicional')==saved
    reload_page();assert page.evaluate('estado.defesaPosicional')==saved,'Reload must preserve in-flight arrows, troops and quivers'
    advance(90);last=page.evaluate('estado.defesaPosicional.ultimo');assert last['disparos']>0 and last['abatidos']>0

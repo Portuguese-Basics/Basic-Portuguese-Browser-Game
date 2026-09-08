@@ -231,3 +231,17 @@ Daily-life acceptance: `node verification/daily-life-test.js`,
 `node verification/daily-life-equivalence-test.js`, and
 `python verification/browser-daily-life.py`. The separate
 `daily-life-live-soak.py` observes more than a minute of foreground 1x play.
+
+## Expanded map and stronghold layout
+
+The world now has 25% more total area (17,500 x 9,000), without increasing the
+450-resident limit or resizing individual buildings. The inner enclosure protects
+garrison, arms and valuable stockpiles; outer housing/services and external
+production/ports have separate corridors and twelve vacant future-building plots.
+Use **Planta da cidade** to visit sectors or fit the whole map.
+
+Existing saves relocate through a one-time geometry revision, preserving paid
+construction, inventories and financial accounts. Roads, gates, garrison approaches
+and separate potable/wastewater routes were rebuilt together. Manual placement and
+purposeful economic visits remain future work; see
+`docs/releases/map-expansion-bastion.md` for precise scope and verification.

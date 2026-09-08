@@ -1,8 +1,10 @@
 'use strict';
-// Active economy, exact previous-runtime replay: exclude ONLY the new visual clock.
+// Active financial equivalence. Map relocation changes camera/player and garrison geometry.
+// Independent map-layout tests validate those fields; no money, identity, job or stock is excluded.
 const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
 const {execFileSync}=require('node:child_process');
-const baseline=execFileSync('git',['show','df0c05bae2b9a748b36b9801738c28c446f609b6:index.html'],{encoding:'utf8'});
+const activeRef=process.env.PREVIOUS_ACTIVE_REF||'df0c05bae2b9a748b36b9801738c28c446f609b6';
+const baseline=execFileSync('git',['show',activeRef+':index.html'],{encoding:'utf8'});
 const current=fs.readFileSync('index.html','utf8');
 const prefix=fs.readFileSync('verification/smoke-test.js','utf8').split('const storage = new Map();')[0].replace('return {\n    elements,','return {\n    context,\n    elements,').replace('crypto: { randomUUID: () => `id-${Math.random()}` },','crypto: { randomUUID: (()=>{let n=0;return ()=>`stable-${++n}`})() },');
 const tests=fs.readFileSync('verification/clarity-test.js','utf8'),fixture=tests.slice(tests.indexOf('function mature('),tests.indexOf('let groups ='));
@@ -12,7 +14,8 @@ function game(html,storage=new Map()){
  vm.runInNewContext(prefix+'\nglobalThis.make=createHarness;\n'+fixture+'\nglobalThis.fixture=mature;',o);
  const g=o.make(storage);g.eval=s=>vm.runInNewContext(s,g.context);g.storage=storage;g.fixture=()=>o.fixture(g);return g;
 }
-function state(g){const s=JSON.parse(JSON.stringify(g.estado));delete s.vidaCotidiana;return s;}
+function state(g){const s=JSON.parse(JSON.stringify(g.estado));if(!baseline.includes("function novaVidaCotidiana"))delete s.vidaCotidiana;delete s.cameraExpansao;delete s.jogador.x;delete s.jogador.y;
+ for(const u of s.defesaPosicional?.unidades||[])for(const k of ['x','y','altura','rota','trecho','fase'])delete u[k];return s;}
 for(const scenario of ['mature','poverty','hunt','garrison','children']){
  const seed=game(baseline);seed.fixture();
  if(scenario==='poverty')Object.assign(seed.estado,{tesouroColonia:50,estoqueAlimentos:0,estoqueMedicamentos:0,saudeColonia:45});
@@ -25,6 +28,6 @@ for(const scenario of ['mature','poverty','hunt','garrison','children']){
   for(const g of [a,b]){g.estado.velocidadeTempo=[1,2,5,10][Math.floor(i/60)%4];g.estado.jogoPausado=i%70<7;g.step(i*50);g.resetDrawCalls();}
   if(i%20===0)assert.deepEqual(state(b),state(a),scenario+' frame '+i);
  }
- console.log('PASS active economy identical to df0c05b: '+scenario+' (480 frames)');
+ console.log('PASS active nonspatial state equivalent to '+activeRef+': '+scenario+' (480 frames)');
 }
 console.log('DAILY_LIFE_ACTIVE_EQUIVALENCE_OK 5 scenarios, 2400 frames');
