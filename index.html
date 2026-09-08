@@ -18674,16 +18674,16 @@
         }
       }
 
-      function desenharCaminhoTrechoEstradaColonia(pontos) {
-        contexto.beginPath();
+      function desenharCaminhoTrechoEstradaColonia(pontos, ctx = contexto) {
+        ctx.beginPath();
         pontos.forEach((ponto, indice) => {
-          if (indice === 0) contexto.moveTo(ponto.x, ponto.y);
-          else contexto.lineTo(ponto.x, ponto.y);
+          if (indice === 0) ctx.moveTo(ponto.x, ponto.y);
+          else ctx.lineTo(ponto.x, ponto.y);
         });
-        contexto.stroke();
+        ctx.stroke();
       }
 
-      function desenharTrechoEstradaColonia(trecho, nivel, opacidade = 1) {
+      function desenharTrechoEstradaColonia(trecho, nivel, opacidade = 1, ctx = contexto) {
         const estilos = [
           { borda: "#665a3d", miolo: "#756849", largura: 13, interna: 7 },
           { borda: "#6f5938", miolo: "#b0915a", largura: 64, interna: 48 },
@@ -18691,43 +18691,43 @@
           { borda: "#4d514b", miolo: "#8e948a", largura: 80, interna: 58 },
         ];
         const estilo = estilos[nivel];
-        contexto.globalAlpha = opacidade;
-        contexto.lineCap = "round";
-        contexto.lineJoin = "round";
+        ctx.globalAlpha = opacidade;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
         const caminhosPrincipais = [trecho.pontos, ...(trecho.ramais || [])];
         const acessos = trecho.acessos || [];
-        contexto.strokeStyle = estilo.borda;
-        contexto.lineWidth = estilo.largura;
+        ctx.strokeStyle = estilo.borda;
+        ctx.lineWidth = estilo.largura;
         caminhosPrincipais.forEach((pontos) =>
-          desenharCaminhoTrechoEstradaColonia(pontos),
+          desenharCaminhoTrechoEstradaColonia(pontos, ctx),
         );
-        contexto.strokeStyle = estilo.miolo;
-        contexto.lineWidth = estilo.interna;
+        ctx.strokeStyle = estilo.miolo;
+        ctx.lineWidth = estilo.interna;
         caminhosPrincipais.forEach((pontos) =>
-          desenharCaminhoTrechoEstradaColonia(pontos),
+          desenharCaminhoTrechoEstradaColonia(pontos, ctx),
         );
-        contexto.strokeStyle = estilo.borda;
-        contexto.lineWidth = Math.max(7, estilo.largura * 0.45);
+        ctx.strokeStyle = estilo.borda;
+        ctx.lineWidth = Math.max(7, estilo.largura * 0.45);
         acessos.forEach((pontos) =>
-          desenharCaminhoTrechoEstradaColonia(pontos),
+          desenharCaminhoTrechoEstradaColonia(pontos, ctx),
         );
-        contexto.strokeStyle = estilo.miolo;
-        contexto.lineWidth = Math.max(4, estilo.interna * 0.42);
+        ctx.strokeStyle = estilo.miolo;
+        ctx.lineWidth = Math.max(4, estilo.interna * 0.42);
         acessos.forEach((pontos) =>
-          desenharCaminhoTrechoEstradaColonia(pontos),
+          desenharCaminhoTrechoEstradaColonia(pontos, ctx),
         );
         if (nivel >= 2) {
-          contexto.fillStyle = nivel === 2 ? "#d1aa69" : "#c8ccc2";
+          ctx.fillStyle = nivel === 2 ? "#d1aa69" : "#c8ccc2";
           caminhosTrechoEstradaColonia(trecho).forEach((pontos) => {
             pontos.forEach((ponto) => {
-              contexto.fillRect(ponto.x - 12, ponto.y - 12, 24, 24);
+              ctx.fillRect(ponto.x - 12, ponto.y - 12, 24, 24);
             });
           });
         }
-        contexto.globalAlpha = 1;
+        ctx.globalAlpha = 1;
       }
 
-      function desenharRedeViariaColonia() {
+      function desenharRedeViariaColoniaDireta(ctx = contexto) {
         if (!estado.coloniaIniciada || estado.etapaConstrucaoColonia < 1) {
           return;
         }
@@ -18740,14 +18740,15 @@
             trecho,
             nivel,
             nivel === 0 ? opacidadeTrilha : 1,
+            ctx,
           );
           if (nivel > 0) {
             const pontoRotulo = trecho.pontos[Math.floor(trecho.pontos.length / 2)];
-            contexto.fillStyle = "#29291f";
-            contexto.font = "bold 17px sans-serif";
-            contexto.textAlign = "center";
-            contexto.textBaseline = "middle";
-            contexto.fillText(
+            ctx.fillStyle = "#29291f";
+            ctx.font = "bold 17px sans-serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(
               nivel === 1 ? "TERRA" : nivel === 2 ? "MADEIRA" : "PEDRA",
               pontoRotulo.x,
               pontoRotulo.y - 52,
@@ -18769,11 +18770,72 @@
               selecionado.trecho,
               selecionado.nivelAlvo,
               0.2 + progresso * 0.8,
+              ctx,
             );
           }
         }
-        contexto.textAlign = "start";
-        contexto.textBaseline = "alphabetic";
+        ctx.textAlign = "start";
+        ctx.textBaseline = "alphabetic";
+      }
+
+      // One screen-sized road layer, never a world-sized bitmap. Production and
+      // routes still update normally. Camera, resolution, road tiers and traffic
+      // change the key; road construction bypasses the cache for every progress step.
+      let cachePinturaEstradasColonia = null;
+      function desenharRedeViariaColonia() {
+        if (!estado.coloniaIniciada || estado.etapaConstrucaoColonia < 1) return;
+        if (typeof contexto.getTransform !== "function" ||
+            typeof contexto.drawImage !== "function" ||
+            canvas.width * canvas.height > 4194304 ||
+            estado.obraAutomaticaColonia === "estradaSegmento") {
+          cachePinturaEstradasColonia = null;
+          desenharRedeViariaColoniaDireta();
+          return;
+        }
+        const m = contexto.getTransform();
+        const niveis = estado.niveisEstradasColonia;
+        const trafego = trechosEstradaColonia.map((_, i) =>
+          (niveis[i] || 0) === 0 ? trafegoTrechoEstradaColonia(i) : 0);
+        const chave = [versaoPlantaColonia, canvas.width, canvas.height,
+          m.a, m.b, m.c, m.d, m.e, m.f, niveis.join(","), trafego.join(",")].join("|");
+        const propriedades = ["fillStyle", "strokeStyle", "lineWidth", "lineCap",
+          "lineJoin", "font", "textAlign", "textBaseline", "globalAlpha"];
+        if (!cachePinturaEstradasColonia) {
+          let camada;
+          try {
+            camada = typeof OffscreenCanvas === "function"
+              ? new OffscreenCanvas(canvas.width, canvas.height)
+              : document.createElement("canvas");
+            camada.width = canvas.width; camada.height = canvas.height;
+            const ctx = camada.getContext("2d");
+            if (!ctx) throw new Error("Canvas de apoio indisponível");
+            cachePinturaEstradasColonia = { camada, ctx, chave: "", finais: null, refeitas: 0 };
+          } catch (_) {
+            cachePinturaEstradasColonia = null;
+            desenharRedeViariaColoniaDireta();
+            return;
+          }
+        }
+        const cache = cachePinturaEstradasColonia;
+        if (cache.chave !== chave) {
+          const { camada, ctx } = cache;
+          if (camada.width !== canvas.width) camada.width = canvas.width;
+          if (camada.height !== canvas.height) camada.height = canvas.height;
+          ctx.setTransform(1, 0, 0, 1, 0, 0);
+          ctx.clearRect(0, 0, camada.width, camada.height);
+          for (const k of propriedades) ctx[k] = contexto[k];
+          ctx.setTransform(m.a, m.b, m.c, m.d, m.e, m.f);
+          desenharRedeViariaColoniaDireta(ctx);
+          cache.finais = Object.fromEntries(propriedades.map(k => [k, ctx[k]]));
+          cache.chave = chave;
+          cache.refeitas += 1;
+        }
+        contexto.save();
+        contexto.setTransform(1, 0, 0, 1, 0, 0);
+        contexto.globalAlpha = 1;
+        contexto.drawImage(cache.camada, 0, 0);
+        contexto.restore();
+        for (const k of propriedades) contexto[k] = cache.finais[k];
       }
 
       function desenharCaminhoParcialRedeHidricaColonia(pontos, progresso) {
