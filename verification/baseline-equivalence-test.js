@@ -24,7 +24,7 @@ function game(html,storage=new Map()){
  const g=outer.makeGame(storage);g.eval=s=>vm.runInNewContext(s,g.context);g.storage=storage;g.fixture=()=>outer.fixture(g);return g;
 }
 // Only new feature fields are excluded; all pre-existing economy/save fields still compare exactly.
-const plain=x=>{const value=JSON.parse(JSON.stringify(x));for(const key of ['trechosAdarveInterno','trechosAdarveExterno','ampliacaoMuralhasAutorizada','defesaPosicional','economiaCidada','vidaCotidiana'])delete value[key];delete value.cameraExpansao;if(value.jogador){delete value.jogador.x;delete value.jogador.y;}return value;};
+const plain=x=>{const value=JSON.parse(JSON.stringify(x));if(value.industriaColonia){assert.equal(value.industriaColonia.ativa,false,"legacy comparison must never mask active enterprises");delete value.industriaColonia;}for(const key of ['trechosAdarveInterno','trechosAdarveExterno','ampliacaoMuralhasAutorizada','defesaPosicional','economiaCidada','vidaCotidiana'])delete value[key];delete value.cameraExpansao;if(value.jogador){delete value.jogador.x;delete value.jogador.y;}return value;};
 for(const scenario of ['mature','shortage','hunt']){
  const seed=game(base);seed.fixture();
  if(scenario==='shortage')Object.assign(seed.estado,{estoqueAlimentos:0,estoqueMedicamentos:0,saudeColonia:42,estoqueFerramentas:5,tesouroColonia:1200});
