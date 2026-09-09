@@ -61,7 +61,7 @@ jobs:
           cp "$RUNNER_TEMP/industries-fixture-mature.log" verification-output/industry-performance/inputs/
           (
             cd "$fixture_checkout"
-            INDUSTRY_SOAK_CYCLES=60 node verification/industry-soak-test.js > "$RUNNER_TEMP/industries-fixture-construction.log" 2>&1
+            INDUSTRY_SOAK_CYCLES=70 node verification/industry-soak-test.js > "$RUNNER_TEMP/industries-fixture-construction.log" 2>&1
           )
           cp "$fixture_checkout/verification-output/industry-soak-save.json" verification-output/industry-performance/inputs/synthetic-construction.json
           cp "$RUNNER_TEMP/industries-fixture-construction.log" verification-output/industry-performance/inputs/

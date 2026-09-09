@@ -579,7 +579,7 @@
         font-variant-numeric: tabular-nums;
       }
 
-      @media (max-width: 760px) {
+      @media (max-width: 760px), (max-height: 500px) {
         .barra {
           align-items: stretch;
           flex-direction: column;
@@ -4298,12 +4298,61 @@
       }
       function industriaAtiva() { return Boolean(estado.industriaColonia?.ativa && economiaCidadaAtiva() && estado.etapaConstrucaoColonia>=4); }
       function planoIndustria(id) { return planosIndustria.find(b=>b.id===id); }
-      function novoNegocioIndustria(id) { return {id,estado:'planejado',caixa:0,capital:0,obra:0,creditos:0,ultimoAtendimento:-1000,ultimoContrato:0,meta:0,saldoInicio:0,receita:0,folha:0,arvores:24,rocha:900,replantios:[],estoque:Object.fromEntries(itensIndustria.map(k=>[k,0]))}; }
+      function novoNegocioIndustria(id,tempo=0,parcial=false) { return {id,contabilidade:novaContabilidadeIndustria(tempo,parcial),estado:'planejado',caixa:0,capital:0,obra:0,creditos:0,ultimoAtendimento:-1000,ultimoContrato:0,meta:0,saldoInicio:0,receita:0,folha:0,arvores:24,rocha:900,replantios:[],estoque:Object.fromEntries(itensIndustria.map(k=>[k,0]))}; }
       function patrimonioIndustria() {
         const s=estado.industriaColonia;if(!s)return 0;
         return Object.values(s.negocios).reduce((n,b)=>n+b.caixa,0)+Object.values(s.agentes).reduce((n,a)=>n+(a.reserva||0),0);
       }
-      function registrarIndustria(tipo,de,para,valor,detalhe='') { registrarLivroCidada(tipo,de,para,valor,detalhe); }
+      const camposContabilidadeIndustria=['vendas','contratos','insumos','salarios','fretes','tributoCidade','tributoPessoal','tributoGeradoCidade','tributoGeradoPessoal','obras','capital','apoios','reembolsos','dividendos'];
+      function novosTotaisContabilidadeIndustria() {return Object.fromEntries(camposContabilidadeIndustria.map(k=>[k,0]));}
+      function novaContabilidadeIndustria(tempo=0,parcial=false) {
+        return {versao:1,desde:tempo,parcial,limitado:false,acumulado:novosTotaisContabilidadeIndustria(),ciclo:{numero:Math.floor(tempo/60),desde:tempo,parcial:parcial&&tempo%60!==0,...novosTotaisContabilidadeIndustria()}};
+      }
+      function normalizarContabilidadeIndustria(raw,tempo) {
+        const c=novaContabilidadeIndustria(tempo,true);if(!raw||raw.versao!==1)return c;
+        c.desde=numeroValido(raw.desde,0,tempo,tempo);c.parcial=raw.parcial!==false||c.desde!==raw.desde;c.limitado=raw.limitado===true;
+        for(const k of camposContabilidadeIndustria){const n=raw.acumulado?.[k];c.acumulado[k]=inteiroCidada(n,Number.MAX_SAFE_INTEGER);if(c.acumulado[k]!==n)c.parcial=true;}
+        if(Number.isSafeInteger(raw.ciclo?.numero)&&raw.ciclo.numero>=0&&raw.ciclo.numero<=Math.floor(tempo/60)){
+          c.ciclo.numero=raw.ciclo.numero;c.ciclo.desde=numeroValido(raw.ciclo.desde,c.ciclo.numero*60,Math.min(tempo,(c.ciclo.numero+1)*60),c.ciclo.numero*60);c.ciclo.parcial=raw.ciclo.parcial!==false||c.ciclo.desde!==raw.ciclo.desde;
+          for(const k of camposContabilidadeIndustria){const n=raw.ciclo[k];c.ciclo[k]=inteiroCidada(n,Number.MAX_SAFE_INTEGER);if(c.ciclo[k]!==n)c.ciclo.parcial=true;}
+        }
+        return c;
+      }
+      function registrarParcelaNegocioIndustria(id,campo,valor) {
+        const s=estado.industriaColonia,b=s?.negocios[id];if(!b||!Number.isSafeInteger(valor)||valor<=0||!camposContabilidadeIndustria.includes(campo))return;
+        const c=b.contabilidade??=novaContabilidadeIndustria(s.tempo,true),numero=Math.floor(s.tempo/60);
+        if(c.ciclo.numero!==numero)c.ciclo={numero,desde:numero*60,parcial:false,...novosTotaisContabilidadeIndustria()};
+        for(const totais of [c.acumulado,c.ciclo]){const n=totais[campo]+valor;if(Number.isSafeInteger(n))totais[campo]=n;else{totais[campo]=Number.MAX_SAFE_INTEGER;c.limitado=true;}}
+      }
+      function registrarIndustria(tipo,de,para,valor,detalhe='',vendedor='') {
+        registrarLivroCidada(tipo,de,para,valor,detalhe);
+        // Observational counters only. No cash, inventory, escrow or journal replay.
+        const registrar=registrarParcelaNegocioIndustria;
+        if(tipo==='capital_cooperativa')registrar(para,'capital',valor);
+        else if(tipo==='apoio_cooperativa')registrar(para,'apoios',valor);
+        else if(tipo==='contrato_manutencao')registrar(para,'contratos',valor);
+        else if(tipo==='contrato_devolvido')registrar(de,'reembolsos',valor);
+        else if(tipo==='dividendo_cooperativa')registrar(de,'dividendos',valor);
+        else if(tipo==='salario_cooperativa')registrar(de,detalhe==='frete'?'fretes':detalhe==='obra'?'obras':'salarios',valor);
+        else if(tipo==='compra_atacado'||tipo==='exportacao_industria'||tipo.startsWith('visita_')){registrar(para,'vendas',valor);if(tipo==='compra_atacado')registrar(de,'insumos',valor);}
+        else if(tipo==='imposto_venda_cidade'){registrar(de,'tributoCidade',valor);registrar(vendedor,'tributoGeradoCidade',valor);}
+        else if(tipo==='imposto_venda_pessoal'){registrar(de,'tributoPessoal',valor);registrar(vendedor,'tributoGeradoPessoal',valor);}
+      }
+      function saldoOperacionalNegocioIndustria(t) {
+        const n=BigInt(t.vendas)+BigInt(t.contratos)-BigInt(t.reembolsos)-BigInt(t.insumos)-BigInt(t.salarios)-BigInt(t.fretes)-BigInt(t.tributoCidade)-BigInt(t.tributoPessoal);
+        return n>=-BigInt(Number.MAX_SAFE_INTEGER)&&n<=BigInt(Number.MAX_SAFE_INTEGER)?Number(n):null;
+      }
+      function resumoContabilidadeIndustria(b) {
+        const c=b?.contabilidade;if(!c)return 'Histórico operacional ainda não iniciado.';
+        const t=c.acumulado,atual=c.ciclo.numero===Math.floor(estado.industriaColonia.tempo/60)?c.ciclo:novosTotaisContabilidadeIndustria(),ouro=textoOuroCidada;
+        const historia='Registro desde '+Math.floor(c.desde)+' s de jogo'+(c.parcial?' (histórico anterior não reconstituído)':'')+(c.limitado?' (limite de contador; totais incompletos)':'')+'. ';
+        const origem='Receitas: vendas '+ouro(t.vendas)+'; contratos de manutenção '+ouro(t.contratos)+'; devoluções de contratos '+ouro(t.reembolsos)+' (deduzidas do fluxo)'+'. ';
+        const despesas='Despesas: insumos '+ouro(t.insumos)+'; salários '+ouro(t.salarios)+'; fretes '+ouro(t.fretes)+'; tributos pagos '+ouro(t.tributoCidade+t.tributoPessoal)+'. ';
+        const fluxo=q=>{const n=saldoOperacionalNegocioIndustria(q);return n===null?'indisponível (limite de precisão)':ouro(n);};
+        const saldo='Fluxo operacional de caixa (não é lucro): '+fluxo(t)+'; neste ciclo '+fluxo(atual)+(atual.parcial?' (parcial)':'')+'. ';
+        const separados='Fora desse saldo: capital '+ouro(t.capital)+'; apoio '+ouro(t.apoios)+'; obras '+ouro(t.obras)+'; dividendos '+ouro(t.dividendos)+'. ';
+        return historia+origem+despesas+saldo+separados+'Tributos gerados nas vendas: cidade '+ouro(t.tributoGeradoCidade)+'; pessoal '+ouro(t.tributoGeradoPessoal)+'. Estoque e trabalho pago ainda não consumido não são lucro.';
+      }
       function invalidarGeografiaIndustria() {
         cachePinturaIndustria=null;cacheSolidosPlanta=null;cacheGrafoPlanta=null;cacheLigacoesPlanta.clear();cacheRotasEstradaColonia.clear();
         cacheVidaCotidiana.assinatura='';cacheVidaCotidiana.obstaculos=null;cacheVidaCotidiana.porId.clear();cachePatiosCotidianos.clear();
@@ -4317,7 +4366,7 @@
       }
       function financiarObraIndustria() {
         const s=estado.industriaColonia;
-        if(!industriaAtiva()||!s.expansao||Object.values(s.negocios).some(b=>b.estado==='obra')||estado.colonosComFome>0||estado.ciclosSoldosAtrasados>0||saldoOperacionalMunicipalColonia()<=0)return false;
+        if(!industriaAtiva()||!s.expansao||Object.values(s.negocios).some(b=>b.estado==='obra')||estado.colonosComFome>0||estado.ciclosSoldosAtrasados>0||auditoriaCidada().atrasados>0||saldoOperacionalMunicipalColonia()<=0)return false;
         const p=planosIndustria.find(p=>s.negocios[p.id]?.estado==='planejado');if(!p)return false;
         const reserva=Math.max(reservaMunicipalDinamicaColonia(),despesasEssenciaisMunicipaisColonia()*4);
         if(estado.tesouroColonia-p.capital<reserva||estado.estoqueMadeira<p.madeira+40||estado.estoquePedra<p.pedra+20)return false;
@@ -4357,8 +4406,8 @@
         e.totais.tributoVendasCidade+=t.cidade;e.totais.tributoVendasPessoal+=t.pessoal;
         s.totais.vendas+=base;s.totais.tributoCidade+=t.cidade;s.totais.tributoPessoal+=t.pessoal;
         if(exterior){e.entradasExternas+=t.total;s.totais.exportacoes+=base;}
-        registrarIndustria(tipo,origem,destino,base,'Principal');registrarIndustria('imposto_venda_cidade',origem,'cidade',t.cidade);
-        registrarIndustria('imposto_venda_pessoal',origem,'administrador',t.pessoal);return t;
+        registrarIndustria(tipo,origem,destino,base,'Principal');registrarIndustria('imposto_venda_cidade',origem,'cidade',t.cidade,'',destino);
+        registrarIndustria('imposto_venda_pessoal',origem,'administrador',t.pessoal,'',destino);return t;
       }
       function entradaIndustria(id) { const p=planoIndustria(id);return {x:p.x+p.largura/2,y:p.y+p.altura+36}; }
       function destinoPraçaIndustria(p) {
@@ -4404,6 +4453,13 @@
         if(a.reserva){if(a.carga?.pagador==='municipio')estado.economiaCidada.compensacaoCidade+=a.reserva;else if(b)b.caixa+=a.reserva;else estado.economiaCidada.custodia+=a.reserva;a.reserva=0;}
         if(a.carga){devolverCargaIndustria(a.carga,s);a.carga=null;}
       }
+      function substituirAgenteIndustria(a) {
+        // A free activity may be replaced without losing any recognized custody.
+        // The route is prepared first; a failed booking never cancels the old actor.
+        const s=estado.industriaColonia,anterior=s.agentes[a.id];
+        if(anterior&&anterior!==a)devolverAgenteIndustria(anterior);
+        s.agentes[a.id]=a;
+      }
       function cancelarAgenteIndustria(a) {
         devolverAgenteIndustria(a);delete estado.industriaColonia.agentes[a.id];estado.industriaColonia.totais.canceladas++;
       }
@@ -4439,6 +4495,7 @@
         for(const p of ordem){const b=s.negocios[p.id];if(!b||b.estado==='planejado')continue;
           const funcao=b.estado==='obra'?'obra':p.id==='zeladoria'?'manutencao':'trabalho';
           if(funcao==='trabalho'&&!estado.economiaCidada.opcionais&&['teatro','festival','taverna','taverna-sul'].includes(p.id))continue;
+          if(funcao==='trabalho'&&p.id==='festival'&&!s.festivalPreparando&&s.festivalAte<=s.tempo)continue;
           const n=numeroAgentesIndustria(p.id,funcao),max=b.estado==='obra'?Math.min(6,Math.ceil(p.obra-b.obra)):b.meta;
           const salario=funcao==='manutencao'?salarioZeladoriaIndustria:salarioTurnoIndustria;
           if(n>=max||b.caixa<salario||b.estado==='obra'&&b.obra+n>=p.obra)continue;
@@ -4448,7 +4505,7 @@
             destino=locais[(hashVidaCotidiana(pessoa.id)+s.ciclo)%Math.min(4,locais.length)]||destino;
           }
           const a=novoAgenteIndustria(pessoa,funcao,p.id,destino,salario);if(!a)return false;
-          b.caixa-=salario;s.agentes[pessoa.id]=a;return true;
+          b.caixa-=salario;substituirAgenteIndustria(a);return true;
         }return false;
       }
       function operarIndustria() {
@@ -4543,7 +4600,7 @@
         const a=novoAgenteIndustria(p,'frete',b.id,origem==='municipio'?acessoMunicipalIndustria(item):entradaIndustria(origem),reserva);if(!a)return false;
         if(origem==='municipio')estado[campoMunicipalIndustria(item)]-=quantidade;else s.negocios[origem].estoque[item]-=quantidade;
         if(municipal){observarContasCidada();const debito=Math.ceil(reserva/10000)*10000;estado.tesouroColonia=arredondarOuro(estado.tesouroColonia-debito/1000000);estado.economiaCidada.compensacaoCidade+=debito-reserva;marcarContasCidada();}else b.caixa-=reserva;
-        a.carga={origem,destino,item,quantidade,base,exportacao,pagador:municipal?'municipio':b.id};s.agentes[p.id]=a;if(exportacao)s.exportadosNoCiclo+=quantidade;return true;
+        a.carga={origem,destino,item,quantidade,base,exportacao,pagador:municipal?'municipio':b.id};substituirAgenteIndustria(a);if(exportacao)s.exportadosNoCiclo+=quantidade;return true;
       }
       function solicitarFretesIndustria() {
         const s=estado.industriaColonia,b=s.negocios.cervejaria,a=s.negocios.artes;
@@ -4576,14 +4633,19 @@
           const id=adultos[(n+Math.floor(s.tempo)*7)%adultos.length],p=e.pessoas[id],a=s.agentes[id];
           if(papeisMilitaresCidada.includes(p.emprego)||p.emprego==='transportador'||a&&a.funcao!=='passeio'||e.ciclo-p.ultimaCompra<3)continue;
           const casa=p.casa?posicaoCasaColonia(p.casa-1):areaAdministracao;
-          const opcoes=[...destinos].sort((a,b)=>Math.hypot(a.x-casa.x,a.y-casa.y)-Math.hypot(b.x-casa.x,b.y-casa.y));
+          const reservaAlimento=reservaAlimentarIndustria(p);
+          const opcoes=destinos.filter(oferta=>{
+            const b=s.negocios[oferta.id],item=oferta.item||'artigos',preco=oferta.preco||1600000;
+            return (filas[b.id]||0)<Math.min(b.estoque[item],12)&&b.estoque[item]>=1&&p.saldo>=reservaAlimento+precoComTributosCidada(preco).total&&(item!=='cerveja'||idadePessoaCidada(p)>=18);
+          }).sort((a,b)=>Math.hypot(a.x-casa.x,a.y-casa.y)-Math.hypot(b.x-casa.x,b.y-casa.y));
+          if(!opcoes.length)continue;
           // Alternate nearby choices by actual prior visits, not a random walk.
           const oferta=opcoes[(p.lazer+p.bens)%Math.min(3,opcoes.length)],b=s.negocios[oferta.id],item=oferta.item||'artigos',preco=oferta.preco||1600000;
           const esperando=filas[b.id]||0;
           if(esperando>=Math.min(b.estoque[item],12)||b.estoque[item]<1||p.saldo<reservaAlimentarIndustria(p)+precoComTributosCidada(preco).total)continue;
           if(item==='cerveja'&&idadePessoaCidada(p)<18)continue;
           const visita=novoAgenteIndustria(p,'visita',b.id,entradaIndustria(b.id));if(!visita)return false;
-          visita.atividade='Visita a '+oferta.nome;s.agentes[id]=visita;return true;
+          visita.atividade='Visita a '+oferta.nome;substituirAgenteIndustria(visita);return true;
         }return false;
       }
       function agendarPasseioIndustria() {
@@ -4656,7 +4718,7 @@
         if(a.funcao==='obra'){
           b.obra++;if(b.obra>=planoIndustria(b.id).obra){b.estado='ativo';b.meta=planoIndustria(b.id).vagas;definirMensagem(planoIndustria(b.id).nome+': construção concluída com salários pagos.');}
         } else if(a.funcao==='trabalho'){b.creditos=Math.min(64,b.creditos+1);b.ultimoAtendimento=s.tempo;}
-        if(a.funcao==='trabalho'&&a.turnos<3&&b.caixa>=salario&&b.meta>0&&(estado.economiaCidada.opcionais||!['teatro','festival','taverna','taverna-sul'].includes(b.id))){b.caixa-=salario;a.reserva=salario;a.trabalho=0;return;}
+        if(a.funcao==='trabalho'&&a.turnos<3&&b.caixa>=salario&&b.meta>0&&(estado.economiaCidada.opcionais||!['teatro','festival','taverna','taverna-sul'].includes(b.id))&&(b.id!=='festival'||s.festivalPreparando||s.festivalAte>s.tempo)){b.caixa-=salario;a.reserva=salario;a.trabalho=0;return;}
         terminarAtividadeIndustria(a);
       }
       function atualizarIndustriaColonia(delta) {
@@ -4684,7 +4746,8 @@
         for(const k of ['tempo','agenda','escala','ciclo','exportadosNoCiclo','proximoFestival','festivalAte'])s[k]=numeroValido(raw[k],0,1e12,s[k]);
         for(const k of ['graos','madeira','pedra'])s.devolucoes[k]=numeroValido(raw.devolucoes?.[k],0,1000000,0);
         s.agenda=Math.min(.5,s.agenda);s.ciclo=Math.floor(s.tempo/60);
-        for(const p of planosIndustria){const q=raw.negocios?.[p.id],b=novoNegocioIndustria(p.id);if(q){
+        for(const p of planosIndustria){const q=raw.negocios?.[p.id],b=novoNegocioIndustria(p.id,s.tempo,true);if(q){
+          b.contabilidade=normalizarContabilidadeIndustria(q.contabilidade,s.tempo);
           b.estado=['planejado','obra','ativo'].includes(q.estado)?q.estado:'planejado';
           for(const k of ['caixa','capital','folha','receita','saldoInicio','ultimoContrato'])b[k]=inteiroCidada(q[k]);
           b.rocha=Math.floor(numeroValido(q.rocha,0,900,900));b.arvores=Math.floor(numeroValido(q.arvores,0,24,24));b.replantios=(Array.isArray(q.replantios)?q.replantios:[]).slice(0,24).filter(Number.isFinite);
@@ -4710,14 +4773,18 @@
             const pagador=c.destino==='municipio'?'municipio':c.exportacao?c.origem:c.destino;
             carga={origem:c.origem,destino:c.destino,item:c.item,quantidade:c.quantidade,base:c.base,exportacao:c.exportacao===true,pagador};
           }
-          const limiteReserva=carga?salarioFreteIndustria+(carga.exportacao?0:precoComTributosCidada(carga.base).total):salarioTurnoIndustria;
-          // Preserve recognized money separately from permission to perform/pay a job.
-          const reserva=inteiroCidada(q.reserva),reservaContratual=q.funcao==='frete'?reserva===limiteReserva:reserva<=limiteReserva;
+          const pago=['trabalho','obra','manutencao'].includes(q.funcao);
+          const limiteReserva=q.funcao==='frete'&&carga?salarioFreteIndustria+(carga.exportacao?0:precoComTributosCidada(carga.base).total):q.funcao==='manutencao'?salarioZeladoriaIndustria:pago?salarioTurnoIndustria:0;
+          // Admission and recovery are separate: contradictory roles cannot spend
+          // recognized escrow, and rejected saves return it without authorizing pay.
+          const reserva=inteiroCidada(q.reserva),reservaContratual=reserva===limiteReserva;
           const empresaCarga=carga?(carga.exportacao||carga.destino==='municipio'?carga.origem:carga.destino):empresa;
           const funcaoValida=['trabalho','obra','manutencao','frete','visita','passeio'].includes(q.funcao);
-          const valido=/^cid-[1-9]\d{0,8}$/.test(id)&&funcaoValida&&reservaContratual&&Number.isFinite(q.x)&&Number.isFinite(q.y)&&q.x>=0&&q.x<=limiteCosta&&q.y>=0&&q.y<=alturaMundoExpansao&&caminho.length>=2&&caminho.every(p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.x<=limiteCosta&&p.y>=0&&p.y<=alturaMundoExpansao)&&['indo','atividade','voltando','livre','entregando'].includes(q.fase)&&
-            (q.funcao==='frete'?carga&&['indo','entregando'].includes(q.fase)&&empresa===empresaCarga&&!q.consumado:!carga)&&
-            (['trabalho','obra','manutencao'].includes(q.funcao)?Boolean(empresa):true)&&estado.economiaCidada.pessoas[id];
+          const faseValida=q.funcao==='frete'?['indo','entregando'].includes(q.fase):q.funcao==='passeio'?['indo','livre','atividade','voltando'].includes(q.fase):['indo','atividade'].includes(q.fase);
+          const empresaValida=q.funcao==='passeio'?q.empresa==='':Boolean(empresa);
+          const valido=/^cid-[1-9]\d{0,8}$/.test(id)&&funcaoValida&&reservaContratual&&Number.isFinite(q.x)&&Number.isFinite(q.y)&&q.x>=0&&q.x<=limiteCosta&&q.y>=0&&q.y<=alturaMundoExpansao&&caminho.length>=2&&caminho.every(p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.x<=limiteCosta&&p.y>=0&&p.y<=alturaMundoExpansao)&&faseValida&&empresaValida&&
+            (q.funcao==='frete'?carga&&empresa===empresaCarga&&!q.consumado:q.carga==null)&&
+            (!(pago||q.funcao==='frete')||!q.consumado&&!q.emCasa)&&estado.economiaCidada.pessoas[id];
           if(!valido){
             const pagador=carga?.pagador||(q.carga?.pagador==='municipio'&&q.carga?.destino==='municipio'?'municipio':empresa||'custodia');
             if(pagador==='municipio')estado.economiaCidada.compensacaoCidade+=reserva;else if(s.negocios[pagador])s.negocios[pagador].caixa+=reserva;else estado.economiaCidada.custodia+=reserva;
@@ -4801,6 +4868,7 @@
         if(!b||b.estado==='planejado'){
           if(!s.ativa)return 'Planejado · aguardando autorização';
           if(!s.expansao)return 'Planejado · novas obras pausadas';
+          if(auditoriaCidada().atrasados>0)return 'Planejado · salários essenciais em atraso têm prioridade';
           if(estado.colonosComFome>0||estado.ciclosSoldosAtrasados>0)return 'Planejado · alimentação e salários essenciais têm prioridade';
           if(Object.values(s.negocios).some(q=>q.estado==='obra'))return 'Planejado · aguardando a obra em andamento';
           if(estado.tesouroColonia-p.capital<Math.max(reservaMunicipalDinamicaColonia(),despesasEssenciaisMunicipaisColonia()*4))return 'Planejado · preservando a reserva municipal';
@@ -4834,7 +4902,7 @@
           const caixa='Caixa livre '+textoOuroCidada(b?.caixa||0)+'; reservado pela empresa '+textoOuroCidada(reservas)+(municipais?'; reservado pelo município '+textoOuroCidada(municipais):'')+'; salários contratados a liquidar '+textoOuroCidada(salarios)+'. '+contratos.length+' contratos; '+locais.filter(a=>a.funcao==='visita').length+' clientes. Neste ciclo: vendas '+textoOuroCidada(b?.receita||0)+'; folha paga '+textoOuroCidada(b?.folha||0)+'; variação de caixa '+textoOuroCidada((b?.caixa||0)-(b?.saldoInicio||0))+' (não é lucro).';
           const estoque=b?itensIndustria.filter(k=>b.estoque[k]>0).map(k=>nomesItensIndustria[k]+' '+Math.floor(b.estoque[k])+(typeof capacidadeEstoqueIndustria==='function'?'/'+capacidadeEstoqueIndustria(p.id,k):'')).join('; ')||'Sem estoque':'Sem estoque';
           const devolucoes=Object.entries(s.devolucoesNegocios?.[p.id]||{}).filter(([k,v])=>v>0).map(([k,v])=>v+' '+nomesItensIndustria[k]).join('; ');
-          return {id:p.id,nome:p.nome,nota:p.papel+' · até '+p.vagas+' posições possíveis',celulas:[situacaoNegocioIndustria(p,b,agentes)+'. Capital previsto '+p.capital+' ouro; '+p.madeira+' madeira; '+p.pedra+' pedra.',caixa,estoque+'. '+transito.length+' fretes em trânsito'+(transito.length?': '+transito.map(a=>a.carga.quantidade+' '+nomesItensIndustria[a.carga.item]+' '+(a.carga.destino===p.id?'a receber':'a entregar')).join('; '):'')+'.'+(devolucoes?' Devolução aguardando espaço: '+devolucoes+'.':'')]};
+          return {id:p.id,nome:p.nome,nota:p.papel+' · até '+p.vagas+' posições possíveis',celulas:[situacaoNegocioIndustria(p,b,agentes)+'. Capital previsto '+p.capital+' ouro; '+p.madeira+' madeira; '+p.pedra+' pedra.',caixa+' '+resumoContabilidadeIndustria(b),estoque+'. '+transito.length+' fretes em trânsito'+(transito.length?': '+transito.map(a=>a.carga.quantidade+' '+nomesItensIndustria[a.carga.item]+' '+(a.carga.destino===p.id?'a receber':'a entregar')).join('; '):'')+'.'+(devolucoes?' Devolução aguardando espaço: '+devolucoes+'.':'')]};
         });
       }
       function adicionarInspecoesIndustria(adicionar) {

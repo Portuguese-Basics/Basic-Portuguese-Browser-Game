@@ -14,7 +14,7 @@ results=[]
 try:
  with sync_playwright() as pw:
   browser=pw.chromium.launch(headless=True,executable_path=shutil.which('chromium') or None,args=['--no-sandbox'])
-  for name,vp,touch in [('desktop',{'width':1440,'height':1050},False),('mobile',{'width':390,'height':844},True)]:
+  for name,vp,touch in [('desktop',{'width':1440,'height':1050},False),('mobile',{'width':390,'height':844},True),('mobile-landscape',{'width':844,'height':390},True)]:
    ctx=browser.new_context(viewport=vp,is_mobile=touch,has_touch=touch,device_scale_factor=2,accept_downloads=True);page=ctx.new_page();errors=[];page.on('pageerror',lambda e:errors.append(str(e)))
    def load(saved=None):
     global page
@@ -40,6 +40,8 @@ try:
    assert page.evaluate('painelIndustria.scrollWidth<=painelIndustria.clientWidth+1')
    page.screenshot(path=str(out/f'{name}-funded-construction.png'))
    page.locator('#fechar-industria').click()
+   canvas_box=page.locator('#jogo').bounding_box()
+   assert canvas_box and canvas_box['height']>=100, (name,canvas_box)
    # Synthetic completed establishments for focused UI/arrival tests. Full staged
    # paid construction is tested separately by industry-soak-test.js.
    page.evaluate('''()=>{
@@ -84,7 +86,7 @@ try:
    assert page.evaluate('estado.industriaColonia.totais')==totals
    assert page.evaluate('auditoriaCidada().diferenca')==0
    assert not errors,errors
-   results.append({'viewport':name,'touch':touch,'capitalTransferred':240,'businesses':10,'realVisitTravelSeconds':seconds+5,'customerPaid':1.54,'saveMidTrip':True,'exactTaxesCoveredByUnitSuite':True,'noRepeatedPaymentOnReload':True,'keyboardAndCanvasTap':True,'noHorizontalOverflow':True,'accountingDiscrepancy':0,'javascriptErrors':errors})
+   results.append({'viewport':name,'touch':touch,'capitalTransferred':240,'businesses':10,'realVisitTravelSeconds':seconds+5,'customerPaid':1.54,'saveMidTrip':True,'exactTaxesCoveredByUnitSuite':True,'noRepeatedPaymentOnReload':True,'keyboardAndCanvasTap':True,'noHorizontalOverflow':True,'initialCanvasHeight':canvas_box['height'],'accountingDiscrepancy':0,'javascriptErrors':errors})
    ctx.close()
   browser.close()
 finally:

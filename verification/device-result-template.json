@@ -1,0 +1,19 @@
+{
+  "status": "NOT_TESTED",
+  "physicalDevice": null,
+  "candidate": {"commit": null, "tree": null, "runtimeBytes": null, "runtimeSha256": null, "fixtureBytes": null, "fixtureSha256": null},
+  "device": {"manufacturer": null, "model": null, "ramGiB": null, "osVersionBuild": null, "browserVersionBuild": null},
+  "display": {"portraitViewport": null, "landscapeViewport": null, "devicePixelRatio": null, "refreshHz": null},
+  "conditions": {"privateBrowsing": null, "batteryPercent": null, "charging": null, "batterySaver": null, "thermalObservation": null, "recordingOrInspector": null},
+  "session": {"startUtc": null, "endUtc": null, "warmupSeconds": null, "foregroundMeasuredSeconds": null, "visibilityInterruptions": []},
+  "intervals": [],
+  "metrics": {"status": "NOT_MEASURED", "fps": null, "workP95Ms": null, "workP99Ms": null, "frameIntervalP95Ms": null, "effectiveSpeedAt10x": null, "framesOver33_3Ms": null, "framesOver50Ms": null, "framesOver100Ms": null, "longestFrameMs": null, "memoryBytes": null, "saveBytes": null, "serializationMs": null},
+  "activity": {"namedWorkArrivalPayBreak": "NOT_TESTED", "carrierCollectionGateDelivery": "NOT_TESTED", "customerServicePrincipalTaxes": "NOT_TESTED", "poorResidentFreeSpace": "NOT_TESTED"},
+  "interaction": {"portrait": "NOT_TESTED", "landscape": "NOT_TESTED", "touchTargets": "NOT_TESTED", "tapVersusDrag": "NOT_TESTED", "pinchZoom": "NOT_TESTED", "focusAndScroll": "NOT_TESTED", "searchAndLocateSameIdentity": "NOT_TESTED"},
+  "saves": {"pausedMidTripReload": "NOT_TESTED", "fundedWorkReload": "NOT_TESTED", "settlementThenReload": "NOT_TESTED", "moneyDiscrepancyMicros": null, "lostOrDuplicateActorsOrCargo": null},
+  "optionalPurchasesPaused": "NOT_TESTED",
+  "extensionDisabled": "NOT_TESTED",
+  "errorsAndAdverseSamples": [],
+  "privateEvidenceReferences": [],
+  "limitations": ["Template only. No physical device run has been performed by creating this file."]
+}
