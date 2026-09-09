@@ -14,7 +14,7 @@ function game(html,storage=new Map()){
  vm.runInNewContext(prefix+'\nglobalThis.make=createHarness;\n'+fixture+'\nglobalThis.fixture=mature;',o);
  const g=o.make(storage);g.eval=s=>vm.runInNewContext(s,g.context);g.storage=storage;g.fixture=()=>o.fixture(g);return g;
 }
-function state(g){const s=JSON.parse(JSON.stringify(g.estado));if(!baseline.includes("function novaVidaCotidiana"))delete s.vidaCotidiana;delete s.cameraExpansao;delete s.jogador.x;delete s.jogador.y;
+function state(g){const s=JSON.parse(JSON.stringify(g.estado));if(!baseline.includes("function novaIndustriaColonia")&&s.industriaColonia){assert.equal(s.industriaColonia.ativa,false,"old-runtime equivalence only covers enterprises not yet authorized");delete s.industriaColonia;}if(!baseline.includes("function novaVidaCotidiana"))delete s.vidaCotidiana;delete s.cameraExpansao;delete s.jogador.x;delete s.jogador.y;
  for(const u of s.defesaPosicional?.unidades||[])for(const k of ['x','y','altura','rota','trecho','fase'])delete u[k];return s;}
 for(const scenario of ['mature','poverty','hunt','garrison','children']){
  const seed=game(baseline);seed.fixture();

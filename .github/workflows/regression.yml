@@ -9,12 +9,13 @@ defaults:
   run:
     shell: bash
 concurrency:
-  group: regression-${{ github.ref }}
+  # A branch push and its PR share one regression slot.
+  group: regression-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
   regression:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,17 +26,19 @@ jobs:
       - name: Simulation regressions
         run: |
           mkdir -p verification-output
-          for name in smoke-test militia-hunts-test clarity-test baseline-equivalence-test walls-test economy-test economy-soak-test daily-life-test daily-life-equivalence-test map-layout-test map-render-test road-render-test; do
+          for name in smoke-test militia-hunts-test clarity-test baseline-equivalence-test walls-test economy-test economy-soak-test daily-life-test daily-life-equivalence-test map-layout-test map-render-test road-render-test industry-test industry-soak-test industry-performance-equivalence-test industry-ui-test industry-custody-test industry-stations-test industry-demand-test industry-geometry-performance-test industry-role-custody-test industry-demand-choice-test industry-arrears-test industry-bookkeeping-test; do
             node "verification/$name.js" 2>&1 | tee "verification-output/$name.log"
           done
           PREVIOUS_RUNTIME_REF=9529f0ce8cc1f43c962f0e665a0ad9ced15c5519 node verification/baseline-equivalence-test.js 2>&1 | tee verification-output/previous-clarity-equivalence.log
           PREVIOUS_RUNTIME_REF=a47830faae4c4c17e680dead01932e9014dbdf14 node verification/baseline-equivalence-test.js 2>&1 | tee verification-output/previous-walls-legacy-mode.log
           PREVIOUS_ACTIVE_REF=c158b99822563e0f94c5f47ac00391e05de0b1c0 node verification/daily-life-equivalence-test.js 2>&1 | tee verification-output/active-previous-map-equivalence.log
+          PREVIOUS_ACTIVE_REF=2c2069da81651b667c9e907ef07cdbd855c635d2 node verification/daily-life-equivalence-test.js 2>&1 | tee verification-output/inactive-industry-baseline-equivalence.log
       - name: Independent map geometry and utility gates
         run: |
           node verification/export-map-layout.js
           python -m pip install shapely==2.1.2 networkx==3.6.1
           python verification/map-geometry-audit.py 2>&1 | tee verification-output/map-geometry.log
+          python verification/industry-geometry-test.py 2>&1 | tee verification-output/industry-geometry.log
       - name: Browser test dependencies
         run: |
           python -m pip install playwright==1.57.0
@@ -47,11 +50,12 @@ jobs:
           server_pid=$!
           trap 'kill "$server_pid"' EXIT
           sleep 1
-          for name in clarity walls economy daily-life map-layout; do
+          for name in clarity walls economy daily-life map-layout industry; do
             python "verification/browser-$name.py" --url http://127.0.0.1:8765/ 2>&1 | tee "verification-output/$name-browser.log"
           done
           python verification/browser-map-render.py 2>&1 | tee verification-output/map-raster.log
           python verification/browser-road-cache.py 2>&1 | tee verification-output/road-cache.log
+          python verification/browser-industry-render.py 2>&1 | tee verification-output/industry-render.log
       - uses: actions/upload-artifact@v4
         if: always()
         with:

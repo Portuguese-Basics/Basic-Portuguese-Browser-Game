@@ -1,0 +1,100 @@
+name: Industries candidate performance
+
+on:
+  push:
+    branches: ['feature/astra-ultra-industries-01']
+    # Reuse source-identical measurements after documentation/reference-test edits.
+    paths: ['index.html', 'verification/industry-paired-benchmark.py']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+concurrency:
+  group: industries-performance-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  performance:
+    if: github.ref == 'refs/heads/feature/astra-ultra-industries-01'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    env:
+      PRODUCTION_REF: 2c2069da81651b667c9e907ef07cdbd855c635d2
+      UNTOUCHED_REF: 54bfe6d5daac17df40984df7243dc579568768cb
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install the pinned host browser test runtime
+        run: |
+          python -m pip install playwright==1.57.0
+          python -m playwright install --with-deps chromium
+
+      - name: Pin public source inputs and create synthetic fixtures from untouched industries
+        timeout-minutes: 15
+        run: |
+          mkdir -p verification-output/industry-performance/inputs
+          git rev-parse HEAD > verification-output/industry-performance/inputs/candidate-commit.txt
+          git show "$PRODUCTION_REF:index.html" > verification-output/industry-performance/inputs/production.html
+          git show "$UNTOUCHED_REF:index.html" > verification-output/industry-performance/inputs/untouched.html
+          cp index.html verification-output/industry-performance/inputs/candidate.html
+          fixture_checkout="$RUNNER_TEMP/industries-performance-fixture-reference"
+          git worktree add --detach "$fixture_checkout" "$UNTOUCHED_REF"
+          (
+            cd "$fixture_checkout"
+            INDUSTRY_SOAK_CYCLES=180 node verification/industry-soak-test.js > "$RUNNER_TEMP/industries-fixture-mature.log" 2>&1
+          )
+          cp "$fixture_checkout/verification-output/industry-soak-save.json" verification-output/industry-performance/inputs/synthetic-mature.json
+          cp "$RUNNER_TEMP/industries-fixture-mature.log" verification-output/industry-performance/inputs/
+          (
+            cd "$fixture_checkout"
+            INDUSTRY_SOAK_CYCLES=70 node verification/industry-soak-test.js > "$RUNNER_TEMP/industries-fixture-construction.log" 2>&1
+          )
+          cp "$fixture_checkout/verification-output/industry-soak-save.json" verification-output/industry-performance/inputs/synthetic-construction.json
+          cp "$RUNNER_TEMP/industries-fixture-construction.log" verification-output/industry-performance/inputs/
+          sha256sum verification-output/industry-performance/inputs/*.html verification-output/industry-performance/inputs/*.json > verification-output/industry-performance/inputs/SHA256SUMS
+
+      - name: Sequential paired matrix and 15-minute active foreground soak
+        timeout-minutes: 100
+        run: |
+          python verification/industry-paired-benchmark.py \
+            --production verification-output/industry-performance/inputs/production.html \
+            --production-ref "$PRODUCTION_REF" \
+            --untouched verification-output/industry-performance/inputs/untouched.html \
+            --untouched-ref "$UNTOUCHED_REF" \
+            --candidate verification-output/industry-performance/inputs/candidate.html \
+            --candidate-ref "${{ github.sha }}" \
+            --save verification-output/industry-performance/inputs/synthetic-mature.json \
+            --motion-save verification-output/industry-performance/inputs/synthetic-construction.json \
+            --variants production,untouched,candidate \
+            --scenes overview,district,tavern,resident-ledger,business-panel,motion,disabled \
+            --seconds 60 --warmup 5 --repetitions 3 --speed 10 \
+            --width 390 --height 844 --dpr 2 \
+            --soak-seconds 900 --soak-speed 1 \
+            --output verification-output/industry-performance/results \
+            2>&1 | tee verification-output/industry-performance/benchmark.log
+
+      - name: Preserve measurements even when a run fails or a budget remains open
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: industries-performance-${{ github.sha }}-${{ github.run_id }}
+          path: verification-output/industry-performance/
+          retention-days: 14
+          if-no-files-found: warn

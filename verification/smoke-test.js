@@ -49,6 +49,7 @@ function createHarness(storage) {
   const strokeRects = [];
   const fillTexts = [];
   const arcs = [];
+  const ellipses = [];
   const lineSegments = [];
   let currentPoint = null;
   let frameCallback = null;
@@ -60,6 +61,7 @@ function createHarness(storage) {
     arc(...args) {
       arcs.push(args);
     },
+    ellipse(...args) { ellipses.push(args); },
     fill() {},
     stroke() {},
     strokeRect(...args) {
@@ -196,6 +198,7 @@ function createHarness(storage) {
     strokeRects,
     fillTexts,
     arcs,
+    ellipses,
     lineSegments,
     areasMoradia: context.__testeJogo.areasMoradia,
     areasHotfixCozinhas: context.__testeJogo.areasHotfixCozinhas,
@@ -226,6 +229,7 @@ function createHarness(storage) {
       strokeRects.length = 0;
       fillTexts.length = 0;
       arcs.length = 0;
+      ellipses.length = 0;
       lineSegments.length = 0;
       currentPoint = null;
     },

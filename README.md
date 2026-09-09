@@ -245,3 +245,23 @@ construction, inventories and financial accounts. Roads, gates, garrison approac
 and separate potable/wastewater routes were rebuilt together. Manual placement and
 purposeful economic visits remain future work; see
 `docs/releases/map-expansion-bastion.md` for precise scope and verification.
+
+## Funded industries and actual paid destinations
+
+Open **Empresas e lazer** and authorize staged cooperative construction. The new
+program adds upkeep, managed woodland, a finite quarry, artisans, hops/barley,
+a brewery, two taverns, theater and a staffed festival square. Residents take
+funded contracts, travel to workplaces and service destinations, and receive/pay
+real money only on completed work or delivery. Free public rest spaces remain
+available. The program uses existing maintenance funding for rotating local jobs
+and keeps essential city reserves protected. It is opt-in and save-compatible.
+
+See [the implementation and accounting rules](docs/releases/industries-paid-life.md)
+for costs, prices, limits, receipts, and remaining scope. New tests:
+
+```sh
+node verification/industry-test.js
+INDUSTRY_SOAK_CYCLES=180 node verification/industry-soak-test.js
+python verification/industry-geometry-test.py
+python verification/browser-industry.py --url http://127.0.0.1:8765/
+```
