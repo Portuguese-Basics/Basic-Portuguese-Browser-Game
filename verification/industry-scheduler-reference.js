@@ -1,24 +1,30 @@
-// Unoptimized, audited stage-2 reference functions. Tests only; never loaded by game.
+// Unoptimized reference with the adopted activity and affordable-choice rules.
+// Keep repeated scans for independent optimization comparison. Tests only; never loaded by game.
       function numeroAgentesIndustria(id,funcao=null) {
         return Object.values(estado.industriaColonia.agentes).filter(a=>a.empresa===id&&(!funcao||a.funcao===funcao)).length;
       }
       function agendarVisitaIndustria() {
         const s=estado.industriaColonia,e=estado.economiaCidada;
         if(!e.opcionais||estado.colonosComFome>0||Object.values(s.agentes).filter(a=>a.funcao==='visita').length>=48)return false;
-        const destinos=planosIndustria.filter(p=>(p.preco||p.id==='artes')&&s.negocios[p.id]?.estado==='ativo'&&(p.id!=='festival'||s.festivalAte>s.tempo+90)&&Object.values(s.agentes).some(a=>a.empresa===p.id&&a.funcao==='trabalho'&&a.fase==='atividade'));
+        const destinos=planosIndustria.filter(p=>(p.preco||p.id==='artes')&&s.negocios[p.id]?.estado==='ativo'&&(p.id!=='festival'||s.festivalAte>s.tempo+90)&&Object.values(s.agentes).some(a=>a.empresa===p.id&&a.funcao==='trabalho'&&a.fase==='atividade'&&e.pessoas[a.id]?.emprego==='geral'));
         if(!destinos.length)return false;
         const adultos=e.adultos;
         for(let n=0;n<adultos.length;n++){
           const id=adultos[(n+Math.floor(s.tempo)*7)%adultos.length],p=e.pessoas[id],a=s.agentes[id];
           if(papeisMilitaresCidada.includes(p.emprego)||p.emprego==='transportador'||a&&a.funcao!=='passeio'||e.ciclo-p.ultimaCompra<3)continue;
-          const opcoes=[...destinos].sort((a,b)=>Math.hypot(a.x-(p.casa?posicaoCasaColonia(p.casa-1).x:areaAdministracao.x),a.y-(p.casa?posicaoCasaColonia(p.casa-1).y:areaAdministracao.y))-Math.hypot(b.x-(p.casa?posicaoCasaColonia(p.casa-1).x:areaAdministracao.x),b.y-(p.casa?posicaoCasaColonia(p.casa-1).y:areaAdministracao.y)));
+          const opcoes=destinos.filter(oferta=>{
+            const b=s.negocios[oferta.id],item=oferta.item||'artigos',preco=oferta.preco||1600000;
+            const esperando=Object.values(s.agentes).filter(a=>a.funcao==='visita'&&a.empresa===b.id).length;
+            return esperando<Math.min(b.estoque[item],12)&&b.estoque[item]>=1&&p.saldo>=reservaAlimentarIndustria(p)+precoComTributosCidada(preco).total&&(item!=='cerveja'||idadePessoaCidada(p)>=18);
+          }).sort((a,b)=>Math.hypot(a.x-(p.casa?posicaoCasaColonia(p.casa-1).x:areaAdministracao.x),a.y-(p.casa?posicaoCasaColonia(p.casa-1).y:areaAdministracao.y))-Math.hypot(b.x-(p.casa?posicaoCasaColonia(p.casa-1).x:areaAdministracao.x),b.y-(p.casa?posicaoCasaColonia(p.casa-1).y:areaAdministracao.y)));
+          if(!opcoes.length)continue;
           // Alternate nearby choices by actual prior visits, not a random walk.
           const oferta=opcoes[(p.lazer+p.bens)%Math.min(3,opcoes.length)],b=s.negocios[oferta.id],item=oferta.item||'artigos',preco=oferta.preco||1600000;
           const esperando=Object.values(s.agentes).filter(a=>a.funcao==='visita'&&a.empresa===b.id).length;
           if(esperando>=Math.min(b.estoque[item],12)||b.estoque[item]<1||p.saldo<reservaAlimentarIndustria(p)+precoComTributosCidada(preco).total)continue;
           if(item==='cerveja'&&idadePessoaCidada(p)<18)continue;
           const visita=novoAgenteIndustria(p,'visita',b.id,entradaIndustria(b.id));if(!visita)return false;
-          visita.atividade='Visita a '+oferta.nome;s.agentes[id]=visita;return true;
+          visita.atividade='Visita a '+oferta.nome;substituirAgenteIndustria(visita);return true;
         }return false;
       }
       function executarCompraIndustria(a) {
@@ -26,7 +32,7 @@
         if(s.agentes[a.id]!==a||a.funcao!=='visita'||a.fase!=='atividade'||a.trabalho<10||a.consumado||estado.jogoPausado)return false;
         if(!p||!b||!oferta||Math.hypot(a.x-entradaIndustria(a.empresa).x,a.y-entradaIndustria(a.empresa).y)>1||b.estado!=='ativo'||!e.opcionais||estado.colonosComFome>0||a.empresa==='festival'&&s.festivalAte<=s.tempo)return false;
         const item=oferta.item||'artigos',preco=oferta.preco||1600000,t=precoComTributosCidada(preco);
-        const atendente=Object.values(s.agentes).some(q=>q.id!==a.id&&q.empresa===a.empresa&&q.funcao==='trabalho'&&q.fase==='atividade');
+        const atendente=Object.values(s.agentes).some(q=>q.id!==a.id&&q.empresa===a.empresa&&q.funcao==='trabalho'&&q.fase==='atividade'&&e.pessoas[q.id]?.emprego==='geral');
         if(!atendente||b.estoque[item]<1||p.saldo<reservaAlimentarIndustria(p)+t.total||item==='cerveja'&&idadePessoaCidada(p)<18)return false;
         p.saldo-=t.total;p.gasto+=t.total;p.impostos+=t.cidade+t.pessoal;p.ultimaCompra=e.ciclo;
         if(item==='artigos')p.bens++;else p.lazer++;

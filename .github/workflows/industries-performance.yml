@@ -3,6 +3,9 @@ name: Industries candidate performance
 on:
   push:
     branches: ['feature/astra-ultra-industries-01']
+    # Reuse source-identical measurements after documentation/reference-test edits.
+    paths: ['index.html', 'verification/industry-paired-benchmark.py']
+  workflow_dispatch:
 
 permissions:
   contents: read
